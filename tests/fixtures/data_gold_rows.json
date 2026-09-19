@@ -1,0 +1,54 @@
+{
+  "nsmc": {
+    "document": "배송이 빠르고 포장이 좋았다.",
+    "label": 1
+  },
+  "ynat": {
+    "title": "대표팀이 월드컵에서 승리했다",
+    "label": 5
+  },
+  "nli": {
+    "premise": "비가 온다.",
+    "hypothesis": "우산이 필요하다.",
+    "label": 0
+  },
+  "sts": {
+    "sentence1": "오늘은 맑다.",
+    "sentence2": "날씨가 좋다.",
+    "labels": {
+      "real-label": 4.5,
+      "binary-label": 1
+    }
+  },
+  "korquad": {
+    "context": "서울은 대한민국의 수도이다.",
+    "question": "대한민국의 수도는 어디인가?",
+    "id": "article-a-question-1"
+  },
+  "korquad_negative": {
+    "context": "부산은 바다와 항구로 유명하다.",
+    "question": "대한민국의 수도는 어디인가?",
+    "id": "article-b-question-1"
+  },
+  "unsmile": {
+    "문장": "이 글은 깨끗하다.",
+    "여성/가족 혐오": 0,
+    "clean": 1
+  },
+  "kmhas": {
+    "text": "모두를 존중해야 한다.",
+    "labels": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+  "kote": {
+    "text": "정말 기쁘고 즐겁다.",
+    "labels": ["기쁨", "즐거움"]
+  },
+  "intent": {
+    "text": "예약 가능한가요?",
+    "label": "예약"
+  },
+  "klaid": {
+    "fact": "피고인은 타인의 재물을 절취하였다.",
+    "laws": ["형법 제329조"]
+  }
+}

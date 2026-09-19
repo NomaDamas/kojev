@@ -1,0 +1,124 @@
+"""Mapper and validation tests for the Korean gold corpus builder."""
+
+from __future__ import annotations
+
+import json
+from typing import TYPE_CHECKING
+
+import pytest
+
+from kojev.data_gold import (
+    build_korquad_pair,
+    map_nli_row,
+    map_nsmc_row,
+    map_sts_row,
+    map_unsmile_row,
+    validate_jsonl,
+)
+from kojev.schema import QuestionType
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+
+def test_maps_nsmc_label_to_choice_and_noul_gold() -> None:
+    example = map_nsmc_row({"document": "좋은 영화다", "label": 1}, split="train")
+
+    assert example.source == "e9t/nsmc"
+    assert example.questions[0].type is QuestionType.CHOICE
+    assert example.questions[0].gold == 1
+    assert example.questions[1].gold == 1
+
+
+def test_maps_nli_label_to_entailment_neutral_contradiction() -> None:
+    example = map_nli_row(
+        {
+            "premise": "비가 온다.",
+            "hypothesis": "우산이 필요하다.",
+            "label": 0,
+        },
+        split="val",
+    )
+
+    assert example.questions[0].options == ["함의", "중립", "모순"]
+    assert example.questions[0].gold == 0
+
+
+def test_maps_sts_real_label_to_rounded_score_and_binary_gold() -> None:
+    example = map_sts_row(
+        {
+            "sentence1": "오늘은 맑다.",
+            "sentence2": "날씨가 좋다.",
+            "labels": {"real-label": 4.5, "binary-label": 1},
+        },
+        split="train",
+    )
+
+    assert example.questions[0].type is QuestionType.SCORE
+    assert example.questions[0].gold == 4
+    assert example.questions[1].gold == 1
+
+
+def test_korquad_negative_pair_flips_answerability_gold() -> None:
+    positive = build_korquad_pair(
+        {"context": "서울은 수도이다.", "question": "수도는?", "id": "a"},
+        split="train",
+        negative_question="부산은 어디인가?",
+    )
+    negative = build_korquad_pair(
+        {"context": "부산은 항구다.", "question": "수도는?", "id": "b"},
+        split="train",
+        negative_question="수도는?",
+    )
+
+    assert positive.questions[0].gold == 1
+    assert negative.questions[0].gold == 0
+
+
+def test_unsmile_emits_one_noul_per_category_and_single_label_choice() -> None:
+    example = map_unsmile_row(
+        {
+            "문장": "깨끗한 글",
+            "여성/가족 혐오": 0,
+            "남성 혐오": 1,
+            "clean": 0,
+        },
+        split="train",
+    )
+
+    assert len(example.questions) == 2
+    assert [question.type for question in example.questions] == [
+        QuestionType.NOUL,
+        QuestionType.CHOICE,
+    ]
+    assert example.questions[0].gold == 1
+    assert example.questions[1].gold == 1
+
+
+def test_validation_reports_malformed_line_number(tmp_path: Path) -> None:
+    path = tmp_path / "broken.jsonl"
+    valid = {
+        "state": "상태",
+        "questions": [
+            {
+                "type": "noul",
+                "instructions": "참인가?",
+                "options": ["아니오", "예"],
+                "gold": 1,
+                "meta": {},
+            }
+        ],
+        "source": "fixture",
+        "split": "train",
+    }
+    path.write_text(
+        json.dumps(valid, ensure_ascii=False)
+        + "\nnot json\n"
+        + json.dumps(valid, ensure_ascii=False)
+        + "\n",
+        encoding="utf-8",
+    )
+
+    errors = validate_jsonl(path)
+
+    assert errors == [f"{path}:2: invalid JSON"]
