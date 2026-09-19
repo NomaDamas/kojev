@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import sys
 from typing import TYPE_CHECKING
 
 import pytest
 
+from kojev import bench
 from kojev.bench import (
     KLUE_TASKS,
     KOBEST_CONFIGS,
@@ -19,7 +21,7 @@ from kojev.bench import (
     map_kobest_row,
     metric_report,
 )
-from kojev.schema import JsonValue, QuestionType
+from kojev.schema import JsonValue, Question, QuestionType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -156,6 +158,61 @@ def test_contamination_assert_rejects_malformed_manifest(
     _ = manifest.write_text("{not-json}\n", encoding="utf-8")
     with pytest.raises(BenchmarkError, match="malformed manifest"):
         assert_no_kobest_contamination(manifest, set())
+
+
+@pytest.mark.parametrize(
+    ("contents", "expected_error", "message"),
+    [
+        (
+            json.dumps({"source": "skt/kobest_v1", "id": "kobest-42"}) + "\n",
+            AssertionError,
+            "contamination",
+        ),
+        ("{not-json}\n", BenchmarkError, "malformed manifest"),
+    ],
+)
+def test_cli_training_manifest_rejects_invalid_data(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    contents: str,
+    expected_error: type[AssertionError | BenchmarkError],
+    message: str,
+) -> None:
+    manifest = tmp_path / "training-manifest.jsonl"
+    _ = manifest.write_text(contents, encoding="utf-8")
+
+    def fake_load_task(
+        dataset: str, task: str, split: str, limit: int
+    ) -> tuple[BenchmarkItem, ...]:
+        assert split in {"test", "validation"}
+        assert limit == 1
+        example_id = "kobest-42" if dataset == "skt/kobest_v1" else f"{task}-1"
+        question = Question(
+            type=QuestionType.NOUL,
+            instructions="질문",
+            options=["아니오", "예"],
+            gold=0,
+            meta={"task": task, "id": example_id},
+        )
+        return (BenchmarkItem(task, QuestionType.NOUL, example_id, "state", question),)
+
+    monkeypatch.setattr(bench, "_load_task", fake_load_task)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "kojev.bench",
+            "--model",
+            "random",
+            "--limit",
+            "8",
+            "--training-manifest",
+            str(manifest),
+        ],
+    )
+
+    with pytest.raises(expected_error, match=message):
+        bench.main()
 
 
 def test_random_model_repeats_exactly_for_same_input() -> None:

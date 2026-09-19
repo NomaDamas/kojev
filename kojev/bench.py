@@ -310,7 +310,9 @@ def assert_no_kobest_contamination(
                 )
 
 
-def load_benchmark_items(limit: int) -> tuple[BenchmarkItem, ...]:
+def load_benchmark_items(
+    limit: int, training_manifest: Path | None = None
+) -> tuple[BenchmarkItem, ...]:
     """Load a bounded, balanced smoke slice through Hugging Face datasets."""
     task_count = len(KOBEST_CONFIGS) + len(KLUE_TASKS)
     if limit < task_count:
@@ -319,6 +321,10 @@ def load_benchmark_items(limit: int) -> tuple[BenchmarkItem, ...]:
     items: list[BenchmarkItem] = []
     for task in KOBEST_CONFIGS:
         items.extend(_load_task("skt/kobest_v1", task, "test", per_task))
+    if training_manifest is not None:
+        assert_no_kobest_contamination(
+            training_manifest, {item.example_id for item in items}
+        )
     for task in KLUE_TASKS:
         items.extend(_load_task("klue/klue", task, "validation", per_task))
     return tuple(items[:limit])
@@ -328,10 +334,11 @@ def main() -> None:
     """Run the deterministic random baseline and write its JSON report."""
     if "--help" in sys.argv:
         _ = sys.stdout.write(
-            "usage: python -m kojev.bench [--model random] [--limit N] [--output PATH]\n"
+            "usage: python -m kojev.bench [--model random] [--limit N] [--output PATH] [--training-manifest PATH]\n"
         )
         return
     values = {"model": "random", "limit": "200", "output": "benchmark-report.json"}
+    training_manifest: Path | None = None
     arguments = iter(sys.argv[1:])
     for argument in arguments:
         if argument == "--model":
@@ -340,13 +347,17 @@ def main() -> None:
             values["limit"] = next(arguments)
         elif argument == "--output":
             values["output"] = next(arguments)
+        elif argument == "--training-manifest":
+            training_manifest = Path(next(arguments))
         else:
             raise BenchmarkError(reason=f"unknown argument: {argument}")
     if values["model"] != "random":
         raise BenchmarkError(reason="only --model random is implemented")
     limit = int(values["limit"])
     output = Path(values["output"])
-    report = metric_report(load_benchmark_items(limit), RandomDecisionModel())
+    report = metric_report(
+        load_benchmark_items(limit, training_manifest), RandomDecisionModel()
+    )
     _ = output.write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
