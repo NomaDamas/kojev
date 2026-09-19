@@ -1,0 +1,34 @@
+KoJev todo 7 augmentation evidence
+
+Branch: feat/todo-7-augment
+Base observed before fix: d8e1a91 (behind origin/main by 3)
+
+RED baseline (before implementation repair)
+Invocation: uv run pytest tests/test_augment.py -q
+Result: exit 2 during collection
+Observed failure: ImportError: cannot import name 'INSTRUCTION_TEMPLATES' from 'kojev.augment'
+
+Implementation verification
+Invocation: uv run pytest -q
+Result: 24 passed in 0.08s
+Invocation: uv run ruff check kojev/augment.py tests/test_augment.py
+Result: All checks passed!
+Invocation: uv run basedpyright kojev/augment.py tests/test_augment.py
+Result: 0 errors, 0 warnings, 0 notes
+Invocation: awk nonblank/noncomment LOC on scoped Python files
+Result: kojev/augment.py=163; tests/test_augment.py=210
+
+Real deterministic driver
+Invocation: uv run python <stdin> (driver recorded from /tmp/kojev-todo-7-driver.txt)
+Assertions: 1000 deterministic examples across shuffle/remap, paraphrase, distractor drop, ordered score synonyms, and noul negation; Korean josa spot checks; exact noul negation; deliberate dropped-gold negative probe.
+Observed output:
+PROPERTY_1000=1000/1000
+JOSA_SPOTS=PASS
+NOUL_NEGATION=PASS
+NEGATIVE_DROPPED_GOLD=CAUGHT
+DRIVER_EXIT=0
+
+Files in requested scope:
+- kojev/augment.py
+- tests/test_augment.py
+- .omo/evidence/task-7-kojev.txt
