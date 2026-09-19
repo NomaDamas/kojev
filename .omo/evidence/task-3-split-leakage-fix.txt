@@ -1,0 +1,65 @@
+KoJev todo 3 - cross-split state leakage corrective evidence
+Repo: /Volumes/SSD1/1/KoJev (main)
+Corrects: 9d7670e4fcb0932deb353324f97423671f5b939d
+
+DEFECT (found by independent todo-8 verification, st_01a0c429)
+Independent audit of the OOD set found 22 emitted OOD rows whose exact `state`
+also appeared in GOLD train. GOLD val overlap was 0, and every OOD (source,state)
+did originate in GOLD test - but the same raw state text existed in BOTH test and
+train.
+
+Root cause: _source_split_rows carves ROWS. Upstream Korean corpora (notably
+e9t/nsmc) contain duplicate texts, so two rows carrying the same state string can
+be assigned to different splits - identical rows hash to adjacent positions and a
+slice boundary can cut between them. The gold corpus therefore leaked held-out
+text into train, which would have contaminated todo 14's evaluation as well as
+todo 8's OOD set.
+
+Severity: blocking. Held-out integrity is a Must-have of this plan.
+
+FIX (kojev/data_gold.py)
+Added _enforce_split_state_isolation(), applied after all sources are mapped and
+before any JSONL is written:
+  - Iterates splits in priority order test -> val -> train.
+  - A state string is kept only if no higher-priority split already claimed it.
+  - Held-out splits win: test keeps everything it holds, val yields to test,
+    train yields to both. Training data is sacrificed, never evaluation data.
+  - Recomputes each source:split summary entry from the survivors and records
+    `dropped_cross_split_state` so the loss is visible rather than silent.
+
+REGRESSION TEST ADDED
+  tests/test_data_gold.py::test_split_state_isolation_gives_held_out_splits_priority
+    - Seeds the same state into all three splits.
+    - Asserts the shared state survives ONLY in test.
+    - Asserts all three pairwise split intersections are empty.
+    - Asserts dropped_cross_split_state is 1 for train, 1 for val, 0 for test.
+
+GREEN GATES
+  uv run pytest -q                        => 57 passed
+  uv run ruff check kojev tests           => All checks passed!
+  uv run ruff format --check kojev tests  => 17 files already formatted
+  uv run basedpyright kojev tests         => 0 errors, 0 warnings, 0 notes
+
+REAL 12-SOURCE BUILD (run twice, real datasets, no synthetic substitution)
+  uv run python -m kojev.data_gold --out /tmp/kojev-leakfix-a  => exit 0
+  uv run python -m kojev.data_gold --out /tmp/kojev-leakfix-b  => exit 0
+
+  LEAKAGE (independent set intersection of emitted state strings):
+    test & train = 0     (previously 22)
+    test & val   = 0
+    val  & train = 0
+
+  Families per split: train=12, val=12, test=12
+  Emitted lines: train=103950, val=6499, test=12998
+  Train states: 95432      Train questions: 302002
+  dropped_cross_split_state total: 49
+  KoBEST present: False
+
+  Acceptance floors still met: >=9 sources (12 OK), >=40k train states
+  (95,432 OK), >=90k train questions (302,002 OK).
+
+DETERMINISM
+  Both builds byte-identical across train.jsonl, val.jsonl and test.jsonl.
+
+CLEANUP
+  Removed /tmp/kojev-leakfix-a and /tmp/kojev-leakfix-b.

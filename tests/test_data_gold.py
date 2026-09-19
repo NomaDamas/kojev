@@ -16,7 +16,7 @@ from kojev.data_gold import (
     map_unsmile_row,
     validate_jsonl,
 )
-from kojev.schema import Example, JsonValue, QuestionType
+from kojev.schema import Example, JsonValue, Question, QuestionType
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -171,6 +171,57 @@ def test_source_split_is_deterministic_under_the_split_seed(
     second = data_gold._source_split_rows(config)  # pyright: ignore[reportPrivateUsage, reportArgumentType]
 
     assert first == second
+
+
+def test_split_state_isolation_gives_held_out_splits_priority() -> None:
+    # Upstream corpora contain duplicate texts, so the same state can land on
+    # both sides of a row-level carve. Held-out splits must win.
+    def example(state: str, split: str) -> Example:
+        return Example(
+            state=state,
+            questions=[
+                Question(
+                    type=QuestionType.NOUL,
+                    instructions="긍정이다.",
+                    options=["아니오", "예"],
+                    gold=1,
+                    meta={},
+                )
+            ],
+            source="e9t/nsmc",
+            split=split,
+        )
+
+    shared = "중복된 리뷰"
+    buckets = {
+        "test": [example(shared, "test"), example("테스트 전용", "test")],
+        "val": [example(shared, "val"), example("검증 전용", "val")],
+        "train": [example(shared, "train"), example("학습 전용", "train")],
+    }
+    per_source = {
+        "e9t/nsmc:test": list(buckets["test"]),
+        "e9t/nsmc:val": list(buckets["val"]),
+        "e9t/nsmc:train": list(buckets["train"]),
+    }
+    summary: dict[str, dict[str, int | str]] = {
+        key: {"states": 0, "questions": 0, "dropped_blank_state": 0}
+        for key in per_source
+    }
+
+    data_gold._enforce_split_state_isolation(buckets, per_source, summary)  # pyright: ignore[reportPrivateUsage]
+
+    test_states = {x.state for x in buckets["test"]}
+    val_states = {x.state for x in buckets["val"]}
+    train_states = {x.state for x in buckets["train"]}
+    assert shared in test_states
+    assert shared not in val_states
+    assert shared not in train_states
+    assert not test_states & val_states
+    assert not test_states & train_states
+    assert not val_states & train_states
+    assert summary["e9t/nsmc:train"]["dropped_cross_split_state"] == 1
+    assert summary["e9t/nsmc:val"]["dropped_cross_split_state"] == 1
+    assert summary["e9t/nsmc:test"]["dropped_cross_split_state"] == 0
 
 
 def test_validation_reports_line_number_for_blank_state(tmp_path: Path) -> None:

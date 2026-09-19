@@ -7,8 +7,10 @@ from dataclasses import dataclass
 from typing import Final, override
 
 _ANSWER_LINE: Final = re.compile(
-    (r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
-     r"(?:option\s*)?([0-9]+)\b"),
+    (
+        r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
+        r"(?:option\s*)?([0-9]+)\b"
+    ),
     re.IGNORECASE,
 )
 

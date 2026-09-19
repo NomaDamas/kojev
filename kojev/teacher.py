@@ -194,9 +194,7 @@ class TeacherClient:
                 self, "_consecutive_errors", self._consecutive_errors + 1
             )
             if self._consecutive_errors >= CONCURRENCY_BACKOFF_ERRORS:
-                next_concurrency = max(
-                    INITIAL_CONCURRENCY, self._concurrency // 2
-                )
+                next_concurrency = max(INITIAL_CONCURRENCY, self._concurrency // 2)
                 object.__setattr__(self, "_concurrency", next_concurrency)
                 object.__setattr__(
                     self,
@@ -274,6 +272,5 @@ class TeacherClient:
             self._ledger_path.parent.mkdir(parents=True, exist_ok=True)
             with self._ledger_path.open("a", encoding="utf-8") as handle:
                 _ = handle.write(
-                    json.dumps({"kind": "marker", "marker": "BUDGET_REACHED"})
-                    + "\n"
+                    json.dumps({"kind": "marker", "marker": "BUDGET_REACHED"}) + "\n"
                 )
