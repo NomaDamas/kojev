@@ -574,10 +574,41 @@ def _source_split_rows(config: SourceConfig) -> dict[str, list[Row]]:
     }
 
 
+def _enforce_split_state_isolation(
+    buckets: dict[str, list[Example]],
+    per_source_mapped: dict[str, list[Example]],
+    summary: dict[str, dict[str, int | str]],
+) -> None:
+    """Guarantee a state string never appears in more than one split.
+
+    Upstream corpora contain duplicate texts, so row-level carving can place the
+    same state on both sides of the train/test boundary and silently contaminate
+    held-out evaluation. Held-out splits win: test keeps every state it holds,
+    val yields to test, and train yields to both.
+    """
+    reserved: set[str] = set()
+    kept_states: dict[str, set[str]] = {}
+    for split in ("test", "val", "train"):
+        kept = [example for example in buckets[split] if example.state not in reserved]
+        buckets[split] = kept
+        kept_states[split] = {example.state for example in kept}
+        reserved |= kept_states[split]
+    for key, mapped in per_source_mapped.items():
+        split = key.rsplit(":", 1)[1]
+        allowed = kept_states[split]
+        survivors = [example for example in mapped if example.state in allowed]
+        entry = summary[key]
+        removed = len(mapped) - len(survivors)
+        entry["states"] = len({example.state for example in survivors})
+        entry["questions"] = sum(len(x.questions) for x in survivors)
+        entry["dropped_cross_split_state"] = removed
+
+
 def build_gold(out: Path) -> dict[str, dict[str, int | str]]:
     """Download, map, cap, and write the deterministic gold corpus."""
     out.mkdir(parents=True, exist_ok=True)
     buckets: dict[str, list[Example]] = {"train": [], "val": [], "test": []}
+    per_source_mapped: dict[str, list[Example]] = {}
     summary: dict[str, dict[str, int | str]] = {}
     for config in SOURCES:
         source_name = _source_name(config)
@@ -609,11 +640,13 @@ def build_gold(out: Path) -> dict[str, dict[str, int | str]]:
                         dropped += 1
                     mapped.extend(examples)
             buckets[split].extend(mapped)
+            per_source_mapped[f"{source_name}:{split}"] = mapped
             summary[f"{source_name}:{split}"] = {
                 "states": len(selected) - dropped,
                 "questions": sum(len(x.questions) for x in mapped),
                 "dropped_blank_state": dropped,
             }
+    _enforce_split_state_isolation(buckets, per_source_mapped, summary)
     for split, examples in buckets.items():
         ordered = sorted(
             examples,
