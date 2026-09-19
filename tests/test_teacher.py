@@ -15,6 +15,7 @@ from kojev.teacher import (
     OUTPUT_PRICE_PER_MILLION,
     BudgetReached,
     TeacherClient,
+    TeacherRequestError,
     parse_teacher_answers,
 )
 
@@ -184,4 +185,34 @@ async def test_retries_429_and_5xx_with_bounded_attempts(tmp_path: Path) -> None
     assert not isinstance(result, BudgetReached)
     assert result.answers == {1: 0, 2: 1}
     assert attempts == 3
+    await client.aclose()
+
+
+@pytest.mark.anyio
+async def test_persistent_5xx_raises_typed_teacher_request_error(
+    tmp_path: Path,
+) -> None:
+    # Given a provider that always returns 503
+    attempts = 0
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return httpx.Response(503)
+
+    client = TeacherClient(
+        api_key="test-key",
+        ledger_path=tmp_path / "ledger.jsonl",
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+        retry_delays=(0.0, 0.0, 0.0, 0.0),
+    )
+
+    # When the request exhausts all retries
+    with pytest.raises(TeacherRequestError) as exc_info:
+        _ = await client.ask("state", ["question"])
+
+    # Then a typed exception with the provider status is raised
+    assert exc_info.value.status_code == 503
+    assert str(exc_info.value) == "OpenRouter request exhausted retries: HTTP 503"
+    assert attempts == 4
     await client.aclose()

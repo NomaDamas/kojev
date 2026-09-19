@@ -29,11 +29,15 @@ class MissingApiKeyError(RuntimeError):
         return "OPENROUTER_API_KEY is required"
 
 
-@dataclass(frozen=True, slots=True)
 class TeacherRequestError(RuntimeError):
     """Raised when OpenRouter retries are exhausted."""
 
     status_code: int
+
+    def __init__(self, status_code: int) -> None:
+        """Store the last HTTP status code that caused exhaustion."""
+        self.status_code = status_code
+        super().__init__(f"OpenRouter request exhausted retries: HTTP {status_code}")
 
     @override
     def __str__(self) -> str:
