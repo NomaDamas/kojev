@@ -271,3 +271,54 @@ def test_gold_train_states_get_fresh_unlabeled_reading_questions() -> None:
     # Then the original gold is not copied into the new questions
     assert len(families) == 1
     assert all(question.gold is None for question in families[0].questions)
+
+
+@pytest.mark.anyio
+async def test_seeded_request_id_skips_transport(tmp_path: Path) -> None:
+    # Given a candidate whose deterministic request ID is already in the ledger
+    ledger = tmp_path / "ledger.jsonl"
+    output = tmp_path / "train.jsonl"
+    _ = ledger.write_text(
+        json.dumps(
+            {
+                "kind": "usage",
+                "model": "qwen/qwen3-vl-8b-instruct",
+                "request_id": "already-issued",
+                "candidate_id": "already-issued",
+                "cost_usd": 0.001,
+            }
+        )
+        + "\n"
+    )
+    base = _example()
+    candidate = base.model_copy(
+        update={
+            "questions": [
+                question.model_copy(update={"meta": {"request_id": "already-issued"}})
+                for question in base.questions
+            ]
+        }
+    )
+    calls = 0
+
+    def respond(_: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return _response("unexpected")
+
+    client = TeacherClient(
+        api_key="test-key",
+        ledger_path=ledger,
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(respond)),
+    )
+
+    # When the runner resumes
+    labeled = await LabelRunner(
+        client=client, output_path=output, ledger_path=ledger
+    ).run([candidate])
+
+    # Then already-issued work is skipped before transport invocation
+    assert labeled == 0
+    assert calls == 0
+    assert not output.exists()
+    await client.aclose()

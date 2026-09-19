@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -43,6 +44,7 @@ class LedgerRecord(BaseModel):
 
     kind: str
     request_id: str | None = None
+    candidate_id: str | None = None
 
 
 class OutputLine(BaseModel):
@@ -52,6 +54,8 @@ class OutputLine(BaseModel):
 
     state: str
     request_id: str
+    candidate_id: str | None = None
+    questions: list[Question] = []
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +65,7 @@ class LabeledRecord:
     example: Example
     request_id: str
     cost_usd: float
+    candidate_id: str = ""
 
 
 class CliArgs(argparse.Namespace):
@@ -156,9 +161,32 @@ def build_korquad_families(limit: int | None = None) -> list[Example]:
     return families if limit is None else families[:limit]
 
 
-def _issued_records(ledger_path: Path, output_path: Path) -> tuple[set[str], set[str]]:
-    """Read completed provider IDs and states from durable append-only artifacts."""
+def _candidate_id(example: Example) -> str:
+    """Return a stable ID for one state and question family."""
+    requested = example.questions[0].meta.get("request_id")
+    if isinstance(requested, str):
+        return requested
+    payload = {
+        "state": example.state,
+        "questions": [
+            {
+                "type": question.type,
+                "instructions": question.instructions,
+                "options": question.options,
+            }
+            for question in example.questions
+        ],
+    }
+    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _issued_records(
+    ledger_path: Path, output_path: Path
+) -> tuple[set[str], set[str], set[str]]:
+    """Read completed provider and deterministic candidate IDs."""
     request_ids: set[str] = set()
+    candidate_ids: set[str] = set()
     states: set[str] = set()
     if ledger_path.exists():
         for line in ledger_path.read_text(encoding="utf-8").splitlines():
@@ -166,8 +194,11 @@ def _issued_records(ledger_path: Path, output_path: Path) -> tuple[set[str], set
                 record = LedgerRecord.model_validate_json(line)
             except ValueError:
                 continue
-            if record.kind == "usage" and record.request_id is not None:
-                request_ids.add(record.request_id)
+            if record.kind == "usage":
+                if record.request_id is not None:
+                    request_ids.add(record.request_id)
+                if record.candidate_id is not None:
+                    candidate_ids.add(record.candidate_id)
     if output_path.exists():
         for line in output_path.read_text(encoding="utf-8").splitlines():
             try:
@@ -175,7 +206,18 @@ def _issued_records(ledger_path: Path, output_path: Path) -> tuple[set[str], set
             except ValueError:
                 continue
             states.add(output.state)
-    return request_ids, states
+            candidate_ids.add(
+                output.candidate_id
+                or _candidate_id(
+                    Example(
+                        state=output.state,
+                        questions=output.questions,
+                        source="resume",
+                        split="train",
+                    )
+                )
+            )
+    return request_ids, candidate_ids, states
 
 
 def _question_prompt(question: Question) -> str:
@@ -217,6 +259,7 @@ async def _label_with_retries(
     client: TeacherClient, example: Example
 ) -> LabeledRecord | None:
     """Retry timeout failures without allowing one item to abort its wave."""
+    candidate_id = _candidate_id(example)
     for _ in range(RETRY_COUNT):
         try:
             labeled = await _ask_with_fallback(client, example.state, example.questions)
@@ -224,7 +267,7 @@ async def _label_with_retries(
             continue
         if labeled is None:
             return None
-        answers, request_id, cost_usd = labeled
+        answers, provider_request_id, cost_usd = labeled
         labeled_questions = [
             question.model_copy(
                 update={
@@ -232,7 +275,8 @@ async def _label_with_retries(
                     "meta": {
                         **question.meta,
                         "label_source": LABEL_SOURCE,
-                        "request_id": request_id,
+                        "request_id": candidate_id,
+                        "provider_request_id": provider_request_id,
                     },
                 }
             )
@@ -240,8 +284,9 @@ async def _label_with_retries(
         ]
         return LabeledRecord(
             example=example.model_copy(update={"questions": labeled_questions}),
-            request_id=request_id,
+            request_id=provider_request_id,
             cost_usd=cost_usd,
+            candidate_id=candidate_id,
         )
     return None
 
@@ -265,11 +310,12 @@ class LabelRunner:
                 payload = record.example.model_dump(mode="json")
                 payload["label_source"] = LABEL_SOURCE
                 payload["request_id"] = record.request_id
+                payload["candidate_id"] = record.candidate_id
                 payload["cost_usd"] = record.cost_usd
                 _ = handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
     async def _run_wave(
-        self, examples: Sequence[Example], issued: set[str]
+        self, examples: Sequence[Example], issued: set[str], candidate_ids: set[str]
     ) -> list[LabeledRecord]:
         """Run exactly one bounded wave and wait for all its tasks."""
         records: list[LabeledRecord] = []
@@ -280,10 +326,21 @@ class LabelRunner:
             if record is None:
                 return
             async with lock:
-                if record.request_id in issued:
+                candidate_id = record.candidate_id or _candidate_id(example)
+                if record.request_id in issued or candidate_id in candidate_ids:
                     return
                 issued.add(record.request_id)
-                records.append(record)
+                candidate_ids.add(candidate_id)
+                records.append(
+                    record
+                    if record.candidate_id == candidate_id
+                    else LabeledRecord(
+                        example=record.example,
+                        request_id=record.request_id,
+                        cost_usd=record.cost_usd,
+                        candidate_id=candidate_id,
+                    )
+                )
 
         async with anyio.create_task_group() as task_group:
             for example in examples:
@@ -292,16 +349,23 @@ class LabelRunner:
 
     async def run(self, examples: Sequence[Example]) -> int:
         """Label candidates in bounded waves and return new record count."""
-        issued, completed_states = _issued_records(self._ledger_path, self._output_path)
+        issued, candidate_ids, completed_states = _issued_records(
+            self._ledger_path, self._output_path
+        )
         candidates = [
             example
             for example in examples
-            if _goldless(example) and example.state not in completed_states
+            if (
+                _goldless(example)
+                and example.state not in completed_states
+                and _candidate_id(example) not in candidate_ids
+                and _candidate_id(example) not in issued
+            )
         ]
         labeled_count = 0
         for start in range(0, len(candidates), WAVE_SIZE):
             wave = candidates[start : start + WAVE_SIZE]
-            records = await self._run_wave(wave, issued)
+            records = await self._run_wave(wave, issued, candidate_ids)
             self._append_records(records)
             labeled_count += len(records)
         return labeled_count
