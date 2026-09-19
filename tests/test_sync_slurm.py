@@ -61,6 +61,8 @@ def test_templates_prefer_a_prebuilt_shared_venv_and_never_mutate_it() -> None:
         assert SHARED_VENV in text
         assert "uv run --no-sync" in text
         assert "uv sync --no-dev" in text
+        # the shared-venv path launches its own interpreter, bypassing uv entirely
+        assert 'exec "$@"' in text
 
 
 def test_templates_skip_dev_dependencies_on_the_cluster() -> None:
@@ -132,6 +134,6 @@ def test_templates_export_hf_home_and_run_uv_when_body_is_read() -> None:
         assert cache_export in text
         assert f"cd {REMOTE_REPO}" in text
         assert "uv sync --no-dev" in text
-        assert 'uv run --no-sync "$@"' in text
+        assert 'exec uv run --no-sync "$@"' in text
         assert "/data/" not in text.replace("/data2/", "")
         assert "/data1/" not in text

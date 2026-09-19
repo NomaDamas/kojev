@@ -42,5 +42,11 @@ fi
 if [ "$#" -eq 0 ]; then
   set -- python -c "import torch; print(torch.cuda.is_available())"
 fi
-# --no-sync: never mutate the shared environment from inside a job.
-uv run --no-sync "$@"
+# With a prebuilt shared environment, run its interpreter directly: uv is not
+# needed to launch and must never mutate the shared venv. Fall back to
+# `uv run --no-sync` only on the per-job path.
+if [ -x "${SHARED_VENV}/bin/python" ]; then
+  exec "$@"
+else
+  exec uv run --no-sync "$@"
+fi
