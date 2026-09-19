@@ -1,0 +1,139 @@
+
+## manualQa matrix
+
+### surfaceEvidence
+
+| scenario id | criterion reference | surface | exact invocation | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| cpu-unit-suite | loss/divergence/temperature/report criteria | pytest | `uv run pytest tests/test_train.py -q` | PASS (5 passed) | `ev-task10` |
+| full-regression-suite | repository regression safety | pytest | `uv run pytest -q` | PASS (61 passed) | `ev-task10` |
+| cpu-cli-e2e | real local training/report surface | CLI | `uv run python -m kojev.train --tiny --train /tmp/kojev-task10-data/train.jsonl --val /tmp/kojev-task10-data/val.jsonl --limit 4 --epochs 1 --seed 7 --batch-size 2 --augmentation-probability 0 --out /tmp/kojev-task10-smoke` | PASS; exit 0, report written, `diverged=False`, 2 loss points | `ev-task10` |
+| ruff-check | required lint gate | CLI | `uv run ruff check kojev tests` | PASS | `ev-task10` |
+| ruff-format | required format gate | CLI | `uv run ruff format --check kojev tests` | FAIL/BLOCKED by pre-existing out-of-scope `kojev/teacher.py` and `kojev/teacher_types.py` formatting findings | `ev-task10` |
+| basedpyright | required type gate | CLI | `uv run basedpyright kojev tests` | FAIL/BLOCKED; unsuppressed torch/argparse/new trainer diagnostics recorded above | `ev-task10` |
+
+### adversarialCases
+
+| scenario id | criterion reference | adversarial class | expected behavior | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| divergence-rise | divergence watch | synthetic rising loss stream | abort/mark `diverged=true` after >25% rise over 200-step baseline | PASS | `ev-task10` |
+| divergence-nan | divergence watch | NaN loss | abort/mark `diverged=true` | PASS | `ev-task10` |
+| divergence-healthy | divergence watch | healthy decreasing stream | do not diverge | PASS | `ev-task10` |
+| calibration-overconfidence | post-hoc temperature | deliberately overconfident logits | fitted temperature > 1 | PASS | `ev-task10` |
+| gpu01-slurm | scope boundary | unavailable cluster prerequisite | not run in this local increment; separate follow-up | NOT_APPLICABLE (cluster still being prepared) | `ev-task10` |
+
+### artifactRefs
+
+| id | kind | description | path |
+|---|---|---|---|
+| `ev-task10` | text evidence | RED proof, green test outputs, static-gate outputs, real CPU CLI stdout/report keys, cleanup receipt, and this manual-QA matrix | `.omo/evidence/task-10-kojev.txt` |
+
+## Corrective verification after rebase onto origin/main d9c7cb4
+
+Rebased successfully onto `d9c7cb4e9e720d25850e8b1868072e40ecd9d952`.
+Strict typing was corrected with an immutable typed CLI dataclass, explicit `Batch` narrowing, typed report parsing, and narrowly scoped third-party torch stub boundary annotations. Project strictness was not loosened.
+
+### Required gates (corrected final outputs)
+
+`uv run pytest tests/test_train.py -q`
+
+```text
+.....                                                                    [100%]
+5 passed in 2.24s
+```
+
+`uv run pytest -q`
+
+```text
+..............................................................           [100%]
+62 passed in 2.72s
+```
+
+`uv run ruff check kojev tests`
+
+```text
+All checks passed!
+```
+
+`uv run ruff format --check kojev tests`
+
+```text
+19 files already formatted
+```
+
+`uv run basedpyright kojev tests`
+
+```text
+0 errors, 0 warnings, 0 notes
+```
+
+### Corrected real tiny CPU end-to-end invocation
+
+```text
+uv run python -m kojev.train --tiny --train /tmp/kojev-task10-data/train.jsonl --val /tmp/kojev-task10-data/val.jsonl --limit 4 --epochs 1 --seed 7 --batch-size 2 --augmentation-probability 0 --out /tmp/kojev-task10-smoke
+```
+
+Actual stdout and report inspection:
+
+```text
+{"report": "/tmp/kojev-task10-smoke/report.json"}
+report_keys= ['args', 'data_counts', 'diverged', 'loss_curve', 'metrics', 'peak_memory', 'temperature', 'wall_time']
+diverged= False loss_points= 2
+```
+
+The `gpu01` Slurm smoke remains out of scope for this local increment. Temporary smoke data and run directories were removed after evidence capture.
+
+## Structural cleanup verification on origin/main 168e757
+
+Rebased onto `origin/main` at `168e7576000b32a7b2aabd016711a6bd5a5a40c2`.
+Removed the `# noqa: C901, PLR0913, PLR0915` suppression by introducing `TrainConfig`, `_Runtime`, `_TrainingLoop`, `_ReportContext`, `_make_scheduler`, `_train_epochs`, `_persist_report`, and `_resolve_runtime`. The remaining suppressions are unchanged and justified: `S311` for deterministic non-cryptographic augmentation/shuffling, `T201` for the CLI's observable stdout, and narrowly targeted torch-boundary pyright ignores for incomplete third-party stubs.
+
+### Required gates
+
+`uv run pytest tests/test_train.py -q`
+
+```text
+.....                                                                    [100%]
+5 passed in 2.62s
+```
+
+`uv run pytest -q`
+
+```text
+..................................................................       [100%]
+66 passed in 2.88s
+```
+
+`uv run ruff check kojev tests`
+
+```text
+All checks passed!
+```
+
+`uv run ruff format --check kojev tests`
+
+```text
+21 files already formatted
+```
+
+`uv run basedpyright kojev tests`
+
+```text
+0 errors, 0 warnings, 0 notes
+```
+
+### Real tiny CPU end-to-end invocation
+
+```text
+uv run python -m kojev.train --tiny --train /tmp/kojev-task10-data/train.jsonl --val /tmp/kojev-task10-data/val.jsonl --limit 4 --epochs 1 --seed 7 --batch-size 2 --augmentation-probability 0 --out /tmp/kojev-task10-smoke
+```
+
+Actual stdout and report inspection:
+
+```text
+{"report": "/tmp/kojev-task10-smoke/report.json"}
+report_keys= ['args', 'data_counts', 'diverged', 'loss_curve', 'metrics', 'peak_memory', 'temperature', 'wall_time']
+diverged= False loss_points= 2
+```
+
+Temporary smoke directories were removed after capture. The `gpu01` Slurm smoke remains out of scope.
