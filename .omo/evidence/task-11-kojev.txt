@@ -1,0 +1,63 @@
+
+## Resume-path correction
+
+### RED proof against the pre-fix runner
+
+A regression test was added with a seeded usage ledger record whose request ID was `already-issued`. Before the fix, the test failed because the runner still called the transport and wrote a new label:
+
+```text
+FAILED test_seeded_request_id_skips_transport
+assert labeled == 0
+E       assert 1 == 0
+RED_EXIT=1
+```
+
+### Fix
+
+`kojev/label.py` now:
+
+- Computes deterministic candidate IDs from state plus the question family using SHA-256.
+- Reads issued request/candidate IDs from the ledger before constructing waves.
+- Reads candidate IDs and completed states from output before constructing waves.
+- Filters candidates before any transport call.
+- Preserves bounded waves, per-wave persistence, timeout retry, and the existing teacher client unchanged.
+- Stores the deterministic candidate ID in each output record while retaining the provider request ID in the question metadata/output request field.
+
+### Paid-free resume proof against existing output/ledger
+
+Exact invocation:
+
+```text
+uv run python - <<'PY'
+# loads all existing data/distill/train.jsonl examples,
+# runs LabelRunner against data/distill/ledger.jsonl,
+# and uses a MockTransport that would fail if called
+PY
+```
+
+Observed result:
+
+```json
+{"existing_candidates": 33340, "transport_calls": 0, "new_labeled_count": 0, "resume_output_exists": false}
+```
+
+This proves the existing 100,020-question dataset is skipped before transport invocation and no new output is emitted.
+
+## Final resume gates
+
+```text
+uv run pytest tests/test_label.py -q
+7 passed in 0.46s
+
+uv run pytest -q
+77 passed in 2.35s
+
+uv run ruff check kojev tests
+All checks passed!
+
+uv run ruff format --check kojev tests
+25 files already formatted
+
+uv run basedpyright kojev tests
+0 errors, 0 warnings, 0 notes
+```
