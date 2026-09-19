@@ -228,3 +228,29 @@ Adversarial overlap verification:
 Cleanup receipt:
 - Removed `.tmp-task8-gold`, `.tmp-task8-ood`, and `.tmp-task8-adversarial`.
 - Changed files remain limited to `kojev/data_ood.py`, `tests/test_data_ood.py`, and `.omo/evidence/task-8-kojev.txt` beyond the upstream merge.
+
+## resumed manualQa
+
+### surfaceEvidence
+| scenario id | criterion reference | surface | exact invocation | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| resumed-build | >=2500 questions / >=6 families | CLI | `uv run python -m kojev.data_ood --gold .tmp-task8-gold --out .tmp-task8-ood` | PASS: 10256 questions, 6 families | `resumed-real-build` |
+| resumed-tests | flip, reversal, overlap tests | pytest CLI | `uv run pytest tests/test_data_ood.py -q` | PASS: 4 passed | `resumed-tests` |
+| resumed-lint | lint and typing | CLI | `uv run ruff check kojev tests`; `uv run basedpyright kojev tests` | PASS | `resumed-static` |
+| resumed-format-scope | changed-file formatting | CLI | `uv run ruff format --check kojev/data_ood.py tests/test_data_ood.py` | PASS | `resumed-static` |
+| resumed-format-repo | repository formatting | CLI | `uv run ruff format --check kojev tests` | FAIL: pre-existing upstream `teacher.py` and `teacher_types.py`, outside write scope | `resumed-format-upstream` |
+
+### adversarialCases
+| scenario id | criterion reference | adversarial class | expected behavior | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| resumed-overlap | train-instruction overlap | injected collision | fail loudly and name instruction | PASS | `resumed-overlap` |
+| resumed-test-only | GOLD TEST states only | split contamination | emitted examples retain split `test` | PASS | `resumed-tests` |
+
+### artifactRefs
+| id | kind | description | path |
+|---|---|---|---|
+| resumed-real-build | terminal transcript | real GOLD/OOD build and summary counts | `.omo/evidence/task-8-kojev.txt` |
+| resumed-tests | terminal transcript | focused pytest output | `.omo/evidence/task-8-kojev.txt` |
+| resumed-static | terminal transcript | Ruff check, changed-file format, and basedpyright outputs | `.omo/evidence/task-8-kojev.txt` |
+| resumed-format-upstream | terminal transcript | exact unrelated repository format failures | `.omo/evidence/task-8-kojev.txt` |
+| resumed-overlap | terminal transcript | injected-overlap traceback and exit code | `.omo/evidence/task-8-kojev.txt` |
