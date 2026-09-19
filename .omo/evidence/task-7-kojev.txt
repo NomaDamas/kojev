@@ -32,3 +32,7 @@ Files in requested scope:
 - kojev/augment.py
 - tests/test_augment.py
 - .omo/evidence/task-7-kojev.txt
+
+Cleanup receipt:
+- Removed stale task-specific temporary driver `/tmp/kojev-todo-7-driver.txt` after independent QA found it.
+- Verified the path does not exist after removal; no other task runtime was started.
