@@ -1,0 +1,13 @@
+/Volumes/SSD1/worktrees/kojev-task-9-teacher/kojev/teacher.py
+  /Volumes/SSD1/worktrees/kojev-task-9-teacher/kojev/teacher.py:198:17 - warning: Result of call expression is of type "Response" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+/Volumes/SSD1/worktrees/kojev-task-9-teacher/tests/test_teacher.py
+  /Volumes/SSD1/worktrees/kojev-task-9-teacher/tests/test_teacher.py:65:12 - error: Type of "cost_usd" is partially unknown
+    Type of "cost_usd" is "float | Unknown" (reportUnknownMemberType)
+  /Volumes/SSD1/worktrees/kojev-task-9-teacher/tests/test_teacher.py:65:19 - error: Cannot access attribute "cost_usd" for class "BudgetReached"
+    Attribute "cost_usd" is unknown (reportAttributeAccessIssue)
+  /Volumes/SSD1/worktrees/kojev-task-9-teacher/tests/test_teacher.py:95:5 - warning: Result of call expression is of type "int" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+  /Volumes/SSD1/worktrees/kojev-task-9-teacher/tests/test_teacher.py:145:12 - error: Type of "answers" is partially unknown
+    Type of "answers" is "dict[int, int] | Unknown" (reportUnknownMemberType)
+  /Volumes/SSD1/worktrees/kojev-task-9-teacher/tests/test_teacher.py:145:19 - error: Cannot access attribute "answers" for class "BudgetReached"
+    Attribute "answers" is unknown (reportAttributeAccessIssue)
+4 errors, 2 warnings, 0 notes

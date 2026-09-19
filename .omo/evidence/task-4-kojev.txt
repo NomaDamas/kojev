@@ -1,0 +1,199 @@
+todo 4 — KoBEST + KLUE zero-shot benchmark harness
+branch: feat/todo-4-kobest-klue-bench (task-owned; origin/main not touched)
+worktree: /Volumes/SSD1/1/KoJev-todo4
+base: d1e9fcf50efc5035db83618717f9cefc9abdd42b feat(schema): typed-decision schema + jsonl io
+
+================================================================
+RED (already captured; before kojev/bench.py existed)
+================================================================
+command: uv run pytest tests/test_bench.py -q
+cwd: /Volumes/SSD1/1/KoJev-todo4
+exit: 2
+source: recover-todo-4 session st_01a0c00f (tests written, product module absent)
+
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_bench.py _____________________
+ImportError while importing test module '/Volumes/SSD1/1/KoJev-todo4/tests/test_bench.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/jeffrey/.local/share/uv/python/cpython-3.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_bench.py:10: in <module>
+    from kojev.bench import (
+E   ModuleNotFoundError: No module named 'kojev.bench'
+=========================== short test summary info ============================
+ERROR tests/test_bench.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.05s
+
+reason: missing implementation (kojev/bench.py not present). Not import-syntax noise.
+
+================================================================
+GREEN
+================================================================
+command: uv run pytest tests/test_bench.py -q
+cwd: /Volumes/SSD1/1/KoJev-todo4
+exit: 0
+output:
+.......                                                                  [100%]
+7 passed in 0.06s
+
+================================================================
+STATIC
+================================================================
+command: uv run ruff check kojev tests
+exit: 0
+output: All checks passed!
+
+command: uv run basedpyright kojev tests
+exit: 0
+output: 0 errors, 0 warnings, 0 notes
+
+================================================================
+CLI happy (real-surface random-model smoke)
+================================================================
+command: uv run python -m kojev.bench --model random --limit 200
+cwd: /Volumes/SSD1/1/KoJev-todo4
+exit: 0
+stdout: (empty; harness writes benchmark-report.json)
+stderr: (empty)
+artifact: /Volumes/SSD1/1/KoJev-todo4/benchmark-report.json (generated; not committed)
+
+parsed proof (not exit-code-only):
+  total_count = 200
+  kinds = choice (100), noul (75), score (25)
+  KoBEST (5) counts>0:
+    boolq      count=25  accuracy=0.52  macro_f1=0.512987012987013  brier=0.5900015830227885  ece_15=0.2513479388932976
+    copa       count=25  accuracy=0.64  macro_f1=0.6376811594202898  brier=0.4502609516948871  ece_15=0.16163224514259697
+    wic        count=25  accuracy=0.56  macro_f1=0.56               brier=0.49684728027058717 ece_15=0.18339151650126803
+    hellaswag  count=25  accuracy=0.20  macro_f1=0.1988095238095238  brier=0.9035993297075662  ece_15=0.2649563592660238
+    sentineg   count=25  accuracy=0.60  macro_f1=0.5941558441558441  brier=0.4877879702422242  ece_15=0.13357881144600423
+  KLUE (3) counts>0:
+    ynat       count=25  accuracy=0.24  macro_f1=0.09977324263038548 brier=0.8879069447209733  ece_15=0.05885399377434632
+    nli        count=25  accuracy=0.44  macro_f1=0.4400707651481645  brier=0.6643883106128803  ece_15=0.23725025317257784
+    sts        count=25  accuracy=0.24  macro_f1=0.20755170755170757 brier=0.894843766174478   ece_15=0.08637499583857929
+  ALL_EIGHT_POSITIVE = True
+
+================================================================
+QA failure (contamination negative probe)
+================================================================
+temporary manifest: /var/folders/8w/_x12f_056yv_z1x45vr_f2cm0000gp/T/kojev-todo4-contam-yw3ir0nn/train-manifest.jsonl
+contents: {"source": "skt/kobest_v1", "id": "kobest-42"}
+call: assert_no_kobest_contamination(manifest, {"kobest-42"})
+observed:
+  CONTAMINATION_PROBE: FAIL_AS_REQUIRED
+  error_type= AssertionError
+  error= contamination: KoBEST id 'kobest-42' at line 1
+
+malformed sibling (same temp dir):
+  contents: {not-json}
+  observed:
+    MALFORMED_PROBE: FAIL_AS_REQUIRED
+    error_type= BenchmarkError
+    error starts: malformed manifest line 1: 1 validation error for dict[...] Invalid JSON
+
+pytest also pins both failures:
+  test_contamination_assert_rejects_training_manifest_overlap
+  test_contamination_assert_rejects_malformed_manifest
+
+================================================================
+Adversarial probes
+================================================================
+malformed_input: malformed JSONL manifest raises BenchmarkError naming the line; overlapping KoBEST id raises AssertionError with "contamination". Fixture mappers reject unsupported configs via BenchmarkError.
+prompt_injection: KoBEST/KLUE Korean text is loaded as state/options data only; never executed. No prompt-eval surface in this lane.
+stale_state: RandomDecisionModel(seed) repeats exactly for the same state (test_random_model_repeats_exactly_for_same_input). CLI smoke is deterministic given cached rows + seed 0.
+dirty_worktree: isolated worktree /Volumes/SSD1/1/KoJev-todo4 on feat/todo-4-kobest-klue-bench; origin/main not checked out; plan/main/unrelated files not edited.
+hung_long_commands: CLI completed in this ship run (exit 0); HF load is subprocess timeout=300.
+flaky_tests: no sleeps, no polling; pytest 7 passed in 0.06s; random model uses Random(f"{seed}:{state}").
+misleading_success_output: assertions on parsed report task keys and positive counts, plus exception type/message for the negative probe — not CLI exit 0 alone.
+cancel_resume: N/A.
+repeated_interruptions: N/A.
+
+================================================================
+Cleanup receipt
+================================================================
+removed: temporary contamination dir kojev-todo4-contam-yw3ir0nn (manifest + malformed jsonl)
+removed: .debug-journal.md (agent debug notes; not product)
+removed: benchmark-report.json after parsing into this evidence file (regenerable via the CLI command above)
+no long-running processes started by this todo
+pycache/ and .venv/ left untracked via .gitignore
+product files staged for commit: kojev/bench.py, tests/test_bench.py, .omo/evidence/task-4-kojev.txt
+
+================================================================
+CORRECTIVE PASS — CLI training-manifest guard
+================================================================
+scope: exactly one verified defect — assert_no_kobest_contamination() existed
+but the executable CLI never accepted or invoked it. No plan/main/unrelated
+modules were changed.
+
+RED (before production change)
+command: cd /Volumes/SSD1/1/KoJev-todo4 && uv run pytest tests/test_bench.py -q -k cli_training_manifest --tb=short
+exit: 1
+result:
+  2 failed, 7 deselected
+  both cases reached kojev/bench.py:344 and raised:
+    BenchmarkError: unknown argument: --training-manifest
+  overlap case expected AssertionError matching "contamination"
+  malformed case expected BenchmarkError matching "malformed manifest"
+reason: the new executable-CLI regression correctly failed because the
+production parser had no --training-manifest option.
+
+GREEN (after production change)
+command: cd /Volumes/SSD1/1/KoJev-todo4 && uv run pytest tests/test_bench.py -q -k cli_training_manifest --tb=short
+exit: 0
+result: 2 passed, 7 deselected
+implementation: --training-manifest is optional; load_benchmark_items() loads
+the KoBEST slice once, derives the actual runner IDs from those items, invokes
+assert_no_kobest_contamination() before KLUE loading/metric evaluation, and
+retains the no-manifest path.
+
+REGRESSION AND QUALITY
+command: cd /Volumes/SSD1/1/KoJev-todo4 && uv run pytest tests/test_bench.py -q
+exit: 0
+result: 9 passed in 0.04s
+command: cd /Volumes/SSD1/1/KoJev-todo4 && uv run ruff check kojev tests
+exit: 0
+result: All checks passed!
+command: cd /Volumes/SSD1/1/KoJev-todo4 && uv run basedpyright kojev tests
+exit: 0
+result: 0 errors, 0 warnings, 0 notes
+changed-file diagnostics: no LSP diagnostics for kojev/bench.py or
+tests/test_bench.py
+pure LOC: kojev/bench.py=405; tests/test_bench.py=199
+
+CLI HELP
+command: cd /Volumes/SSD1/1/KoJev-todo4 && uv run python -m kojev.bench --help
+exit: 0
+result:
+  usage: python -m kojev.bench [--model random] [--limit N] [--output PATH] [--training-manifest PATH]
+
+REAL RANDOM CLI SMOKE
+command: cd /Volumes/SSD1/1/KoJev-todo4 && uv run python -m kojev.bench --model random --limit 200
+exit: 0
+report: generated benchmark-report.json, parsed before cleanup
+total_count=200
+kinds: choice=100, noul=75, score=25
+parsed eight task/count/metric results:
+  boolq count=25 accuracy=0.52 macro_f1=0.512987012987013 brier=0.5900015830227885 ece_15=0.2513479388932976
+  copa count=25 accuracy=0.64 macro_f1=0.6376811594202898 brier=0.4502609516948871 ece_15=0.16163224514259697
+  hellaswag count=25 accuracy=0.2 macro_f1=0.1988095238095238 brier=0.9035993297075662 ece_15=0.2649563592660238
+  nli count=25 accuracy=0.44 macro_f1=0.4400707651481645 brier=0.6643883106128803 ece_15=0.23725025317257784
+  sentineg count=25 accuracy=0.6 macro_f1=0.5941558441558441 brier=0.4877879702422242 ece_15=0.13357881144600423
+  sts count=25 accuracy=0.24 macro_f1=0.20755170755170757 brier=0.894843766174478 ece_15=0.08637499583857929
+  wic count=25 accuracy=0.56 macro_f1=0.56 brier=0.49684728027058717 ece_15=0.18339151650126803
+  ynat count=25 accuracy=0.24 macro_f1=0.09977324263038548 brier=0.8879069447209733 ece_15=0.05885399377434632
+
+REAL CLI NEGATIVE PROBES
+probe: overlap manifest using actual loaded KoBEST id boolq-0
+exit: 1
+observed: AssertionError: contamination: KoBEST id 'boolq-0' at line 1
+probe: malformed JSONL manifest {not-json}
+exit: 1
+observed: BenchmarkError: malformed manifest line 1: 1 validation error for
+dict[...] (Pydantic JSON-invalid detail follows)
+temporary probe directory: removed by TemporaryDirectory cleanup
+generated benchmark-report.json: removed after parsing
+
+corrective artifact scope: kojev/bench.py, tests/test_bench.py, and this
+appended evidence block only.

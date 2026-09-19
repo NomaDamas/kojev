@@ -1,0 +1,10 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Volumes/SSD1/worktrees/kojev-task-9-teacher
+configfile: pyproject.toml
+plugins: cov-7.1.0, anyio-4.15.1
+collected 5 items
+
+tests/test_teacher.py .....                                              [100%]
+
+============================== 5 passed in 0.07s ===============================

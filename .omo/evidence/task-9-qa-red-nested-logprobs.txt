@@ -1,0 +1,16 @@
+exception_type= ValidationError
+exception= 4 validation errors for _ResponsePayload
+choices.0.logprobs.content.0.top_logprobs.str
+  Input should be a valid string [type=string_type, input_value=[{'token': 'A', 'logprob'...': -1.2, 'bytes': [66]}], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.13/v/string_type
+choices.0.logprobs.content.0.top_logprobs.float
+  Input should be a valid number [type=float_type, input_value=[{'token': 'A', 'logprob'...': -1.2, 'bytes': [66]}], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.13/v/float_type
+choices.0.logprobs.content.0.top_logprobs.list[int].0
+  Input should be a valid integer [type=int_type, input_value={'token': 'A', 'logprob': -0.1, 'bytes': [65]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/int_type
+choices.0.logprobs.content.0.top_logprobs.list[int].1
+  Input should be a valid integer [type=int_type, input_value={'token': 'B', 'logprob': -1.2, 'bytes': [66]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/int_type
+ledger_exists= False
+ledger=

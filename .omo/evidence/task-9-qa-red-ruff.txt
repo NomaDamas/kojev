@@ -1,0 +1,148 @@
+ISC003 [*] Explicitly concatenated string should be implicitly concatenated
+  --> kojev/teacher.py:27:5
+   |
+26 |   _ANSWER_LINE: Final = re.compile(
+27 | /     r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
+28 | |     + r"(?:option\s*)?([0-9]+)\b",
+   | |_________________________________^
+29 |       re.IGNORECASE,
+30 |   )
+   |
+help: Remove redundant '+' operator to implicitly concatenate
+   |
+27 |     r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
+   -     + r"(?:option\s*)?([0-9]+)\b",
+28 +      r"(?:option\s*)?([0-9]+)\b",
+29 |     re.IGNORECASE,
+   |
+
+UP040 Type alias `RequestHook` uses `TypeAlias` annotation instead of the `type` keyword
+  --> kojev/teacher.py:32:1
+   |
+30 | )
+31 | _LOCK_GUARD: Final = anyio.Lock()
+32 | RequestHook: TypeAlias = Callable[[httpx.Request], Awaitable[None]]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: Use the `type` keyword
+
+E501 Line too long (93 > 88)
+  --> kojev/teacher.py:43:89
+   |
+41 |     request_id: str
+42 |     usage: dict[str, int]
+43 |     logprobs: dict[str, list[dict[str, str | float | list[int] | None]] | None] | None = None
+   |                                                                                         ^^^^^
+
+D107 Missing docstring in `__init__`
+   --> kojev/teacher.py:106:9
+    |
+104 |     """Async OpenRouter client with restart-safe accounting and bounded retries."""
+105 |
+106 |     def __init__(
+    |         ^^^^^^^^
+107 |         self,
+108 |         *,
+    |
+
+D105 Missing docstring in magic method
+   --> kojev/teacher.py:126:15
+    |
+124 |         self._consecutive_errors: int = 0
+125 |
+126 |     async def __aenter__(self) -> TeacherClient:
+    |               ^^^^^^^^^^
+127 |         return self
+    |
+
+D105 Missing docstring in magic method
+   --> kojev/teacher.py:129:15
+    |
+127 |         return self
+128 |
+129 |     async def __aexit__(self, *_: object) -> None:
+    |               ^^^^^^^^^
+130 |         await self.aclose()
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/teacher.py:145:19
+    |
+143 |         """Ask Qwen for constrained line-oriented answers."""
+144 |         if not self._api_key:
+145 |             raise TeacherRequestError("OPENROUTER_API_KEY is required")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+146 |         with anyio.fail_after(90):
+147 |             async with self._semaphore:
+    |
+
+EM101 Exception must not use a string literal, assign to variable first
+   --> kojev/teacher.py:145:39
+    |
+143 |         """Ask Qwen for constrained line-oriented answers."""
+144 |         if not self._api_key:
+145 |             raise TeacherRequestError("OPENROUTER_API_KEY is required")
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+146 |         with anyio.fail_after(90):
+147 |             async with self._semaphore:
+    |
+help: Assign to variable; remove string literal
+
+PLR2004 Magic value used in comparison, consider replacing `3` with a constant variable
+   --> kojev/teacher.py:203:44
+    |
+201 |             last_status = response.status_code
+202 |             self._consecutive_errors += 1
+203 |             if self._consecutive_errors >= 3:
+    |                                            ^
+204 |                 self._concurrency = max(INITIAL_CONCURRENCY, self._concurrency // 2)
+205 |                 self._semaphore = anyio.Semaphore(self._concurrency)
+    |
+
+E501 Line too long (96 > 88)
+   --> kojev/teacher.py:207:89
+    |
+205 |                 self._semaphore = anyio.Semaphore(self._concurrency)
+206 |             if attempt + 1 < MAX_RETRIES:
+207 |                 await anyio.sleep(self._retry_delays[min(attempt, len(self._retry_delays) - 1)])
+    |                                                                                         ^^^^^^^^
+208 |         raise TeacherRequestError(
+209 |             f"OpenRouter request exhausted retries: HTTP {last_status}"
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/teacher.py:208:15
+    |
+206 |               if attempt + 1 < MAX_RETRIES:
+207 |                   await anyio.sleep(self._retry_delays[min(attempt, len(self._retry_delays) - 1)])
+208 |           raise TeacherRequestError(
+    |  _______________^
+209 | |             f"OpenRouter request exhausted retries: HTTP {last_status}"
+210 | |         )
+    | |_________^
+211 |
+212 |       @staticmethod
+    |
+
+EM102 Exception must not use an f-string literal, assign to variable first
+   --> kojev/teacher.py:209:13
+    |
+207 |                 await anyio.sleep(self._retry_delays[min(attempt, len(self._retry_delays) - 1)])
+208 |         raise TeacherRequestError(
+209 |             f"OpenRouter request exhausted retries: HTTP {last_status}"
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+210 |         )
+    |
+help: Assign to variable; remove f-string literal
+
+E501 Line too long (92 > 88)
+   --> kojev/teacher.py:215:89
+    |
+213 |     def _prompt(state: str, questions: Sequence[str]) -> str:
+214 |         lines = [f"상태:\n{state}", "질문:"]
+215 |         lines.extend(f"A{index}: {question}" for index, question in enumerate(questions, 1))
+    |                                                                                         ^^^^
+216 |         return "\n".join(lines)
+    |
+
+Found 13 errors.
+[*] 1 fixable with the `--fix` option (3 hidden fixes can be enabled with the `--unsafe-fixes` option).

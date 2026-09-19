@@ -1,0 +1,17 @@
+Surface: OpenRouter authenticated activity API
+Invocation: curl -i -sS https://openrouter.ai/api/v1/activity -H Authorization:<redacted>
+HTTP/2 403
+date: Sat, 19 Sep 2026 18:26:32 GMT
+content-type: application/json
+cf-cache-status: BYPASS
+access-control-allow-origin: *
+cache-control: private, no-store
+access-control-expose-headers: X-Generation-Id,X-Provider-Name,request-id,cf-ray
+set-cookie: __cf_bm=cP5wBC6PpUi_xzMyH3osveTqxcy_IaY3BqVKuxGZsUI-1789842392.5562909-1.0.1.1-zZ.BrdNgUCNgW3y_.gjhwz5flHV3XX5YgTwknljqzLtlr4Y0dDFEl0O1QT4ByO6JDtFICIfbJr9Cu3KIv1iB25gpJfbYXUOztHWGlcx_LE.b5O_BvGccQykp52Acupj5; HttpOnly; SameSite=None; Secure; Path=/; Domain=openrouter.ai; Expires=Sat, 19 Sep 2026 18:56:32 GMT
+permissions-policy: payment=(self "https://checkout.stripe.com" "https://connect-js.stripe.com" "https://js.stripe.com" "https://*.js.stripe.com" "https://hooks.stripe.com")
+referrer-policy: no-referrer, strict-origin-when-cross-origin
+x-content-type-options: nosniff
+server: cloudflare
+cf-ray: a3daa3a97a0320a4-ICN
+
+{"error":{"message":"Only management keys can fetch activity for an account","code":403}}

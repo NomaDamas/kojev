@@ -1,0 +1,72 @@
+KoJev todo 3 - per-source split coverage corrective evidence
+Worktree: /Volumes/SSD1/1/KoJev-todo3
+Branch: feat/data-gold
+Corrects: ea00d4f8dd98c088d04503838453ce7cbb8680c1
+
+DEFECT (found while implementing todo 8)
+Plan todo 3 specifies:
+  "Split: per-source shuffled seed 0, cap per source train<=8000 / val<=500 /
+   test<=1000 STATES; test set shuffled across sources."
+The landed implementation derived the kojev split from the upstream Hugging Face
+split NAME (train / validation / test). Only e9t/nsmc ships an upstream "test"
+split, so data/gold/test.jsonl contained exactly ONE source and 11 of 12 sources
+never contributed any test state.
+
+Impact:
+  - Violates todo 3's own written split specification.
+  - Blocked todo 8, which must build a rule-gold OOD set over GOLD TEST states
+    across >= 6 families; only e9t/nsmc was reachable (997 states / 2991 questions).
+  - Would have weakened todo 14's held-out evaluation.
+
+This was not caught earlier because prior verification checked count floors and
+blank states, but never asserted per-source coverage of the test split.
+
+FIX (kojev/data_gold.py)
+  - Added _shuffle_key(): deterministic SHA-256 ordering over the row payload
+    salted with _SPLIT_SEED. Chosen over random.Random(0).shuffle because the
+    latter trips Ruff S311 and is not guaranteed stable across Python releases;
+    a seeded digest is reproducible and runtime-independent. No lint suppression.
+  - Added _source_split_rows(): pools every configured upstream split for a
+    source, orders by _shuffle_key, then carves disjoint per-source slices
+    test<=1000, val<=500, train<=8000.
+  - build_gold() now iterates those carved splits, so every source contributes
+    to train, val, and test.
+
+REGRESSION TESTS ADDED (would have caught the defect)
+  tests/test_data_gold.py::test_every_source_contributes_disjoint_train_val_and_test_states
+    - asserts exact slice sizes 1000 / 500 / 8000 and that the three splits share
+      no row (disjointness).
+  tests/test_data_gold.py::test_source_split_is_deterministic_under_the_split_seed
+    - asserts two carves of the same source are identical.
+
+GREEN GATES
+  uv run pytest -q                        => 18 passed
+  uv run ruff check kojev tests           => All checks passed!
+  uv run ruff format --check kojev tests  => 5 files already formatted
+  uv run basedpyright kojev tests         => 0 errors, 0 warnings, 0 notes
+
+REAL 12-SOURCE BUILD (run twice, real datasets, no synthetic substitution)
+  uv run python -m kojev.data_gold --out /tmp/kojev-splitfix-a  => exit 0
+  uv run python -m kojev.data_gold --out /tmp/kojev-splitfix-b  => exit 0
+
+  Families per split: train=12, val=12, test=12   (previously test=1)
+  TEST families now present:
+    KorQuAD/squad_kor_v1, e9t/nsmc, jeanlee/kmhas_korean_hate_speech,
+    kakaobrain/kor_nli:multi_nli, kakaobrain/kor_nli:snli, klue/klue:nli,
+    klue/klue:sts, klue/klue:ynat, lawcompany/KLAID, searle-j/kote,
+    smilegate-ai/kor_unsmile, wicho/kor_3i4k
+
+  Emitted lines: train=103999, val=6499, test=12998
+  Blank-state scan: train=[] val=[] test=[]
+  Train states: 96000     Train questions: 302103
+  KoBEST present: False
+
+  Acceptance floors: >=9 sources (12 OK), >=40k train states (96,000 OK),
+                     >=90k train questions (302,103 OK).
+
+DETERMINISM
+  Both builds byte-identical across train.jsonl, val.jsonl, test.jsonl and
+  summary.json.
+
+CLEANUP
+  Removed /tmp/kojev-splitfix-a and /tmp/kojev-splitfix-b.
