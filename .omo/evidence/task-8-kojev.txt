@@ -108,3 +108,123 @@ Temporary build directories removed.
 | basedpyright-output | terminal transcript | basedpyright 0 errors, 0 warnings, 0 notes | `.omo/evidence/task-8-kojev.txt` |
 | real-build-output | terminal transcript | real GOLD/OOD build: 997 states, 2991 questions, one family | `.omo/evidence/task-8-kojev.txt` |
 | overlap-output | terminal transcript | exact `InstructionOverlapError` with `침범 질문` | `.omo/evidence/task-8-kojev.txt` |
+$ uv run python -m kojev.data_gold --out .tmp-task8-gold
+Using the latest cached version of the dataset since e9t/nsmc couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/e9t___nsmc/default/0.0.0/153263700c285ac0997b3e2a2d80b826aaf672d6 (last modified on Sun Sep 20 01:23:12 2026).
+Using the latest cached version of the dataset since e9t/nsmc couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/e9t___nsmc/default/0.0.0/153263700c285ac0997b3e2a2d80b826aaf672d6 (last modified on Sun Sep 20 01:23:12 2026).
+Using the latest cached version of the dataset since jeanlee/kmhas_korean_hate_speech couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/jeanlee___kmhas_korean_hate_speech/default/0.0.0/5df3b7429d68f0ffc89dfbd0159cc72f29fad63c (last modified on Sun Sep 20 01:23:20 2026).
+Using the latest cached version of the dataset since searle-j/kote couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'dichotomized' at /Volumes/SSD1/huggingface/datasets/searle-j___kote/dichotomized/0.0.0/66f0eefe4b675a5d5411c7aa08e2c97fc9a9b17f (last modified on Sun Sep 20 01:30:05 2026).
+Using the latest cached version of the dataset since searle-j/kote couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'dichotomized' at /Volumes/SSD1/huggingface/datasets/searle-j___kote/dichotomized/0.0.0/66f0eefe4b675a5d5411c7aa08e2c97fc9a9b17f (last modified on Sun Sep 20 01:30:05 2026).
+Using the latest cached version of the dataset since lawcompany/KLAID couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/lawcompany___klaid/default/0.0.0/4461690da8a3fb20194488f9712b1b2503571426 (last modified on Sun Sep 20 01:29:21 2026).
+gold_exit_code=0
+$ uv run python -m kojev.data_ood --gold .tmp-task8-gold --out .tmp-task8-ood
+{"states": 6258, "questions": 10256, "families": ["KorQuAD/squad_kor_v1", "e9t/nsmc", "klue/klue:nli", "klue/klue:sts", "klue/klue:ynat", "smilegate-ai/kor_unsmile"]}
+ood_exit_code=0
+$ count and summary
+{'states': 6258, 'questions': 10256, 'families': ['KorQuAD/squad_kor_v1', 'e9t/nsmc', 'klue/klue:nli', 'klue/klue:sts', 'klue/klue:ynat', 'smilegate-ai/kor_unsmile']}
+{"경제 관련 기사다.": {"majority_baseline": 0.868, "majority_gold": 0, "questions": 1000}, "기사의 큰 주제를 고르시오.": {"majority_baseline": 0.31, "majority_gold": 0, "questions": 1000}, "두 문장의 의미 유사도를 반대 방향 척도로 고르시오.": {"majority_baseline": 0.326, "majority_gold": 1, "questions": 1000}, "리뷰의 만족도를 고르시오.": {"majority_baseline": 0.5155155155155156, "majority_gold": 1, "questions": 999}, "리뷰의 만족도를 반대 방향 척도로 고르시오.": {"majority_baseline": 0.5155155155155156, "majority_gold": 0, "questions": 999}, "이 리뷰는 긍정적이지 않다.": {"majority_baseline": 0.5155155155155156, "majority_gold": 0, "questions": 999}, "이 지문은 질문과 무관하다.": {"majority_baseline": 1.0, "majority_gold": 0, "questions": 1999}, "전제와 가설은 모순되지 않는다.": {"majority_baseline": 0.669, "majority_gold": 1, "questions": 1000}, "전제와 가설은 모순된다.": {"majority_baseline": 0.669, "majority_gold": 0, "questions": 1000}, "혐오 여부를 고르시오.": {"majority_baseline": 1.0, "majority_gold": 0, "questions": 260}}
+$ adversarial overlap injection
+Traceback (most recent call last):
+  File "<stdin>", line 17, in <module>
+  File "/Volumes/SSD1/1/KoJev-todo8/kojev/data_ood.py", line 228, in assert_no_train_instruction_overlap
+    raise InstructionOverlapError(overlap)
+kojev.data_ood.InstructionOverlapError: OOD instructions overlap GOLD train: ['침범 질문']
+exit_code=1
+$ uv run pytest tests/test_data_ood.py -q
+....                                                                     [100%]
+4 passed in 0.03s
+$ uv run ruff check kojev tests
+D101 Missing docstring in public class
+  --> kojev/data_ood.py:42:7
+   |
+42 | class CliArgs(argparse.Namespace):
+   |       ^^^^^^^
+43 |     gold: Path = Path("data/gold")
+44 |     out: Path = Path("data/ood")
+   |
+
+Found 1 error.
+$ uv run ruff format --check kojev tests
+unformatted: File would be reformatted
+   --> kojev/teacher.py:197:40
+    |
+196 |             if self._consecutive_errors >= CONCURRENCY_BACKOFF_ERRORS:
+    -                 next_concurrency = max(
+    -                     INITIAL_CONCURRENCY, self._concurrency // 2
+    -                 )
+197 +                 next_concurrency = max(INITIAL_CONCURRENCY, self._concurrency // 2)
+198 |                 object.__setattr__(self, "_concurrency", next_concurrency)
+--------------------------------------------------------------------------------
+274 |                 _ = handle.write(
+    -                     json.dumps({"kind": "marker", "marker": "BUDGET_REACHED"})
+    -                     + "\n"
+275 +                     json.dumps({"kind": "marker", "marker": "BUDGET_REACHED"}) + "\n"
+276 |                 )
+    |
+
+unformatted: File would be reformatted
+  --> kojev/teacher_types.py:10:6
+   |
+9  | _ANSWER_LINE: Final = re.compile(
+   -     (r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
+   -      r"(?:option\s*)?([0-9]+)\b"),
+10 +     (
+11 +         r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
+12 +         r"(?:option\s*)?([0-9]+)\b"
+13 +     ),
+14 |     re.IGNORECASE,
+   |
+
+2 files would be reformatted, 17 files already formatted
+$ uv run basedpyright kojev tests
+0 errors, 0 warnings, 0 notes
+$ uv run ruff check kojev/data_ood.py tests/test_data_ood.py
+D101 Missing docstring in public class
+  --> kojev/data_ood.py:42:7
+   |
+42 | class CliArgs(argparse.Namespace):
+   |       ^^^^^^^
+43 |     gold: Path = Path("data/gold")
+44 |     out: Path = Path("data/ood")
+   |
+
+Found 1 error.
+$ uv run ruff format --check kojev/data_ood.py tests/test_data_ood.py
+2 files already formatted
+$ uv run basedpyright kojev/data_ood.py tests/test_data_ood.py
+0 errors, 0 warnings, 0 notes
+
+## resumed acceptance after upstream splitter fix
+
+Base update:
+- Merged `origin/main` containing splitter fix `9d7670e4fcb0932deb353324f97423671f5b939d`.
+
+Real corpus build:
+- `uv run python -m kojev.data_gold --out .tmp-task8-gold` -> exit 0.
+- `uv run python -m kojev.data_ood --gold .tmp-task8-gold --out .tmp-task8-ood` -> exit 0.
+- States: 6258.
+- Questions: 10256.
+- Families: `KorQuAD/squad_kor_v1`, `e9t/nsmc`, `klue/klue:nli`, `klue/klue:sts`, `klue/klue:ynat`, `smilegate-ai/kor_unsmile`.
+- `summary.json` includes `majority_class_baseline` entries for every emitted instruction family.
+
+Acceptance verification:
+- `uv run pytest tests/test_data_ood.py -q` -> 4 passed.
+- `uv run ruff check kojev/data_ood.py tests/test_data_ood.py` -> All checks passed.
+- `uv run ruff format --check kojev/data_ood.py tests/test_data_ood.py` -> 2 files already formatted.
+- `uv run basedpyright kojev/data_ood.py tests/test_data_ood.py` -> 0 errors, 0 warnings, 0 notes.
+- Repository-wide `uv run ruff check kojev tests` -> All checks passed.
+- Repository-wide `uv run basedpyright kojev tests` -> 0 errors, 0 warnings, 0 notes.
+- Repository-wide `uv run ruff format --check kojev tests` remains blocked by pre-existing unrelated formatting in `kojev/teacher.py` and `kojev/teacher_types.py`; those files were not touched due to write-scope restrictions.
+
+Adversarial overlap verification:
+- Injected `침범 질문` into GOLD train and OOD JSONL.
+- Exact result: `InstructionOverlapError: OOD instructions overlap GOLD train: ['침범 질문']` with exit code 1.
+
+Cleanup receipt:
+- Removed `.tmp-task8-gold`, `.tmp-task8-ood`, and `.tmp-task8-adversarial`.
+- Changed files remain limited to `kojev/data_ood.py`, `tests/test_data_ood.py`, and `.omo/evidence/task-8-kojev.txt` beyond the upstream merge.

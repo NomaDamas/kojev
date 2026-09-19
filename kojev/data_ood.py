@@ -37,14 +37,13 @@ _YNAT_COARSE_BY_LABEL: Final = {
 }
 _YNAT_LABELS: Final = ["IT과학", "경제", "사회", "생활문화", "세계", "스포츠", "정치"]
 _NLI_CONTRADICTION_LABEL: Final = 2
-_SUPPORTED: Final = {
-    "e9t/nsmc",
-    "klue/klue:ynat",
-    "klue/klue:nli",
-    "klue/klue:sts",
-    "KorQuAD/squad_kor_v1",
-    "smilegate-ai/kor_unsmile",
-}
+
+
+class CliArgs(argparse.Namespace):
+    """Typed command-line arguments."""
+
+    gold: Path = Path("data/gold")
+    out: Path = Path("data/ood")
 
 
 class FamilySummary(TypedDict):
@@ -64,13 +63,6 @@ class InstructionOverlapError(AssertionError):
     @override
     def __str__(self) -> str:
         return f"OOD instructions overlap GOLD train: {self.overlap}"
-
-
-class CliArgs(argparse.Namespace):
-    """Typed command-line arguments."""
-
-    gold: Path = Path("data/gold")
-    out: Path = Path("data/ood")
 
 
 def _question(
@@ -205,12 +197,12 @@ _QUESTION_BUILDERS: Final[dict[str, Callable[[Example], list[Question]]]] = {
 
 def build_ood_examples(gold_dir: Path) -> list[Example]:
     """Build OOD examples from the GOLD test split only."""
-    test_path = gold_dir / "test.jsonl"
     examples: list[Example] = []
-    for source_example in read_jsonl(test_path):
-        if source_example.split != "test" or source_example.source not in _SUPPORTED:
+    for source_example in read_jsonl(gold_dir / "test.jsonl"):
+        builder = _QUESTION_BUILDERS.get(source_example.source)
+        if source_example.split != "test" or builder is None:
             continue
-        questions = _QUESTION_BUILDERS[source_example.source](source_example)
+        questions = builder(source_example)
         if questions:
             examples.append(
                 Example(

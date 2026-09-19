@@ -21,9 +21,7 @@ def test_reversed_monotone_rule_flips_polarity() -> None:
     assert reversed_monotone_gold(1, 2) == 0
 
 
-def test_ood_probes_use_rule_gold_and_six_families(tmp_path: Path) -> None:
-    gold = tmp_path / "gold"
-    gold.mkdir()
+def test_nsmc_probe_contains_flip_and_reversed_direction(tmp_path: Path) -> None:
     example = Example(
         state="좋은 영화",
         questions=[
@@ -37,11 +35,36 @@ def test_ood_probes_use_rule_gold_and_six_families(tmp_path: Path) -> None:
         source="e9t/nsmc",
         split="test",
     )
-    _ = (gold / "test.jsonl").write_text(
+    _ = (tmp_path / "test.jsonl").write_text(
         example.model_dump_json() + "\n", encoding="utf-8"
     )
 
-    built = build_ood_examples(gold)
+    questions = build_ood_examples(tmp_path)[0].questions
+
+    assert [question.gold for question in questions] == [0, 1, 0]
+    assert questions[0].instructions == "이 리뷰는 긍정적이지 않다."
+    assert questions[2].options == ["만족", "불만족"]
+
+
+def test_ood_probes_use_test_states_and_rule_gold(tmp_path: Path) -> None:
+    example = Example(
+        state="좋은 영화",
+        questions=[
+            Question(
+                type=QuestionType.CHOICE,
+                instructions="원래 질문",
+                options=["부정", "긍정"],
+                gold=1,
+            )
+        ],
+        source="e9t/nsmc",
+        split="test",
+    )
+    _ = (tmp_path / "test.jsonl").write_text(
+        example.model_dump_json() + "\n", encoding="utf-8"
+    )
+
+    built = build_ood_examples(tmp_path)
 
     assert built
     assert {item.source for item in built} == {"e9t/nsmc"}
