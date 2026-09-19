@@ -1,0 +1,79 @@
+KoJev todo 14 - evaluation harness (LOCAL HALF)
+Worktree: /Volumes/SSD1/1/KoJev-todo14
+Branch: feat/todo-14-eval
+Base: merged up to origin/main 4af0418c34cea8218a5335175beca21e71a95d1a
+
+SCOPE STATEMENT (read first)
+This increment delivers the evaluation MACHINERY, verified against a scripted
+model and synthetic fixtures. Producing the REAL evaluation tables requires
+todo 12's trained checkpoints, which do not exist yet. The plan checkbox for
+todo 14 therefore remains UNCHECKED.
+
+IMPLEMENTATION NOTE
+Delegated implementation (st_01a0c437) returned an audit reporting the module as
+missing rather than writing it, matching a repeated pattern across four
+greenfield tasks. This module was therefore implemented directly by the
+orchestrator.
+
+RED PROOF (captured before production code existed, by st_01a0c437)
+  $ uv run pytest tests/test_evaluate.py -q
+  ERROR: file or directory not found: tests/test_evaluate.py
+  kojev/evaluate.py: missing
+  tests/test_evaluate.py: missing
+Recorded in .omo/evidence/st_01a0c437/st_01a0c437-manual-qa.md.
+
+DESIGN DECISIONS
+- EvaluationError is a plain RuntimeError subclass with classmethod
+  constructors, matching kojev/bench.py's BenchmarkError and satisfying
+  TRY003/EM102 without suppressions. Deliberately not a frozen dataclass: todo 9
+  proved those reject __traceback__ assignment.
+- A missing or unusable checkpoint fails BEFORE any evaluation work starts. An
+  evaluation report full of zeros is worse than no report, so an empty
+  directory or empty file is rejected as explicitly as an absent path.
+- Contamination is checked per split BEFORE scoring, and the report file is only
+  written after every split passes. A contaminated run leaves no report behind.
+- Latency is measured with time.perf_counter around the real model call, and is
+  reported as p50/p95 in milliseconds. No duration is fabricated or hardcoded,
+  and no test asserts a specific duration, so the suite cannot flake on timing.
+- Metric computation reuses kojev.bench.calibration_metrics rather than
+  reimplementing accuracy/Brier/ECE.
+
+GREEN GATES
+  uv run pytest tests/test_evaluate.py -q => 8 passed
+  uv run pytest -q                        => 93 passed
+  uv run ruff check kojev tests           => All checks passed!
+  uv run ruff format --check kojev tests  => 29 files already formatted
+  uv run basedpyright kojev tests         => 0 errors, 0 warnings, 0 notes
+
+TEST COVERAGE (tests/test_evaluate.py, 8 tests)
+  - missing checkpoint raises EvaluationError naming the path; asserts
+    `type(exc) is EvaluationError`, not merely that something raised
+  - empty checkpoint directory rejected
+  - contamination check FAILS when a train state is injected into the evaluated
+    split, and the message names the offending state
+  - contamination check passes on disjoint states
+  - HAND-COMPUTED METRICS: three questions, two correct at p=0.75 on gold and
+    one incorrect at p=0.25 on gold.
+      accuracy = 2/3                      (asserted to 1e-9)
+      brier    = (0.125+0.125+1.125)/3
+               = 0.4583333333333333       (asserted to 1e-9)
+    This asserts arithmetic, not mere key presence, so a plausible-looking but
+    wrong table cannot pass.
+  - report carries overall/kinds/sources tables plus latency; per-kind "noul"
+    and per-source "e9t/nsmc" breakdowns present; latency count exact and
+    p50/p95 finite
+  - missing split file raises the typed error
+  - END-TO-END contamination refusal: a state present in both train and test
+    aborts the run AND leaves no report file on disk (asserted
+    `not out.exists()`)
+
+ADVERSARIAL CLASSES PROBED
+  malformed input    : absent checkpoint, empty checkpoint dir, absent split
+  silent failure     : zero-filled report impossible; checkpoint validated first
+  stale state        : contaminated split proven to abort before writing output
+  misleading success : exact hand-verified accuracy and Brier asserted
+  flaky tests        : latency asserted finite only, never a specific duration
+
+CLEANUP
+  No temp directories, servers, processes, or network resources were created;
+  all fixtures are pytest tmp_path scoped and removed by pytest itself.
