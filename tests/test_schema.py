@@ -112,6 +112,42 @@ def test_rejects_choice_question_when_option_count_exceeds_255() -> None:
         )
 
 
+def test_rejects_example_when_state_is_empty() -> None:
+    with pytest.raises(ValueError, match="non-blank state"):
+        _ = Example(
+            state="",
+            questions=[
+                Question(
+                    type=QuestionType.NOUL,
+                    instructions="긍정이다.",
+                    options=["아니오", "예"],
+                    gold=1,
+                    meta={},
+                )
+            ],
+            source="e9t/nsmc",
+            split="train",
+        )
+
+
+def test_rejects_example_when_state_is_only_whitespace() -> None:
+    with pytest.raises(ValueError, match="non-blank state"):
+        _ = Example(
+            state="   \n\t ",
+            questions=[
+                Question(
+                    type=QuestionType.NOUL,
+                    instructions="긍정이다.",
+                    options=["아니오", "예"],
+                    gold=1,
+                    meta={},
+                )
+            ],
+            source="e9t/nsmc",
+            split="train",
+        )
+
+
 def test_confidence_is_one_when_distribution_is_peaked() -> None:
     assert confidence((1.0, 0.0, 0.0)) == pytest.approx(1.0)
 

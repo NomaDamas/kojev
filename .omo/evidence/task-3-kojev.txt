@@ -1,0 +1,51 @@
+Task 3 manual QA evidence
+Date: 2026-09-19
+Worktree: /Volumes/SSD1/1/KoJev-todo3
+Branch before commit: feat/data-gold
+
+Implementation/runtime repairs observed during real execution:
+- Added explicit kakaobrain/kor_nli configs multi_nli and snli; removed unavailable xnli train.
+- Used wicho/kor_3i4k (the unnamespaced kor_3i4k URI failed in datasets) and lawcompany/KLAID default cache path.
+- Adapted UnSmile current fields and valid split.
+- Adapted K-MHaS label-index lists and KOTE integer ClassLabel indices.
+- Preserved KLAID zero-based laws_service_id labels.
+- Added KorQuAD deterministic cross-title negative pair generation.
+- Normalized validation split aliases including valid.
+
+Commands and observed results:
+1. Target tests:
+   Command: cd /Volumes/SSD1/1/KoJev-todo3 && uv run pytest tests/test_data_gold.py tests/test_schema.py -q
+   Output: 12 passed in 0.04s
+2. Real source build:
+   Command: cd /Volumes/SSD1/1/KoJev-todo3 && uv run python -m kojev.data_gold --out /tmp/kojev-gold-qa
+   Exit: 0
+   Source loader used actual Hugging Face datasets with local cache fallback messages; no synthetic/substitute rows were generated.
+3. Final generated artifact counts from /tmp/kojev-gold-qa/summary.json:
+   source_count=12
+   train_states=96000
+   train_questions=302085
+   split_files=['test.jsonl', 'train.jsonl', 'val.jsonl']
+   kobest_entries=[]
+   korquad_entries=['KorQuAD/squad_kor_v1:train']
+   JSONL line counts: train=96000, val=2500, test=1000.
+4. Clean validation:
+   Command: cd /Volumes/SSD1/1/KoJev-todo3 && uv run python -m kojev.data_gold --validate /tmp/kojev-gold-qa
+   Output: no diagnostics
+   Exit: 0
+5. Isolated corruption adversarial check:
+   Copied clean train.jsonl to /tmp/kojev-gold-corrupt/train.jsonl; replaced only line 2 with `not json`.
+   Command: cd /Volumes/SSD1/1/KoJev-todo3 && uv run python -m kojev.data_gold --validate /tmp/kojev-gold-corrupt
+   Output: /tmp/kojev-gold-corrupt/train.jsonl:2: invalid JSON
+   Exit: 1
+6. Static checks:
+   Commands:
+   - uv run basedpyright kojev/data_gold.py tests/test_data_gold.py
+   - uv run ruff check kojev/data_gold.py tests/test_data_gold.py
+   Both failed. Failures are recorded, not suppressed: basedpyright reports missing datasets stubs/unknown third-party types plus unused helpers; ruff reports existing style/complexity rules and an unused pytest import. These are not claimed as passing.
+
+Cleanup performed after evidence capture:
+- Removed /tmp/kojev-gold-qa
+- Removed /tmp/kojev-gold-corrupt
+- Removed /tmp/kojev-gold-build.log
+- Removed .debug-journal.md (debug-only artifact)
+- Confirmed no data/gold directory was created in the worktree.

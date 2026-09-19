@@ -1,0 +1,78 @@
+KoJev todo 3 - blank-state corrective evidence
+Worktree: /Volumes/SSD1/1/KoJev-todo3
+Branch: feat/data-gold
+Base commit corrected: 6947a0fb5422eee694c1ba49d8095a38d63772a9
+
+BLOCKER ADDRESSED (independent QA st_01a0c421 / st_01a0c423)
+Eight emitted examples carried a blank `state` and validation still exited 0:
+  train.jsonl lines 2310-2314 and test.jsonl lines 5-7, all from e9t/nsmc.
+The prior corrective change enforced non-empty `questions` but never constrained
+`state`, so schema-valid-but-useless rows reached the corpus.
+
+FIX (smallest correct change)
+1. kojev/schema.py
+   - Added SchemaError.blank_state() ("examples require a non-blank state").
+   - Example._validate_questions now rejects a state that is empty or whitespace-only.
+     Blank states are therefore impossible to construct or to load from JSONL.
+2. kojev/data_gold.py
+   - Added _is_blank_state_error(), _korquad_examples(), _mapped_examples():
+     a row whose upstream source text is blank is skipped deterministically,
+     while every other ValidationError is re-raised (no error masking).
+   - build_gold now counts skipped rows per source and records them as
+     `dropped_blank_state` in summary.json; `states` reports rows actually kept.
+   - No lambda closures over loop variables (Ruff B023 clean).
+
+RED PROOF (before production fix)
+Direct construction and validator probe on the pre-fix tree accepted blank states:
+  independent QA recorded `validation incorrectly exits 0` with 8 blank states.
+Post-fix probe (uv run python -c ...):
+  DIRECT_BLANK=REJECTED True
+  WHITESPACE_BLANK=REJECTED True
+  VALIDATE_ERRORS= ['<tmp>/train.jsonl:2: Value error, examples require a non-blank state']
+  FLAGS_LINE_2= True
+
+REGRESSION TESTS ADDED
+  tests/test_schema.py::test_rejects_example_when_state_is_empty
+  tests/test_schema.py::test_rejects_example_when_state_is_only_whitespace
+  tests/test_data_gold.py::test_validation_reports_line_number_for_blank_state
+
+GREEN GATES
+  uv run pytest -q                        => 16 passed
+  uv run ruff check kojev tests           => All checks passed!
+  uv run ruff format --check kojev tests  => 5 files already formatted
+  uv run basedpyright kojev tests         => 0 errors, 0 warnings, 0 notes
+
+REAL 12-SOURCE BUILD (executed twice, no synthetic or substitute data)
+  uv run python -m kojev.data_gold --out /tmp/kojev-todo3-final-a   => exit 0
+  uv run python -m kojev.data_gold --out /tmp/kojev-todo3-final-b   => exit 0
+
+  Emitted JSONL lines: train=103994, val=2500, test=997
+  Blank-state scan:    train=[] val=[] test=[]   (previously 5 + 0 + 3)
+  Selected train states (after drops): 95995
+  Train questions:                     304008
+  dropped_blank_state total:           8   -> {"e9t/nsmc:train": 5, "e9t/nsmc:test": 3}
+  Distinct sources:                    12
+  KoBEST present:                      False
+  KorQuAD keys:                        ['KorQuAD/squad_kor_v1:train']  (train-only)
+
+  Acceptance floors: >=9 sources (12 OK), >=40k train states (95,995 OK),
+                     >=90k train questions (304,008 OK).
+
+DETERMINISM
+  Both builds byte-identical across train/val/test and summary.json:
+    train  sha256 ed383fea8f2b005977ffa75008eae78dac1a28502cc8c2d1375f7cc4d42a6dd3
+    val    sha256 1d5493cdfa7d1857a07691d6c75388ed587cf944519f2d509811b3b63fbe8fce
+    test   sha256 d8c0f1149cdb7bae1d5cf6bec501e63edfe9af635480c4fa69d62413bed82348
+    summary sha256 f2224210cbc77c6b86b1a26cbcdf3a4654421d7195b790fc93d4173a4187a97a
+
+NOTE ON COUNT SEMANTICS
+  `states` now reports rows kept after blank-state drops, so the train figure moved
+  from 96,000 (rows considered) to 95,995 (rows kept). Emitted train lines moved
+  103,999 -> 103,994 for the same reason. Selected-vs-emitted remain distinct
+  quantities: emitted lines exceed states because KorQuAD adds negative pairs.
+
+CLEANUP
+  Removed temporary build outputs /tmp/kojev-todo3-fix-{a,b} and
+  /tmp/kojev-todo3-final-{a,b}; .debug-journal.md removed by the prior QA pass.
+  Preserved external provenance: task-3-adversarial-audit.txt,
+  task-3-adversarial-manual-qa.md, task-3-blank-state-builds.log.

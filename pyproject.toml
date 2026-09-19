@@ -36,6 +36,7 @@ packages = ["kojev"]
 typeCheckingMode = "all"
 pythonVersion = "3.12"
 pythonPlatform = "All"
+extraPaths = ["typings"]
 include = ["kojev", "tests"]
 exclude = ["**/__pycache__", "**/.venv", "**/build", "**/dist"]
 reportUnusedCallResult = "warning"

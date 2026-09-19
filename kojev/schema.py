@@ -22,6 +22,7 @@ _CHOICE_MAX: Final = 255
 _SCORE_MIN: Final = 2
 _SCORE_MAX: Final = 10
 _NOUL_COUNT: Final = 2
+_QUESTION_MIN: Final = 1
 _CONFIDENCE_MIN_K: Final = 2
 
 
@@ -59,6 +60,18 @@ class SchemaError(ValueError):
     def confidence_k(cls) -> SchemaError:
         """Reject a confidence call with fewer than two probabilities."""
         return cls(reason="confidence requires K >= 2")
+
+    @classmethod
+    def empty_questions(cls) -> SchemaError:
+        """Reject an example without any decision questions."""
+        return cls(
+            reason=f"examples require at least one question (minimum {_QUESTION_MIN})"
+        )
+
+    @classmethod
+    def blank_state(cls) -> SchemaError:
+        """Reject an example whose state carries no visible text."""
+        return cls(reason="examples require a non-blank state")
 
 
 class QuestionType(StrEnum):
@@ -109,12 +122,20 @@ class Example(BaseModel):
     source: str
     split: str
 
+    @model_validator(mode="after")
+    def _validate_questions(self) -> Self:
+        if len(self.questions) < _QUESTION_MIN:
+            raise SchemaError.empty_questions()
+        if not self.state.strip():
+            raise SchemaError.blank_state()
+        return self
+
 
 def confidence(probs: Sequence[float]) -> float:
     """Return ``1 - H(p) / ln K`` for a categorical distribution ``p``.
 
-    Entropy uses the natural log so a peaked distribution scores 1 and a
-    uniform distribution scores 0.
+    Entropy uses the natural log so a peaked distribution scores 1 and a uniform
+    distribution scores 0.
     """
     kind_count = len(probs)
     if kind_count < _CONFIDENCE_MIN_K:
