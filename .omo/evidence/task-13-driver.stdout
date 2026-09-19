@@ -1,0 +1,3 @@
+loss_trajectory=[-0.13419, -0.017381, -0.016362, -0.016514]
+gradient_norm=0.108805
+gate_decision=GO
