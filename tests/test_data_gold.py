@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from kojev import data_gold
 from kojev.data_gold import (
     build_korquad_pair,
     map_nli_row,
@@ -18,6 +19,7 @@ from kojev.data_gold import (
 from kojev.schema import Example, JsonValue, QuestionType
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from pathlib import Path
 
 
@@ -122,6 +124,53 @@ def test_validation_reports_malformed_line_number(tmp_path: Path) -> None:
     errors = validate_jsonl(path)
 
     assert errors == [f"{path}:2: invalid JSON"]
+
+
+def test_every_source_contributes_disjoint_train_val_and_test_states(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The gold test split must span sources, not only datasets that happen to
+    # ship an upstream "test" split.
+    rows: list[dict[str, JsonValue]] = [
+        {"document": f"리뷰 {index}", "label": index % 2} for index in range(12_000)
+    ]
+
+    def fake_rows(_config: object, _split: str) -> Iterator[dict[str, JsonValue]]:
+        yield from rows
+
+    monkeypatch.setattr(data_gold, "_iter_source_rows", fake_rows)
+    config = {"source": "e9t/nsmc", "config": None, "splits": ("train",)}
+
+    carved = data_gold._source_split_rows(config)  # pyright: ignore[reportPrivateUsage, reportArgumentType]
+
+    assert len(carved["test"]) == 1000
+    assert len(carved["val"]) == 500
+    assert len(carved["train"]) == 8000
+    seen = [
+        json.dumps(row, sort_keys=True)
+        for split in ("train", "val", "test")
+        for row in carved[split]
+    ]
+    assert len(seen) == len(set(seen))
+
+
+def test_source_split_is_deterministic_under_the_split_seed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    rows: list[dict[str, JsonValue]] = [
+        {"document": f"문장 {index}", "label": index % 2} for index in range(3_000)
+    ]
+
+    def fake_rows(_config: object, _split: str) -> Iterator[dict[str, JsonValue]]:
+        yield from rows
+
+    monkeypatch.setattr(data_gold, "_iter_source_rows", fake_rows)
+    config = {"source": "e9t/nsmc", "config": None, "splits": ("train",)}
+
+    first = data_gold._source_split_rows(config)  # pyright: ignore[reportPrivateUsage, reportArgumentType]
+    second = data_gold._source_split_rows(config)  # pyright: ignore[reportPrivateUsage, reportArgumentType]
+
+    assert first == second
 
 
 def test_validation_reports_line_number_for_blank_state(tmp_path: Path) -> None:
