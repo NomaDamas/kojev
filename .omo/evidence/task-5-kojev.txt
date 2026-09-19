@@ -1,0 +1,33 @@
+KoJev todo 5: AI Hub optional lane (docs + ingestion stub)
+Base: main d1e9fcf50efc5035db83618717f9cefc9abdd42b
+Worktree: /Volumes/SSD1/1/KoJev-aihub, branch feat/aihub
+
+RED (before kojev/data_aihub.py existed):
+  uv run pytest tests/test_data_aihub.py -q
+  -> ModuleNotFoundError: No module named 'kojev.data_aihub' (collection error, expected)
+
+GREEN:
+  uv run pytest tests/test_data_aihub.py -q -> 3 passed in 0.01s
+  uv run python -c "import kojev.data_aihub" -> import ok
+  uv run pytest -q (whole suite) -> 9 passed in 0.04s
+  uv run ruff check . -> All checks passed!
+  uv run basedpyright kojev tests -> 0 errors, 0 warnings, 0 notes
+
+Absent-dir typed error (manual run):
+  load_aihub_examples(Path('/tmp/kojev-definitely-absent'))
+  -> NotImplementedError: "AI Hub directory not found: /tmp/kojev-definitely-absent.
+     Follow the five acquisition steps in docs/aihub.md ..."
+
+Docs QA (manual read of docs/aihub.md):
+  - 5 numbered acquisition steps present (lines 13-31): signup+auth, 활용신청,
+    API key, aihubshell download to /data2/jeffrey/kojev/data/aihub, license.
+  - License warning present: 연구 목적 외 재배포 금지, no repo commits of raw or derived data.
+  - 2 typed-decision mappings present: 감성 대화 말뭉치 (감정 choice + 강도 score),
+    민원(콜센터) 질의응답 (의도 choice + 긴급도 score).
+  - Lane documented as optional, never imported by the default pipeline.
+
+Guards:
+  - No credentials in repo (doc tells the user not to commit the API key; none present).
+  - No network scraping or auto-download code anywhere in the lane.
+  - kojev/data_aihub.py is not imported by any other module (checked: only tests import it).
+  - Tests use tmp_path only; no temp fixtures left behind; no daemons or downloads.
