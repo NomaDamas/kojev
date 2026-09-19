@@ -80,3 +80,31 @@ exit_code=1
 Cleanup receipt:
 $ rm -rf .tmp-task8-gold .tmp-task8-ood .tmp-task8-adversarial
 Temporary build directories removed.
+
+## manualQa
+
+### surfaceEvidence
+| scenario id | criterion reference | surface | exact invocation | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| qa-red | TDD red proof | pytest CLI | `uv run pytest tests/test_data_ood.py -q` before `kojev/data_ood.py` existed | PASS | `red-proof` |
+| qa-green | focused acceptance | pytest CLI | `uv run pytest tests/test_data_ood.py -q` | PASS | `green-pytest` |
+| qa-static-ruff | acceptance | CLI | `uv run ruff check kojev tests` and `uv run ruff format --check kojev tests` | PASS | `ruff-output` |
+| qa-static-types | acceptance | CLI | `uv run basedpyright kojev tests` | PASS | `basedpyright-output` |
+| qa-build | acceptance | CLI | `uv run python -m kojev.data_ood --gold .tmp-task8-gold --out .tmp-task8-ood` | FAIL | `real-build-output` |
+
+### adversarialCases
+| scenario id | criterion reference | adversarial class | expected behavior | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| adv-overlap | train-overlap assert | injected train instruction | overlap assertion raises and names the instruction | PASS | `overlap-output` |
+| adv-split | test-only source rule | gold split coverage | builder must not consume train/val as OOD input | PASS | `real-build-output` |
+| adv-family-count | six-family acceptance | insufficient GOLD test families | command must emit >=6 families | FAIL: upstream GOLD test contains only e9t/nsmc | `real-build-output` |
+
+### artifactRefs
+| id | kind | description | path |
+|---|---|---|---|
+| red-proof | terminal transcript | pre-production failing pytest collection output | `.omo/evidence/task-8-kojev.txt` |
+| green-pytest | terminal transcript | focused tests: 3 passed | `.omo/evidence/task-8-kojev.txt` |
+| ruff-output | terminal transcript | Ruff check and format clean | `.omo/evidence/task-8-kojev.txt` |
+| basedpyright-output | terminal transcript | basedpyright 0 errors, 0 warnings, 0 notes | `.omo/evidence/task-8-kojev.txt` |
+| real-build-output | terminal transcript | real GOLD/OOD build: 997 states, 2991 questions, one family | `.omo/evidence/task-8-kojev.txt` |
+| overlap-output | terminal transcript | exact `InstructionOverlapError` with `침범 질문` | `.omo/evidence/task-8-kojev.txt` |
