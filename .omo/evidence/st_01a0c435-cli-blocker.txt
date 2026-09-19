@@ -1,0 +1,10 @@
+Surface: local CLI release packaging.
+Exact invocation:
+cd /Volumes/SSD1/1/KoJev-todo16 && qa=$(mktemp -d /tmp/kojev-todo16-qa.XXXXXX) && mkdir -p "$qa/src" && printf '{"model_type":"kojev"}\n' > "$qa/src/model_config.json" && printf '{"vocab":{}}\n' > "$qa/src/tokenizer.json" && printf '{"markers":["<state>"]}\n' > "$qa/src/marker_metadata.json" && uv run python -m kojev.release build "$qa/src" "$qa/bundle"
+
+Observed stdout/stderr:
+/Volumes/SSD1/1/KoJev-todo16/.venv/bin/python: No module named kojev.release
+
+exit_code=1
+
+The synthetic source tree and temporary directory were removed after the invocation. No restored tree exists because the CLI module is absent.

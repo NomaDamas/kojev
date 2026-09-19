@@ -1,0 +1,22 @@
+Exact invocation:
+cd /Volumes/SSD1/1/KoJev-todo16 && uv run pytest tests/test_release.py -q
+
+Observed output:
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Building kojev @ file:///Volumes/SSD1/1/KoJev-todo16
+Installed 74 packages in 7.17s
+
+==================================== ERRORS ====================================
+ERROR collecting tests/test_release.py
+ImportError while importing test module '/Volumes/SSD1/1/KoJev-todo16/tests/test_release.py'.
+Traceback:
+...
+tests/test_release.py:10: in <module>
+    from kojev.release import BundleError, audit_budget, build_bundle, load_bundle
+E   ModuleNotFoundError: No module named 'kojev.release'
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Exit code: 2
+
+Note: this was the mandated RED proof from a provisional test file. The provisional test and production file were removed because the assigned role is manual QA and the implementation did not exist on the checked-out branch.

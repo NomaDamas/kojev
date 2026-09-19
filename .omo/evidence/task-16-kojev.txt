@@ -1,0 +1,91 @@
+KoJev todo 16 - release bundle packaging (LOCAL HALF)
+Worktree: /Volumes/SSD1/1/KoJev-todo16
+Branch: feat/todo-16-release
+Base: origin/main 6cb06184084bb4e3ddbbe1e2faa552bc22817450
+
+SCOPE STATEMENT (read first)
+This increment delivers the PACKAGING MACHINERY only, verified against synthetic
+fixtures. Populating the final report with REAL evaluation numbers and real
+trained checkpoints depends on todo 12 (model runs) and todo 14 (evaluation),
+neither of which exists yet. The plan checkbox for todo 16 therefore remains
+UNCHECKED. No public deployment and no Hugging Face upload was performed or
+prepared; bundling is local-only and never touches the network.
+
+IMPLEMENTATION NOTE
+Delegated implementation was attempted twice and both agents returned an audit
+("module missing") rather than writing code, so this module was implemented
+directly by the orchestrator.
+
+RED PROOF (captured before production code existed, by st_01a0c435)
+  $ uv run pytest tests/test_release.py -q
+  E   ModuleNotFoundError: No module named 'kojev.release'
+  !!!! Interrupted: 1 error during collection !!!!
+  exit code: 2
+  $ uv run python -m kojev.release build "$qa/src" "$qa/bundle"
+  /Volumes/SSD1/1/KoJev-todo16/.venv/bin/python: No module named kojev.release
+  exit_code=1
+Preserved at .omo/evidence/st_01a0c435-red-proof.txt and
+.omo/evidence/st_01a0c435-cli-blocker.txt.
+
+DESIGN DECISIONS
+- BundleError is a PLAIN ValueError subclass, not a frozen dataclass. Todo 9
+  proved frozen dataclass exceptions reject __traceback__ assignment and surface
+  as TypeError; that pitfall is deliberately not repeated here.
+- Error messages are built by classmethods on BundleError, matching the existing
+  SchemaError convention in kojev/schema.py and satisfying TRY003/EM102 without
+  suppressions.
+- The argparse boundary is read through vars() cast to dict[str, object] and
+  narrowed by isinstance, so no `# pyright: ignore[reportAny]` is needed.
+- Manifest ordering is deterministic (sorted paths) so bundles are reproducible.
+
+GREEN GATES
+  uv run pytest tests/test_release.py -q  => 10 passed
+  uv run pytest -q                        => 80 passed
+  uv run ruff check kojev tests           => All checks passed!
+  uv run ruff format --check kojev tests  => 25 files already formatted
+  uv run basedpyright kojev tests         => 0 errors, 0 warnings, 0 notes
+
+REAL CLI SURFACE (not unit tests)
+  $ uv run python -m kojev.release build   /tmp/.../src    /tmp/.../bundle
+    {"built": "/tmp/kojev-todo16-cli/bundle", "files": 3}      exit 0
+  $ uv run python -m kojev.release restore /tmp/.../bundle /tmp/.../restored
+    {"restored": "/tmp/kojev-todo16-cli/restored", "files": 3} exit 0
+  $ uv run python -m kojev.release audit   /tmp/.../ledger.jsonl
+    {"total_usd": 2.9757e-05, "records": 3, "under_cap": true} exit 0
+
+  Restored tree (round-trip, into a CLEAN directory):
+    config.json            76 bytes
+    nested/tokenizer.json  12 bytes
+    weights.bin          2048 bytes
+
+ADVERSARIAL: TAMPERED CONFIG ON THE REAL CLI
+  Mutated bundle/payload/config.json after build, then restored:
+    exit 1
+    BundleError: content hash mismatch for config.json:
+      expected 1f061e7fcac50299b2587917b71848ff22d1641bf87df9bfb6cde7099a272f76
+      found    f58eaf3c8be49faeb37af7b53b081446d1936b53a613113cef7d8322d801e676
+  The destination directory was NOT created: restored2 exists = False.
+  A tampered bundle therefore fails loudly and restores nothing partial.
+
+TEST COVERAGE (tests/test_release.py, 10 tests)
+  - round trip restores every file into a clean directory
+  - tampered config rejected; asserts `type(exc) is BundleError`, not a generic
+    exception, and that the message names config.json
+  - tampered payload bytes rejected, naming nested/tokenizer.json
+  - manifest-listed file deleted -> typed rejection naming weights.bin
+  - unsupported bundle_version rejected
+  - restoring into a non-empty destination refused
+  - budget audit totals exactly 2.0 over mixed usage/marker lines (markers and
+    non-numeric rows ignored, bools rejected)
+  - ledger at 100.0 reports under_cap False
+  - missing ledger reports zero spend rather than raising
+  - empty source tree rejected
+
+BUDGET
+  audit_budget() reads the append-only OpenRouter ledger and compares against a
+  $100 cap. Against the real todo-9 ledger costs the total is 2.9757e-05 USD,
+  far under the cap.
+
+CLEANUP
+  Removed /tmp/kojev-todo16-cli after capturing the transcripts above.
+  No server, process, or network resource was created by this task.
