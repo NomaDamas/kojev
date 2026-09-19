@@ -1,0 +1,281 @@
+KoJev todo 6 RED evidence
+Surface: CPU pytest
+Invocation: .venv/bin/pytest tests/test_encoder.py -q
+FFFF.                                                                    [100%]
+=================================== FAILURES ===================================
+________ test_collator_marks_spans_without_marker_hidden_state_readout _________
+
+    def test_collator_marks_spans_without_marker_hidden_state_readout() -> None:
+        # Given examples and a tokenizer with task marker support
+>       model, collator = _tiny_model()
+                          ^^^^^^^^^^^^^
+
+tests/test_encoder.py:108:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/test_encoder.py:101: in _tiny_model
+    collator = SpanCollator(tokenizer, max_length=128)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <kojev.encoder.SpanCollator object at 0x109a8cec0>
+tokenizer = <test_encoder.TinyTokenizer object at 0x109a8c860>, max_length = 128
+
+    def __init__(self, tokenizer: _Tokenizer, max_length: int = 4096) -> None:
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.marker_ids = tuple(self._add_marker(token) for token in _MARKERS)
+>       pad_token_id = tokenizer.pad_token_id
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'TinyTokenizer' object has no attribute 'pad_token_id'
+
+kojev/encoder.py:97: AttributeError
+______________ test_grouped_softmax_sums_to_one_for_each_question ______________
+
+    def test_grouped_softmax_sums_to_one_for_each_question() -> None:
+        # Given a mixed batch with three question groups
+>       model, collator = _tiny_model()
+                          ^^^^^^^^^^^^^
+
+tests/test_encoder.py:127:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/test_encoder.py:101: in _tiny_model
+    collator = SpanCollator(tokenizer, max_length=128)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <kojev.encoder.SpanCollator object at 0x113d224b0>
+tokenizer = <test_encoder.TinyTokenizer object at 0x113d22450>, max_length = 128
+
+    def __init__(self, tokenizer: _Tokenizer, max_length: int = 4096) -> None:
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.marker_ids = tuple(self._add_marker(token) for token in _MARKERS)
+>       pad_token_id = tokenizer.pad_token_id
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'TinyTokenizer' object has no attribute 'pad_token_id'
+
+kojev/encoder.py:97: AttributeError
+________________ test_tiny_modernbert_overfits_sixteen_examples ________________
+
+    def test_tiny_modernbert_overfits_sixteen_examples() -> None:
+        # Given a random ModernBERT backbone and repeated labeled examples
+        tokenizer = TinyTokenizer()
+>       collator = SpanCollator(tokenizer, max_length=128)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_encoder.py:142:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <kojev.encoder.SpanCollator object at 0x113d22750>
+tokenizer = <test_encoder.TinyTokenizer object at 0x113d22780>, max_length = 128
+
+    def __init__(self, tokenizer: _Tokenizer, max_length: int = 4096) -> None:
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.marker_ids = tuple(self._add_marker(token) for token in _MARKERS)
+>       pad_token_id = tokenizer.pad_token_id
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'TinyTokenizer' object has no attribute 'pad_token_id'
+
+kojev/encoder.py:97: AttributeError
+________________ test_decide_returns_schema_valid_mixed_answers ________________
+
+    def test_decide_returns_schema_valid_mixed_answers() -> None:
+        # Given a mixed choice, score, and noul example
+>       model, collator = _tiny_model()
+                          ^^^^^^^^^^^^^
+
+tests/test_encoder.py:174:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/test_encoder.py:101: in _tiny_model
+    collator = SpanCollator(tokenizer, max_length=128)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <kojev.encoder.SpanCollator object at 0x113d22120>
+tokenizer = <test_encoder.TinyTokenizer object at 0x113d22180>, max_length = 128
+
+    def __init__(self, tokenizer: _Tokenizer, max_length: int = 4096) -> None:
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.marker_ids = tuple(self._add_marker(token) for token in _MARKERS)
+>       pad_token_id = tokenizer.pad_token_id
+                       ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'TinyTokenizer' object has no attribute 'pad_token_id'
+
+kojev/encoder.py:97: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_encoder.py::test_collator_marks_spans_without_marker_hidden_state_readout
+FAILED tests/test_encoder.py::test_grouped_softmax_sums_to_one_for_each_question
+FAILED tests/test_encoder.py::test_tiny_modernbert_overfits_sixteen_examples
+FAILED tests/test_encoder.py::test_decide_returns_schema_valid_mixed_answers
+4 failed, 1 passed in 3.33s
+
+exit=1
+
+
+===== GREEN PYTEST EVIDENCE =====
+TARGET PYTEST
+Invocation: .venv/bin/pytest tests/test_encoder.py -q
+.....                                                                    [100%]
+5 passed in 1.84s
+FULL PYTEST
+Invocation: .venv/bin/pytest -q
+..............                                                           [100%]
+14 passed in 1.73s
+
+
+===== RUFF EVIDENCE =====
+RUFF
+Invocation: .venv/bin/ruff check .
+All checks passed!
+FORMAT
+Invocation: .venv/bin/ruff format --check .
+9 files already formatted
+
+
+===== BASEDPYRIGHT BLOCKER =====
+BASEDPYRIGHT
+Invocation: .venv/bin/basedpyright kojev tests
+/Volumes/SSD1/1/KoJev-task6/kojev/encoder.py
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:65:5 - error: Type of "tokenizer" is unknown (reportUnknownVariableType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:65:42 - error: Type of "from_pretrained" is partially unknown
+    Type of "from_pretrained" is "(pretrained_model_name_or_path: str | PathLike[Unknown], ..., cache_dir: str | PathLike[Unknown] | None = None, force_download: bool = False, local_files_only: bool = False, token: str | bool | None = None, revision: str = "main", trust_remote_code: bool = False) -> Unknown" (reportUnknownMemberType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:68:32 - error: Type of "from_pretrained" is partially unknown
+    Type of "from_pretrained" is "(pretrained_model_name_or_path: str | PathLike[Unknown], cache_dir: str | PathLike[Unknown] | None = None, force_download: bool = False, local_files_only: bool = False, token: str | bool | None = None, revision: str = "main", **kwargs: Unknown) -> ModernBertConfig" (reportUnknownMemberType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:69:33 - error: Type of "from_pretrained" is partially unknown
+    Type of "from_pretrained" is "(pretrained_model_name_or_path: str | PathLike[Unknown] | None, ..., config: PreTrainedConfig | str | PathLike[Unknown] | None = None, cache_dir: str | PathLike[Unknown] | None = None, ignore_mismatched_sizes: bool = False, force_download: bool = False, local_files_only: bool = False, token: str | bool | None = None, revision: str = "main", use_safetensors: bool | None = None, weights_only: bool = True, fusion_config: dict[str, bool | dict[str, Any]] | None = None, disable_mmap: bool | None = None) -> ModernBertModel" (reportUnknownMemberType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:72:46 - error: Argument type is partially unknown
+    Argument corresponds to parameter "obj" in function "len"
+    Argument type is "Unknown | TokenizersBackend" (reportUnknownArgumentType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:73:12 - error: Return type, "tuple[ModernBertModel, Unknown | TokenizersBackend]", is partially unknown (reportUnknownVariableType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:73:22 - error: Type "tuple[ModernBertModel, Unknown | PreTrainedTokenizerFast]" is not assignable to return type "tuple[Backbone, Tokenizer]"
+    Type "Unknown | PreTrainedTokenizerFast" is not assignable to type "Tokenizer"
+      "TokenizersBackend" is incompatible with protocol "Tokenizer"
+        "add_special_tokens" is an incompatible type
+          Type "(special_tokens_dict: dict[str, str | AddedToken | Sequence[str | AddedToken]], replace_extra_special_tokens: bool = True) -> int" is not assignable to type "(payload: dict[str, list[str]]) -> int"
+            Parameter name mismatch: "payload" versus "special_tokens_dict"
+            Parameter 1: type "dict[str, list[str]]" is incompatible with type "dict[str, str | AddedToken | Sequence[str | AddedToken]]"
+        "encode" is an incompatible type
+          Type "(text: TextInput | PreTokenizedInput | EncodedInput, text_pair: TextInput | PreTokenizedInput | EncodedInput | None = None, add_special_tokens: bool = True, padding: bool | str | PaddingStrategy = False, truncation: bool | str | TruncationStrategy | None = None, max_length: int | None = None, stride: int = 0, padding_side: str | None = None, return_tensors: str | TensorType | None = None, **kwargs: Unknown) -> list[int]" is not assignable to type "(text: str, add_special_tokens: bool = False) -> list[int]" (reportReturnType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:239:9 - error: Type of "output" is partially unknown
+    Type of "output" is "Unknown | Any" (reportUnknownVariableType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:239:26 - error: Type of "forward" is partially unknown
+    Type of "forward" is "(input: Unknown) -> (Unknown | Any)" (reportUnknownMemberType)
+  /Volumes/SSD1/1/KoJev-task6/kojev/encoder.py:240:16 - error: Return type, "Unknown | Tensor", is partially unknown (reportUnknownVariableType)
+/Volumes/SSD1/1/KoJev-task6/tests/test_encoder.py
+  /Volumes/SSD1/1/KoJev-task6/tests/test_encoder.py:18:21 - error: "loss" is not accessed (reportUnusedParameter)
+  /Volumes/SSD1/1/KoJev-task6/tests/test_encoder.py:18:35 - error: "optimizer" is not accessed (reportUnusedParameter)
+12 errors, 0 warnings, 0 notes
+
+
+===== REAL MINIMAL DRIVER =====
+REAL MINIMAL DRIVER
+Invocation: .venv/bin/python -c ...
+answer_types= ['choice', 'score', 'noul']
+probability_lengths= [2, 2, 2]
+probability_sums= [1.0, 1.0, 1.0]
+score= 0.4954472482204437
+noul= 0.5068092942237854
+
+
+===== CLEANUP EVIDENCE =====
+CLEANUP / STATUS
+?? .omo/evidence/task-6-kojev-basedpyright.txt
+?? .omo/evidence/task-6-kojev-cleanup.txt
+?? .omo/evidence/task-6-kojev-driver.txt
+?? .omo/evidence/task-6-kojev-manual-qa.md
+?? .omo/evidence/task-6-kojev-pytest.txt
+?? .omo/evidence/task-6-kojev-ruff.txt
+?? .omo/evidence/task-6-kojev.txt
+?? kojev/encoder.py
+?? tests/test_encoder.py
+DIFF STAT
+PURE LOC
+     279
+     173
+DEBUG MARKER SCAN
+
+
+===== MANUAL QA MATRIX =====
+# KoJev todo 6 manual QA
+
+## surfaceEvidence
+
+| scenario id | criterion reference | surface | exact invocation | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| qa-6-01 | model acceptance: target tests, grouped probabilities, overfit | CPU pytest | `.venv/bin/pytest tests/test_encoder.py -q` | PASS | `art-pytest` |
+| qa-6-02 | repository regression safety | CPU pytest full suite | `.venv/bin/pytest -q` | PASS | `art-full-pytest` |
+| qa-6-03 | lint/format gate | Ruff CLI | `.venv/bin/ruff check . && .venv/bin/ruff format --check .` | PASS | `art-ruff` |
+| qa-6-04 | decide() mixed choice/score/noul schema-valid output | real minimal Python driver | `.venv/bin/python - <<'PY' ... model.decide(example, collator) ... PY` | PASS | `art-driver` |
+| qa-6-05 | required static type gate | basedpyright CLI | `.venv/bin/basedpyright kojev tests` | BLOCKED | `art-basedpyright` |
+
+## adversarialCases
+
+| scenario id | criterion reference | adversarial class | expected behavior | verdict | artifactRefs |
+|---|---|---|---|---|---|
+| adv-6-01 | schema guard: choice <=255 options | oversized choice (300 options) | construction rejects before collation/model execution with a 255-cardinality validation error | PASS | `art-pytest` |
+| adv-6-02 | no marker hidden-state head | marker leakage | pooled question/option spans contain no marker token ids; logits still have one scalar per option | PASS | `art-pytest` |
+| adv-6-03 | grouped softmax | multiple question groups | every question group sums to 1 independently, not across the flattened batch | PASS | `art-pytest` |
+| adv-6-04 | loss mechanics | tiny random ModernBERT CPU overfit | 16-example fixture reaches loss <0.01 within 200 optimizer steps | PASS | `art-pytest` |
+| adv-6-05 | no network/downloads in unit tests | download/network dependency | unit suite uses TinyTokenizer and a local ModernBertConfig; no model download is triggered | PASS | `art-pytest` |
+| adv-6-06 | static typing | third-party transformer factory/torch typing | basedpyright should report no errors | FAIL | `art-basedpyright` |
+
+## artifactRefs
+
+| id | kind | description | path |
+|---|---|---|---|
+| `art-red` | test transcript | Genuine pre-production RED: target encoder tests failed 4 tests due to incomplete collator contract | `.omo/evidence/task-6-kojev.txt` |
+| `art-pytest` | test transcript | Target encoder suite: 5 passed; includes overfit, grouped softmax, marker exclusion, mixed decide, and 300-option rejection | `.omo/evidence/task-6-kojev-pytest.txt` |
+| `art-full-pytest` | test transcript | Full repository suite: 14 passed | `.omo/evidence/task-6-kojev-pytest.txt` |
+| `art-ruff` | static-check transcript | Ruff check passed and format check reports all files formatted | `.omo/evidence/task-6-kojev-ruff.txt` |
+| `art-basedpyright` | static-check transcript | basedpyright reports 12 errors, all in the new encoder/test boundary; no warning-only pass claimed | `.omo/evidence/task-6-kojev-basedpyright.txt` |
+| `art-driver` | CLI transcript | Real local driver returned choice/score/noul, two probabilities each, sums 1.0, numeric score and noul probability | `.omo/evidence/task-6-kojev-driver.txt` |
+
+## verdict
+
+FAIL/BLOCKED. Runtime behavior, full tests, Ruff, formatting, and real minimal driver pass. The required basedpyright gate fails on untyped/unknown `transformers` factory overloads, tokenizer protocol incompatibility, torch module typing, and two unused helper parameters in the test shim. No commit or push was made because the requested static gate is not green.
+
+===== TODO-6 TYPE-CORRECTION RED (prior evidence verified) =====
+The prior static RED is already recorded above: `.venv/bin/basedpyright kojev tests` reported 12 errors. No duplicate static RED was needed before this correction because the exact failing invocation and diagnostics were present in this evidence file before editing.
+
+===== TODO-6 TYPE-CORRECTION GREEN =====
+Exact invocation: `.venv/bin/basedpyright kojev tests`
+Observed: `0 errors, 0 warnings, 0 notes`
+
+Exact invocation: `.venv/bin/ruff check .`
+Observed: `All checks passed!`
+
+Exact invocation: `.venv/bin/ruff format --check .`
+Observed: `10 files already formatted`
+
+Exact invocation: `.venv/bin/pytest tests/test_encoder.py -q`
+Observed: `5 passed`
+
+Exact invocation: `.venv/bin/pytest -q`
+Observed: `14 passed`
+
+===== TODO-6 REAL MIXED-KIND DRIVER =====
+Invocation: `.venv/bin/python - <<'PY' ... model.decide(example, collator) ... PY`
+Observed:
+answer_types= ['choice', 'score', 'noul']
+probability_lengths= [2, 2, 2]
+probability_sums= [1.0, 1.0, 1.0]
+score= 0.49195194244384766
+noul= 0.5298164486885071
+
+===== TODO-6 ADVERSARIAL PROBES =====
+300-option choice invocation constructed `Question(type=QuestionType.CHOICE, ..., options=range(300))`.
+Observed: `ValidationError ... choice questions require 2..255 options, got 300`.
+
+Grouped softmax invocation used the local TinyBackbone fixture.
+Observed:
+(0, 1) 1.0
+(2, 3) 1.0
+(4, 5) 1.0
+
+CPU overfit invocation: `.venv/bin/pytest tests/test_encoder.py::test_tiny_modernbert_overfits_sixteen_examples -q`
+Observed: `1 passed`.
+
+===== TODO-6 CLEANUP / STATUS =====
+Only the requested implementation, tests, and consolidated evidence are untracked relative to the preserved base. No debug markers were found in the changed Python files. No download or network operation was used by the unit tests or real driver.
