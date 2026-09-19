@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.1.1, pluggy-1.6.0 -- /Volumes/SSD1/worktrees/kojev-task-9-teacher/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Volumes/SSD1/worktrees/kojev-task-9-teacher
+configfile: pyproject.toml
+plugins: cov-7.1.0, anyio-4.15.1
+collecting ... collected 6 items
+
+tests/test_teacher.py::test_accounts_exact_usage_cost_and_persists_append_only_ledger[asyncio] PASSED [ 16%]
+tests/test_teacher.py::test_parses_nested_list_of_object_logprobs[asyncio] PASSED [ 33%]
+tests/test_teacher.py::test_refuses_at_cap_and_survives_restart_with_budget_marker[asyncio] PASSED [ 50%]
+tests/test_teacher.py::test_retries_429_and_5xx_with_bounded_attempts[asyncio] PASSED [ 66%]
+tests/test_teacher.py::test_persistent_5xx_raises_typed_teacher_request_error[asyncio] PASSED [ 83%]
+tests/test_teacher.py::test_parser_accepts_three_line_format_deviations_without_external_text PASSED [100%]
+
+============================== 6 passed in 0.07s ===============================
