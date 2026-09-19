@@ -1,0 +1,100 @@
+todo 1 — repo scaffold + typed-decision schema
+branch: feat/schema (task-owned; origin/main kept as clean integration)
+worktree: /Volumes/SSD1/1/KoJev (same checkout as the plan path; a second worktree would fork files off that path)
+
+================================================================
+RED (before kojev/schema.py existed)
+================================================================
+command: uv run pytest tests/test_schema.py -q
+exit: 2
+
+======================================================== ERRORS ========================================================
+________________________________________ ERROR collecting tests/test_schema.py _________________________________________
+ImportError while importing test module '/Volumes/SSD1/1/KoJev/tests/test_schema.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/jeffrey/.local/share/uv/python/cpython-3.12.9-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_schema.py:9: in <module>
+    from kojev.schema import Example, Question, confidence, read_jsonl, write_jsonl
+E   ModuleNotFoundError: No module named 'kojev.schema'
+=============================================== short test summary info ================================================
+ERROR tests/test_schema.py
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 error in 0.04s
+
+reason: missing implementation (kojev/schema.py not present). Not import-syntax noise.
+
+================================================================
+GREEN (after implementation)
+================================================================
+command: uv run pytest tests/test_schema.py -q
+exit: 0
+output:
+......                                                                                                           [100%]
+6 passed in 0.03s
+
+also:
+  uv run ruff check kojev tests          -> All checks passed!
+  uv run ruff format --check kojev tests -> 3 files already formatted
+  uv run basedpyright kojev tests        -> 0 errors, 0 warnings, 0 notes
+
+================================================================
+QA happy (real-surface roundtrip)
+================================================================
+command:
+uv run python -c "from pathlib import Path; from kojev.schema import Example, Question, QuestionType, read_jsonl, write_jsonl; q = Question(type=QuestionType.CHOICE, instructions='극성', options=['부정','긍정'], gold=1, meta={'k':'v'}); s = Question(type=QuestionType.SCORE, instructions='만족도', options=['낮음','중간','높음'], gold=2, meta={}); n = Question(type=QuestionType.NOUL, instructions='이 리뷰는 긍정적이다', options=['아니오','예'], gold=1, meta={}); ex = Example(state='배송이 빨랐다', questions=[q,s,n], source='qa', split='dev'); path = Path('.omo/tmp-task1-qa/roundtrip.jsonl'); write_jsonl(path, [ex]); parsed = read_jsonl(path)[0]; print('parsed_state=', parsed.state); print('parsed_source=', parsed.source); print('parsed_split=', parsed.split); print('choice_type=', parsed.questions[0].type); print('choice_options=', parsed.questions[0].options); print('choice_gold=', parsed.questions[0].gold); print('score_gold=', parsed.questions[1].gold); print('noul_gold=', parsed.questions[2].gold); print('meta=', parsed.questions[0].meta); print('equal=', parsed == ex); print(parsed)"
+
+observed (not merely exit 0):
+parsed_state= 배송이 빨랐다
+parsed_source= qa
+parsed_split= dev
+choice_type= choice
+choice_options= ['부정', '긍정']
+choice_gold= 1
+score_gold= 2
+noul_gold= 1
+meta= {'k': 'v'}
+equal= True
+state='배송이 빨랐다' questions=[Question(type=<QuestionType.CHOICE: 'choice'>, ...), Question(type=<QuestionType.SCORE: 'score'>, ...), Question(type=<QuestionType.NOUL: 'noul'>, ...)] source='qa' split='dev'
+
+================================================================
+QA failure (score with 1 level raises ValueError)
+================================================================
+command:
+uv run python -c "from kojev.schema import Question, QuestionType
+try:
+    Question(type=QuestionType.SCORE, instructions='만족도', options=['유일'], gold=0, meta={})
+    print('UNEXPECTED_SUCCESS')
+except ValueError as e:
+    print('error_type=', type(e).__name__)
+    print('mro=', [c.__name__ for c in type(e).mro()])
+    print('error=', e)"
+
+observed:
+error_type= ValidationError
+mro= ['ValidationError', 'ValueError', 'Exception', 'BaseException', 'object']
+error= 1 validation error for Question
+  Value error, score questions require 2..10 ordered levels, got 1 [type=value_error, ...]
+
+================================================================
+Adversarial probes
+================================================================
+malformed_input: score 1 / score 11 / choice 256 all raise ValidationError (subclass of ValueError); messages contain "score" or "choice" and the illegal count (got 1 / 11 / 256).
+dirty_worktree: git status before QA showed only untracked product files (kojev/, tests/, pyproject.toml, uv.lock, .omo/). After QA the same set; no unrelated tracked files overwritten. origin/main still bootstrap-only.
+stale_state: wrote JSONL in process A; process B read_jsonl and asserted state/source/split/options/gold/meta equality (fresh_process_equal_fields=True).
+flaky_tests: no sleeps, no polling; pytest 6 passed in 0.03s deterministic.
+misleading_success_output: assertions on parsed field values and error MRO, not exit codes alone.
+prompt_injection: N/A (no untrusted external text).
+cancel_resume: N/A.
+hung_long_commands: N/A (bounded pytest/uv).
+repeated_interruptions: N/A.
+
+================================================================
+Cleanup receipt
+================================================================
+removed: .omo/tmp-task1-qa/ (roundtrip.jsonl, stale.jsonl)
+removed: /tmp/kojev-task1-qa.log if present
+no long-running processes started by this todo
+pycache/ and .venv/ left untracked via .gitignore
