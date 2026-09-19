@@ -15,12 +15,14 @@ from datasets import load_dataset
 from pydantic import BaseModel, ConfigDict
 
 from kojev.schema import Example, Question, QuestionType, read_jsonl
-from kojev.teacher import BudgetReached, TeacherClient
+from kojev.teacher import INITIAL_CONCURRENCY, BudgetReached, TeacherClient
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 LABEL_SOURCE: Final = "teacher:qwen3-vl-8b-instruct"
+WAVE_SIZE: Final = INITIAL_CONCURRENCY
+RETRY_COUNT: Final = 2
 TOPICS: Final[tuple[str, ...]] = (
     "과학",
     "역사",
@@ -211,8 +213,41 @@ async def _ask_with_fallback(
     return answers, request_id, total_cost
 
 
+async def _label_with_retries(
+    client: TeacherClient, example: Example
+) -> LabeledRecord | None:
+    """Retry timeout failures without allowing one item to abort its wave."""
+    for _ in range(RETRY_COUNT):
+        try:
+            labeled = await _ask_with_fallback(client, example.state, example.questions)
+        except TimeoutError:
+            continue
+        if labeled is None:
+            return None
+        answers, request_id, cost_usd = labeled
+        labeled_questions = [
+            question.model_copy(
+                update={
+                    "gold": answers[index],
+                    "meta": {
+                        **question.meta,
+                        "label_source": LABEL_SOURCE,
+                        "request_id": request_id,
+                    },
+                }
+            )
+            for index, question in enumerate(example.questions, 1)
+        ]
+        return LabeledRecord(
+            example=example.model_copy(update={"questions": labeled_questions}),
+            request_id=request_id,
+            cost_usd=cost_usd,
+        )
+    return None
+
+
 class LabelRunner:
-    """Run concurrent teacher requests and append schema-compatible labels."""
+    """Run teacher requests in bounded waves and append durable labels."""
 
     def __init__(
         self, *, client: TeacherClient, output_path: Path, ledger_path: Path
@@ -222,59 +257,8 @@ class LabelRunner:
         self._output_path: Path = output_path
         self._ledger_path: Path = ledger_path
 
-    async def run(self, examples: Sequence[Example]) -> int:
-        """Label each unissued example and return the number of new records."""
-        issued, completed_states = _issued_records(self._ledger_path, self._output_path)
-        candidates = [
-            example
-            for example in examples
-            if _goldless(example) and example.state not in completed_states
-        ]
-        records: list[LabeledRecord] = []
-        lock = anyio.Lock()
-        limiter = anyio.CapacityLimiter(32)
-
-        async def label(example: Example) -> None:
-            async with limiter:
-                try:
-                    labeled = await _ask_with_fallback(
-                        self._client, example.state, example.questions
-                    )
-                except TimeoutError:
-                    return
-            if labeled is None:
-                return
-            answers, request_id, cost_usd = labeled
-            async with lock:
-                if request_id in issued:
-                    return
-                issued.add(request_id)
-                labeled_questions = [
-                    question.model_copy(
-                        update={
-                            "gold": answers[index],
-                            "meta": {
-                                **question.meta,
-                                "label_source": LABEL_SOURCE,
-                                "request_id": request_id,
-                            },
-                        }
-                    )
-                    for index, question in enumerate(example.questions, 1)
-                ]
-                records.append(
-                    LabeledRecord(
-                        example=example.model_copy(
-                            update={"questions": labeled_questions}
-                        ),
-                        request_id=request_id,
-                        cost_usd=cost_usd,
-                    )
-                )
-
-        async with anyio.create_task_group() as task_group:
-            for example in candidates:
-                _ = task_group.start_soon(label, example)
+    def _append_records(self, records: Sequence[LabeledRecord]) -> None:
+        """Append one completed wave without rewriting prior output."""
         self._output_path.parent.mkdir(parents=True, exist_ok=True)
         with self._output_path.open("a", encoding="utf-8") as handle:
             for record in records:
@@ -283,7 +267,44 @@ class LabelRunner:
                 payload["request_id"] = record.request_id
                 payload["cost_usd"] = record.cost_usd
                 _ = handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
-        return len(records)
+
+    async def _run_wave(
+        self, examples: Sequence[Example], issued: set[str]
+    ) -> list[LabeledRecord]:
+        """Run exactly one bounded wave and wait for all its tasks."""
+        records: list[LabeledRecord] = []
+        lock = anyio.Lock()
+
+        async def label(example: Example) -> None:
+            record = await _label_with_retries(self._client, example)
+            if record is None:
+                return
+            async with lock:
+                if record.request_id in issued:
+                    return
+                issued.add(record.request_id)
+                records.append(record)
+
+        async with anyio.create_task_group() as task_group:
+            for example in examples:
+                _ = task_group.start_soon(label, example)
+        return records
+
+    async def run(self, examples: Sequence[Example]) -> int:
+        """Label candidates in bounded waves and return new record count."""
+        issued, completed_states = _issued_records(self._ledger_path, self._output_path)
+        candidates = [
+            example
+            for example in examples
+            if _goldless(example) and example.state not in completed_states
+        ]
+        labeled_count = 0
+        for start in range(0, len(candidates), WAVE_SIZE):
+            wave = candidates[start : start + WAVE_SIZE]
+            records = await self._run_wave(wave, issued)
+            self._append_records(records)
+            labeled_count += len(records)
+        return labeled_count
 
 
 def _parse_args() -> CliArgs:

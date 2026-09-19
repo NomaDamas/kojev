@@ -1,32 +1,24 @@
-# Task 11 evidence
 
-## RED proof
+## Follow-up wave-scheduling fix and scale-up
 
-Surface: `uv run pytest tests/test_label.py -q`
+The original runner defect was one task per candidate with a semaphore inside the task, leaving thousands of tasks queued inside the teacher client's fixed 90-second timeout. The fix in `kojev/label.py` is:
 
-Before production code existed, collection failed with:
+- `WAVE_SIZE = INITIAL_CONCURRENCY` (32).
+- `LabelRunner.run` slices candidates into explicit 32-item waves and awaits `_run_wave` before creating the next wave.
+- Each completed wave is appended immediately, preserving restart durability.
+- Each item retries timeout failures twice; exhausted timeouts are skipped without aborting the wave or overall run.
+- `teacher.py` and all other forbidden files remain unmodified.
 
-```text
-ModuleNotFoundError: No module named 'kojev.label'
-!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
-RED_EXIT=2
-```
+New deterministic tests prove wave peak concurrency and timeout retry behavior.
 
-## Implementation and required gates
-
-- New production runner: `kojev/label.py`.
-- New deterministic mocked tests: `tests/test_label.py`.
-- Forbidden files were not modified: `kojev/teacher.py`, `kojev/teacher_types.py`, `kojev/teacher_models.py`, `kojev/schema.py`, and `kojev/data_gold.py`.
-- No write was made under `data/gold`; outputs are under `data/distill`.
-
-Exact invocations and observed results:
+## Follow-up gates
 
 ```text
 uv run pytest tests/test_label.py -q
-4 passed in 0.51s
+6 passed
 
 uv run pytest -q
-74 passed in 3.66s
+76 passed in 3.33s
 
 uv run ruff check kojev tests
 All checks passed!
@@ -38,73 +30,61 @@ uv run basedpyright kojev tests
 0 errors, 0 warnings, 0 notes
 ```
 
-## Manual QA matrix
+## Live wave-scale arithmetic
 
-### surfaceEvidence
-
-| scenario id | criterion reference | surface | exact invocation | verdict | artifactRefs |
-|---|---|---|---|---|---|
-| pilot-cli | real teacher labeling and output | CLI/tmux | `uv run python -m kojev.label --korquad-only --limit 20 --output data/distill/train.jsonl --ledger data/distill/ledger.jsonl` | PASS: 20 output states, 60 questions, valid schema | `ev-task11` |
-| kill-restart | restart-safe append-only run | CLI/tmux | kill tmux job after 15s, then rerun exact CLI with `--limit 200` using `data/distill/killproof.jsonl` and `data/distill/killproof-ledger.jsonl` | PASS: before restart ledger 26/output 0; after restart ledger 226, output 200 | `ev-task11` |
-| scaled-cli | bounded real job | CLI/tmux | `uv run python -m kojev.label --korquad-only --limit 33334 --output data/distill/train.jsonl --ledger data/distill/ledger.jsonl` | PARTIAL/STOPPED by existing 90s request timeout under queue pressure: 994 states / 2,982 questions, no duplicate IDs | `ev-task11` |
-| regression-gates | project quality gates | CLI | commands listed above | PASS | `ev-task11` |
-
-### adversarialCases
-
-| scenario id | criterion reference | adversarial class | expected behavior | verdict | artifactRefs |
-|---|---|---|---|---|---|
-| resume-dedupe | restart safety | repeated completed state/request | do not append a duplicate request/output | PASS: mocked test and real ID audit | `ev-task11` |
-| gold-refusal | goldless scope | input question with dataset gold | do not send directly to teacher | PASS: mocked test | `ev-task11` |
-| ledger-append | accounting | existing ledger plus new responses | append only; preserve unique request IDs | PASS: 226/226 and 5,211/5,211 real audits | `ev-task11` |
-| incomplete-provider-answer | provider boundary | HTTP success with unparseable answer | do not crash or write a fabricated label | PASS: real response produced no output and fallback was exercised | `ev-task11` |
-| budget-overrun | cost boundary | projection to 100k | stop before $20 | PASS: successful pilot projection $2.70348; accumulated task ledger $0.412529533 | `ev-task11` |
-
-### artifactRefs
-
-| id | kind | description | path |
-|---|---|---|---|
-| `ev-task11` | text/evidence | RED proof, gates, real CLI transcripts/counts, cost arithmetic, kill/restart integers, matrix, cleanup | `.omo/evidence/task-11-kojev.txt` |
-
-## Pilot arithmetic
-
-The corrected successful 20-state pilot used 60 questions and added `$0.001622088` to the provider ledger.
+Exact scale invocation:
 
 ```text
-$0.001622088 / 60 questions = $0.0000270348 per question
-$0.0000270348 * 100000 = $2.70348 projected for 100k questions
+uv run python -m kojev.label --korquad-only --limit 33334 --output data/distill/train.jsonl --ledger data/distill/ledger.jsonl
 ```
 
-The first 20-state attempts also charged provider usage for incomplete responses; all charges were retained in the append-only ledger. At the stopped scale run, the complete task ledger contained:
+Observed completion:
 
 ```text
-usage records = 5211
-request-id set size = 5211
+labeled = 32331
+output states = 33325
+questions = 99975
+ledger lines = 37542
+request-id set size = 37542
 duplicate request IDs = 0
-output states = 994
-output questions = 2982
-total USD = 0.412529533
+total USD = 2.944537297
 ```
 
-The 100k target was not reached because the existing teacher client's fixed 90-second timeout expired for queued concurrent requests. Scaling stopped; no budget breach occurred.
-
-## Real kill/restart proof
-
-Dedicated real run using `data/distill/killproof*`:
+Resume increment:
 
 ```text
-after kill: ledger lines = 26, output lines = 0
-after restart: ledger lines = 226
-request-id set size = 226
-ledger line count = 226
-duplicate request IDs = 0
-output lines = 200
-total USD = 0.016992261
+uv run python -m kojev.label --korquad-only --limit 33350 --output data/distill/train.jsonl --ledger data/distill/ledger.jsonl
 ```
 
-## Cleanup receipt
+Observed completion:
 
-- Removed temporary killproof output/ledger from the worktree after recording the result.
-- Removed temporary `/tmp` standalone ledgers and job transcripts.
-- Kept requested durable `data/distill/train.jsonl` and `data/distill/ledger.jsonl` outputs.
-- Confirmed no `data/gold` path was created or modified by this task.
-- No `gpu01` or cluster job was used.
+```text
+labeled = 15
+output states = 33340
+total questions = 100020
+ledger lines = 37557
+request-id set size = 37557
+duplicate request IDs = 0
+total USD = 2.945570641
+cost per question = 0.00002944981644671066
+100000-question projection = 2.9449816446710657
+```
+
+The target was reached with `$17.054429359` remaining under the task's `$20` cap.
+
+## Follow-up real kill/restart proof after wave fix
+
+Dedicated wave run using `data/distill/wave-kill*`:
+
+```text
+after kill: ledger lines = 224
+              request-id set size = 224
+              duplicate request IDs = 0
+              output lines = 224
+
+after restart: ledger lines = 497
+                 request-id set size = 497
+                 duplicate request IDs = 0
+                 output lines = 497
+                 total USD = 0.037672245
+```

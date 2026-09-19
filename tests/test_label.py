@@ -5,11 +5,18 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, ClassVar
 
+import anyio
 import httpx
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from kojev.label import LabelRunner, OutputLine, build_goldless_families
+import kojev.label
+from kojev.label import (
+    LabeledRecord,
+    LabelRunner,
+    OutputLine,
+    build_goldless_families,
+)
 from kojev.schema import Example, Question, QuestionType
 from kojev.teacher import TeacherClient
 
@@ -165,6 +172,92 @@ async def test_ledger_is_append_only_and_request_ids_are_unique(tmp_path: Path) 
     assert len(lines) == 2
     assert len(request_ids) == len(set(request_ids))
     assert text == "".join(f"{line}\n" for line in lines)
+    await client.aclose()
+
+
+@pytest.mark.anyio
+async def test_timeout_retries_without_aborting_run(tmp_path: Path) -> None:
+    # Given a transport that times out once before succeeding
+    attempts = 0
+
+    def respond(_: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise TimeoutError
+        return _response("req-retried")
+
+    client = TeacherClient(
+        api_key="test-key",
+        ledger_path=tmp_path / "ledger.jsonl",
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(respond)),
+    )
+    runner = LabelRunner(
+        client=client,
+        output_path=tmp_path / "train.jsonl",
+        ledger_path=tmp_path / "ledger.jsonl",
+    )
+
+    # When the one-item wave is run
+    labeled = await runner.run([_example()])
+
+    # Then the timeout is retried and the run completes normally
+    assert labeled == 1
+    assert attempts == 2
+    await client.aclose()
+
+
+@pytest.mark.anyio
+async def test_runner_waits_for_each_bounded_wave(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given five candidates and a two-item wave size
+    active = 0
+    peak = 0
+    calls = 0
+    wave_ready = anyio.Event()
+
+    async def label_one(
+        client: TeacherClient, example: Example
+    ) -> LabeledRecord | None:
+        nonlocal active, peak, calls
+        del client
+        active += 1
+        calls += 1
+        own_call = calls
+        peak = max(peak, active)
+        if active == 2:
+            wave_ready.set()
+        await wave_ready.wait()
+        active -= 1
+        return LabeledRecord(
+            example=example, request_id=f"req-{own_call}", cost_usd=0.0
+        )
+
+    monkeypatch.setattr(kojev.label, "WAVE_SIZE", 2)
+    monkeypatch.setattr(kojev.label, "_label_with_retries", label_one)
+    client = TeacherClient(
+        api_key="test-key",
+        ledger_path=tmp_path / "ledger.jsonl",
+        http_client=httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda _: _response("unused"))
+        ),
+    )
+    examples = [
+        _example().model_copy(update={"state": f"지문: {index}"}) for index in range(5)
+    ]
+
+    # When the runner labels all candidates
+    labeled = await LabelRunner(
+        client=client,
+        output_path=tmp_path / "train.jsonl",
+        ledger_path=tmp_path / "ledger.jsonl",
+    ).run(examples)
+
+    # Then it never creates more active work than one bounded wave
+    assert labeled == 5
+    assert calls == 5
+    assert peak == 2
     await client.aclose()
 
 
