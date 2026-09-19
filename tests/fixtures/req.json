@@ -1,0 +1,1 @@
+{"model":"tiny-random","state":"배송이 빠르고 포장이 단단하다","questions":{"choice":{"type":"choice","instructions":"평가는?","criteria":["나쁨","좋음"]},"score":{"type":"score","instructions":"만족도는?","options":["낮음","높음"]},"noul":{"type":"noul","instructions":"긍정적인가?","criteria":{"아니오":"negative","예":"positive"}}}}

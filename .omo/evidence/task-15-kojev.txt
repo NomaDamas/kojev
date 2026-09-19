@@ -1,0 +1,98 @@
+Task 15 local serving shim evidence
+====================================
+
+Branch/base
+-----------
+- Worktree: /Volumes/SSD1/worktrees/kojev-todo-15
+- Branch: feat/todo-15-serve
+- Base: origin/main at 4a02c3ad8dbd1188c0ef8350dc761e84de62abf2
+- Scope files: kojev/serve.py, tests/test_serve.py, tests/fixtures/req.json, this evidence file
+
+TDD RED proof (before production code)
+--------------------------------------
+Invocation before writing kojev/serve.py:
+  uv run pytest tests/test_serve.py -q
+
+Captured first collection failure:
+  ==================================== ERRORS ====================================
+  _____________________ ERROR collecting tests/test_serve.py ____________________
+  E   ModuleNotFoundError: No module named 'httpx2'
+  ...
+  1 error in 0.15s
+
+After installing the environment's required httpx2 compatibility package, the same pre-production test collection still failed under the repository's warnings-as-errors configuration because Starlette's TestClient accessed the deprecated AnyIO BlockingPortal alias:
+  E   DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+  1 error in 0.14s
+
+These are the exact captured RED outputs before production implementation. The dependency was installed into the worktree environment only; no project scope file was changed. The final targeted test run below is the GREEN proof.
+
+Implemented behavior
+--------------------
+- FastAPI POST /v1/systemone.
+- Jev request fields model/state/questions and criteria list/dict or options.
+- choice, score, and noul answer fields with probabilities and confidence.
+- Schema validation translated to HTTP 422 detail.error_type/message.
+- KOJEV_CKPT is read for a checkpoint directory; tiny-random is the deterministic local smoke sentinel used for this task because the trained checkpoint from todo 12 is not available.
+- Uvicorn entrypoint binds 127.0.0.1:8930.
+- No auth layer, public bind, or text-generation endpoint added.
+
+Automated gates
+---------------
+1. Targeted:
+   Command: uv run pytest tests/test_serve.py -q
+   Result: 4 passed in 1.89s
+
+2. Full suite:
+   Command: uv run pytest -q
+   Result: 60 passed in 2.27s
+
+3. Ruff:
+   Command: uv run ruff check kojev tests
+   Result: All checks passed!
+
+4. Format:
+   Command: uv run ruff format --check kojev tests
+   Result: 19 files already formatted
+
+5. basedpyright:
+   Command: uv run basedpyright kojev tests
+   Result: 0 errors, 0 warnings, 0 notes
+
+Real HTTP surface QA
+--------------------
+Surface: uvicorn on 127.0.0.1:8930 with KOJEV_CKPT=tiny-random.
+The following is the captured terminal output, including exact invocations and headers/bodies.
+
+--- HAPPY INVOCATION ---
+curl -i -X POST 127.0.0.1:8930/v1/systemone -H "Content-Type: application/json" -d @tests/fixtures/req.json
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+  0     0    0     0    0     0 --:--:-- --:--:-- --:--:-- 0
+  100   805  100   433  100   372  16017  13760 --:--:-- --:--:-- --:--:-- 29814
+HTTP/1.1 200 OK
+date: Sat, 19 Sep 2026 19:54:09 GMT
+server: uvicorn
+content-length: 433
+content-type: application/json
+
+{"model":"tiny-random","answers":{"choice":{"probabilities":[0.5022103786468506,0.4977896213531494],"confidence":1.4097409074098621e-05,"choice":0},"score":{"probabilities":[0.5252285599708557,0.4747714400291443],"confidence":0.0018372738225447272,"score":0.4747714400291443},"noul":{"probabilities":[0.49926847219467163,0.5007315278053284],"confidence":1.5440677993971974e-06,"noul":0.5007315278053284}},"usage":{"input_tokens":13}}
+
+--- MALFORMED INVOCATION ---
+curl -i -X POST 127.0.0.1:8930/v1/systemone -H 'Content-Type: application/json' -d '{"model":"tiny-random","state":"x","questions":{"broken":{"instructions":"q","options":["a","b"]}}}'
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+  0     0    0     0    0     0 --:--:-- --:--:-- --:--:-- 0
+  100   442  100   343  100    99  515k  148k --:--:-- --:--:-- --:--:-- 431k
+HTTP/1.1 422 Unprocessable Entity
+date: Sat, 19 Sep 2026 19:54:09 GMT
+server: uvicorn
+content-length: 343
+content-type: application/json
+
+{"detail":{"error_type":"validation_error","message":"1 validation error:\n  {'type': 'missing', 'loc': ('body', 'questions', 'broken', 'type'), 'msg': 'Field required', 'input': {'instructions': 'q', 'options': ['a', 'b']}}\n\n  File \"/Volumes/SSD1/worktrees/kojev-todo-15/kojev/serve.py\", line 147, in system_one\n    POST /v1/systemone"}}
+
+--- TEARDOWN ---
+SERVER_PID=58267
+kill -0 58267: failed (exit 1)
+
+Checkpoint scope limitation
+---------------------------
+The requested real-server curl was executed end-to-end against the deterministic tiny-random checkpoint sentinel. The trained-checkpoint curl remains a follow-up increment blocked on todo 12 (model runs); this evidence does not claim todo 15 complete.
