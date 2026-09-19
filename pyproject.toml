@@ -20,6 +20,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "basedpyright>=1.21",
+    # starlette >=1.6 drives TestClient through httpx2; without it TestClient is
+    # both deprecated and untyped. Test-only, so the cluster's --no-dev sync
+    # never installs it.
+    "httpx2>=2",
     "pytest>=8",
     "pytest-cov>=5",
     "ruff>=0.8",
