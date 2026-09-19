@@ -124,6 +124,37 @@ def test_validation_reports_malformed_line_number(tmp_path: Path) -> None:
     assert errors == [f"{path}:2: invalid JSON"]
 
 
+def test_validation_reports_line_number_for_blank_state(tmp_path: Path) -> None:
+    path = tmp_path / "train.jsonl"
+    question: dict[str, JsonValue] = {
+        "type": "noul",
+        "instructions": "참인가?",
+        "options": ["아니오", "예"],
+        "gold": 1,
+        "meta": {},
+    }
+    good: dict[str, JsonValue] = {
+        "state": "좋은 영화",
+        "questions": [question],
+        "source": "fixture",
+        "split": "train",
+    }
+    blank: dict[str, JsonValue] = {**good, "state": ""}
+    _ = path.write_text(
+        json.dumps(good, ensure_ascii=False)
+        + "\n"
+        + json.dumps(blank, ensure_ascii=False)
+        + "\n",
+        encoding="utf-8",
+    )
+
+    errors = validate_jsonl(path)
+
+    assert len(errors) == 1
+    assert errors[0].startswith(f"{path}:2:")
+    assert "non-blank state" in errors[0]
+
+
 def test_validation_rejects_example_with_no_questions() -> None:
     with pytest.raises(ValueError, match="at least one question"):
         _ = Example.model_validate(

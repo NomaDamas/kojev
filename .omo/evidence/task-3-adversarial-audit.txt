@@ -1,0 +1,636 @@
+=== provenance ===
+## feat/data-gold
+?? .omo/evidence/task-3-adversarial-audit.txt
+HEAD=001c8c46043d8a9083a6ed6d6ff8c8a86a95fc5d
+origin/feat/data-gold=001c8c46043d8a9083a6ed6d6ff8c8a86a95fc5d
+=== target tests ===
+............                                                             [100%]
+12 passed in 0.03s
+=== full tests ===
+............                                                             [100%]
+12 passed in 0.03s
+=== ruff ===
+E501 Line too long (93 > 88)
+  --> kojev/data_gold.py:16:89
+   |
+14 | from kojev.schema import Example, JsonValue, Question, QuestionType, write_jsonl
+15 |
+16 | RowValue = str | int | float | bool | list[str] | list[int] | Mapping[str, str | int | float]
+   |                                                                                         ^^^^^
+17 | Row = Mapping[str, RowValue]
+   |
+
+E501 Line too long (101 > 88)
+  --> kojev/data_gold.py:21:69
+   |
+19 | _CHOICE_POLARITY: Final = ["부정", "긍정"]
+20 | _NLI_OPTIONS: Final = ["함의", "중립", "모순"]
+21 | _STS_OPTIONS: Final = ["전혀 다름", "매우 다름", "다소 다름", "비슷함", "매우 비슷함", "완전히 같음"]
+   |                                                                                         ^^^^^^^^^^^^^
+22 | _UNSMILE_CATEGORIES: Final = [
+23 |     "여성/가족 혐오", "남성 혐오", "성소수자 혐오", "인종/국적 혐오", "연령 혐오",
+   |
+
+E501 Line too long (90 > 88)
+  --> kojev/data_gold.py:38:72
+   |
+36 |     "clean": "clean",
+37 | }
+38 | _KOTE_EMOTIONS: Final = ["기쁨", "즐거움", "슬픔", "분노", "불안", "사랑", "감사", "중립"]
+   |                                                                                         ^^
+39 | _KOTE_COARSE: Final = ["기쁨", "슬픔", "분노", "중립"]
+40 | _KOTE_LABELS: Final = [
+   |
+
+D101 Missing docstring in public class
+  --> kojev/data_gold.py:52:7
+   |
+52 | class SourceConfig(TypedDict):
+   |       ^^^^^^^^^^^^
+53 |     source: str
+54 |     config: str | None
+   |
+
+E501 Line too long (89 > 88)
+  --> kojev/data_gold.py:65:89
+   |
+63 |     {"source": "kakaobrain/kor_nli", "config": "multi_nli", "splits": ("train",)},
+64 |     {"source": "kakaobrain/kor_nli", "config": "snli", "splits": ("train",)},
+65 |     {"source": "smilegate-ai/kor_unsmile", "config": None, "splits": ("train", "valid")},
+   |                                                                                         ^
+66 |     {"source": "jeanlee/kmhas_korean_hate_speech", "config": None, "splits": ("train",)},
+67 |     {"source": "searle-j/kote", "config": None, "splits": ("train", "validation")},
+   |
+
+E501 Line too long (89 > 88)
+  --> kojev/data_gold.py:66:89
+   |
+64 |     {"source": "kakaobrain/kor_nli", "config": "snli", "splits": ("train",)},
+65 |     {"source": "smilegate-ai/kor_unsmile", "config": None, "splits": ("train", "valid")},
+66 |     {"source": "jeanlee/kmhas_korean_hate_speech", "config": None, "splits": ("train",)},
+   |                                                                                         ^
+67 |     {"source": "searle-j/kote", "config": None, "splits": ("train", "validation")},
+68 |     {"source": "wicho/kor_3i4k", "config": None, "splits": ("train",)},
+   |
+
+TRY003 Avoid specifying long messages outside the exception class
+  --> kojev/data_gold.py:77:15
+   |
+75 |     value = row[key]
+76 |     if not isinstance(value, str):
+77 |         raise TypeError(f"{key} must be text")
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+78 |     return value
+   |
+
+EM102 Exception must not use an f-string literal, assign to variable first
+  --> kojev/data_gold.py:77:25
+   |
+75 |     value = row[key]
+76 |     if not isinstance(value, str):
+77 |         raise TypeError(f"{key} must be text")
+   |                         ^^^^^^^^^^^^^^^^^^^^^
+78 |     return value
+   |
+help: Assign to variable; remove f-string literal
+
+TRY003 Avoid specifying long messages outside the exception class
+  --> kojev/data_gold.py:84:15
+   |
+82 |     value = row[key]
+83 |     if isinstance(value, bool) or not isinstance(value, int):
+84 |         raise TypeError(f"{key} must be an integer")
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+85 |     return value
+   |
+
+EM102 Exception must not use an f-string literal, assign to variable first
+  --> kojev/data_gold.py:84:25
+   |
+82 |     value = row[key]
+83 |     if isinstance(value, bool) or not isinstance(value, int):
+84 |         raise TypeError(f"{key} must be an integer")
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+85 |     return value
+   |
+help: Assign to variable; remove f-string literal
+
+E501 Line too long (102 > 88)
+  --> kojev/data_gold.py:95:89
+   |
+93 |     **meta: JsonValue,
+94 | ) -> Question:
+95 |     return Question(type=kind, instructions=instructions, options=options, gold=gold, meta=dict(meta))
+   |                                                                                         ^^^^^^^^^^^^^^
+
+E501 Line too long (90 > 88)
+   --> kojev/data_gold.py:107:79
+    |
+105 |     state = _text(row, "document")
+106 |     return _example(state, [
+107 |         _question(QuestionType.CHOICE, "리뷰의 극성을 고르시오.", _CHOICE_POLARITY, gold),
+    |                                                                                         ^^
+108 |         _question(QuestionType.NOUL, "이 리뷰는 긍정적이다.", ["아니오", "예"], gold),
+109 |     ], "e9t/nsmc", split)
+    |
+
+PLR2004 Magic value used in comparison, consider replacing `6` with a constant variable
+   --> kojev/data_gold.py:118:76
+    |
+116 |     return _example(_text(row, "title"), [
+117 |         _question(QuestionType.CHOICE, "기사의 주제를 고르시오.", options, gold),
+118 |         _question(QuestionType.NOUL, "정치 기사이다.", ["아니오", "예"], int(gold == 6)),
+    |                                                                                      ^
+119 |     ], "klue/klue:ynat", split)
+    |
+
+E501 Line too long (89 > 88)
+   --> kojev/data_gold.py:118:79
+    |
+116 |     return _example(_text(row, "title"), [
+117 |         _question(QuestionType.CHOICE, "기사의 주제를 고르시오.", options, gold),
+118 |         _question(QuestionType.NOUL, "정치 기사이다.", ["아니오", "예"], int(gold == 6)),
+    |                                                                                         ^
+119 |     ], "klue/klue:ynat", split)
+    |
+
+E501 Line too long (93 > 88)
+   --> kojev/data_gold.py:127:76
+    |
+125 |     gold = _integer(row, "label")
+126 |     return _example(state, [
+127 |         _question(QuestionType.CHOICE, "전제와 가설의 관계를 고르시오.", _NLI_OPTIONS, gold),
+    |                                                                                         ^^^^^
+128 |         _question(QuestionType.NOUL, "가설은 전제에 의해 함의된다.", ["아니오", "예"], int(gold == 0)),
+129 |     ], source, split)
+    |
+
+E501 Line too long (103 > 88)
+   --> kojev/data_gold.py:128:73
+    |
+126 |     return _example(state, [
+127 |         _question(QuestionType.CHOICE, "전제와 가설의 관계를 고르시오.", _NLI_OPTIONS, gold),
+128 |         _question(QuestionType.NOUL, "가설은 전제에 의해 함의된다.", ["아니오", "예"], int(gold == 0)),
+    |                                                                                         ^^^^^^^^^^^^^^^
+129 |     ], source, split)
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/data_gold.py:136:15
+    |
+134 |     labels = row["labels"]
+135 |     if not isinstance(labels, Mapping):
+136 |         raise TypeError("labels must be a mapping")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+137 |     real = labels["real-label"]
+138 |     binary = labels["binary-label"]
+    |
+
+EM101 Exception must not use a string literal, assign to variable first
+   --> kojev/data_gold.py:136:25
+    |
+134 |     labels = row["labels"]
+135 |     if not isinstance(labels, Mapping):
+136 |         raise TypeError("labels must be a mapping")
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+137 |     real = labels["real-label"]
+138 |     binary = labels["binary-label"]
+    |
+help: Assign to variable; remove string literal
+
+E501 Line too long (99 > 88)
+   --> kojev/data_gold.py:139:89
+    |
+137 |     real = labels["real-label"]
+138 |     binary = labels["binary-label"]
+139 |     if not isinstance(real, (int, float)) or isinstance(real, bool) or not isinstance(binary, int):
+    |                                                                                         ^^^^^^^^^^^
+140 |         raise TypeError("STS labels have an invalid shape")
+141 |     return _example(f"{_text(row, 'sentence1')}\n{_text(row, 'sentence2')}", [
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/data_gold.py:140:15
+    |
+138 |     binary = labels["binary-label"]
+139 |     if not isinstance(real, (int, float)) or isinstance(real, bool) or not isinstance(binary, int):
+140 |         raise TypeError("STS labels have an invalid shape")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+141 |     return _example(f"{_text(row, 'sentence1')}\n{_text(row, 'sentence2')}", [
+142 |         _question(QuestionType.SCORE, "두 문장의 의미 유사도를 고르시오.", _STS_OPTIONS, round(real)),
+    |
+
+EM101 Exception must not use a string literal, assign to variable first
+   --> kojev/data_gold.py:140:25
+    |
+138 |     binary = labels["binary-label"]
+139 |     if not isinstance(real, (int, float)) or isinstance(real, bool) or not isinstance(binary, int):
+140 |         raise TypeError("STS labels have an invalid shape")
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+141 |     return _example(f"{_text(row, 'sentence1')}\n{_text(row, 'sentence2')}", [
+142 |         _question(QuestionType.SCORE, "두 문장의 의미 유사도를 고르시오.", _STS_OPTIONS, round(real)),
+    |
+help: Assign to variable; remove string literal
+
+E501 Line too long (102 > 88)
+   --> kojev/data_gold.py:142:75
+    |
+140 |         raise TypeError("STS labels have an invalid shape")
+141 |     return _example(f"{_text(row, 'sentence1')}\n{_text(row, 'sentence2')}", [
+142 |         _question(QuestionType.SCORE, "두 문장의 의미 유사도를 고르시오.", _STS_OPTIONS, round(real)),
+    |                                                                                         ^^^^^^^^^^^^^^
+143 |         _question(QuestionType.NOUL, "두 문장은 사실상 같은 의미다.", ["아니오", "예"], binary),
+144 |     ], "klue/klue:sts", split)
+    |
+
+E501 Line too long (96 > 88)
+   --> kojev/data_gold.py:143:73
+    |
+141 |     return _example(f"{_text(row, 'sentence1')}\n{_text(row, 'sentence2')}", [
+142 |         _question(QuestionType.SCORE, "두 문장의 의미 유사도를 고르시오.", _STS_OPTIONS, round(real)),
+143 |         _question(QuestionType.NOUL, "두 문장은 사실상 같은 의미다.", ["아니오", "예"], binary),
+    |                                                                                         ^^^^^^^^
+144 |     ], "klue/klue:sts", split)
+    |
+
+E501 Line too long (118 > 88)
+   --> kojev/data_gold.py:197:89
+    |
+195 |     """Map the nine K-MHaS multi-label columns to noul questions."""
+196 |     labels = row["label"] if "label" in row else row["labels"]
+197 |     if not isinstance(labels, list) or any(isinstance(label, bool) or not isinstance(label, int) for label in labels):
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+198 |         raise TypeError("K-MHaS labels must be integer list")
+199 |     integer_labels = [int(index in labels) for index in range(9)]
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/data_gold.py:198:15
+    |
+196 |     labels = row["label"] if "label" in row else row["labels"]
+197 |     if not isinstance(labels, list) or any(isinstance(label, bool) or not isinstance(label, int) for label in labels):
+198 |         raise TypeError("K-MHaS labels must be integer list")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+199 |     integer_labels = [int(index in labels) for index in range(9)]
+200 |     categories = [f"혐오 유형 {index + 1}" for index in range(9)]
+    |
+
+EM101 Exception must not use a string literal, assign to variable first
+   --> kojev/data_gold.py:198:25
+    |
+196 |     labels = row["label"] if "label" in row else row["labels"]
+197 |     if not isinstance(labels, list) or any(isinstance(label, bool) or not isinstance(label, int) for label in labels):
+198 |         raise TypeError("K-MHaS labels must be integer list")
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+199 |     integer_labels = [int(index in labels) for index in range(9)]
+200 |     categories = [f"혐오 유형 {index + 1}" for index in range(9)]
+    |
+help: Assign to variable; remove string literal
+
+E501 Line too long (98 > 88)
+   --> kojev/data_gold.py:202:76
+    |
+200 |     categories = [f"혐오 유형 {index + 1}" for index in range(9)]
+201 |     return _example(_text(row, "text"), [
+202 |         _question(QuestionType.NOUL, f"이 문장은 {category}에 해당한다.", ["아니오", "예"], label)
+    |                                                                                         ^^^^^^^^^^
+203 |         for category, label in zip(categories, integer_labels, strict=True)
+204 |     ], "jeanlee/kmhas_korean_hate_speech", split)
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/data_gold.py:211:15
+    |
+209 |     labels = row["labels"]
+210 |     if not isinstance(labels, list):
+211 |         raise TypeError("KOTE labels must be a list")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+212 |     label_names = [
+213 |         label if isinstance(label, str) else _KOTE_LABELS[label]
+    |
+
+EM101 Exception must not use a string literal, assign to variable first
+   --> kojev/data_gold.py:211:25
+    |
+209 |     labels = row["labels"]
+210 |     if not isinstance(labels, list):
+211 |         raise TypeError("KOTE labels must be a list")
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+212 |     label_names = [
+213 |         label if isinstance(label, str) else _KOTE_LABELS[label]
+    |
+help: Assign to variable; remove string literal
+
+E501 Line too long (131 > 88)
+   --> kojev/data_gold.py:234:75
+    |
+232 |             else "중립"
+233 |         )
+234 |     questions.append(_question(QuestionType.CHOICE, "가장 가까운 감정 범주를 고르시오.", _KOTE_COARSE, _KOTE_COARSE.index(coarse)))
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+235 |     return _example(_text(row, "text"), questions, "searle-j/kote", split)
+    |
+
+PLR0913 Too many arguments in function definition (6 > 5)
+   --> kojev/data_gold.py:238:5
+    |
+238 | def _map_generic_choice(row: Row, *, split: str, source: str, text_key: str, label_key: str, options: list[str]) -> Example:
+    |     ^^^^^^^^^^^^^^^^^^^
+239 |     """Map a single-label text classification row."""
+240 |     return _example(_text(row, text_key), [
+    |
+
+E501 Line too long (124 > 88)
+   --> kojev/data_gold.py:238:89
+    |
+238 | def _map_generic_choice(row: Row, *, split: str, source: str, text_key: str, label_key: str, options: list[str]) -> Example:
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+239 |     """Map a single-label text classification row."""
+240 |     return _example(_text(row, text_key), [
+    |
+
+E501 Line too long (101 > 88)
+   --> kojev/data_gold.py:241:79
+    |
+239 |     """Map a single-label text classification row."""
+240 |     return _example(_text(row, text_key), [
+241 |         _question(QuestionType.CHOICE, "문장의 의도를 고르시오.", options, _integer(row, label_key)),
+    |                                                                                         ^^^^^^^^^^^^^
+242 |         _question(QuestionType.NOUL, "질문이다.", ["아니오", "예"], int(_text(row, text_key).endswith("?"))),
+243 |     ], source, split)
+    |
+
+E501 Line too long (109 > 88)
+   --> kojev/data_gold.py:242:81
+    |
+240 |     return _example(_text(row, text_key), [
+241 |         _question(QuestionType.CHOICE, "문장의 의도를 고르시오.", options, _integer(row, label_key)),
+242 |         _question(QuestionType.NOUL, "질문이다.", ["아니오", "예"], int(_text(row, text_key).endswith("?"))),
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^
+243 |     ], source, split)
+    |
+
+C901 `_row_to_examples` is too complex (12 > 10)
+   --> kojev/data_gold.py:254:5
+    |
+254 | def _row_to_examples(source: str, row: Row, split: str) -> list[Example]:
+    |     ^^^^^^^^^^^^^^^^
+255 |     """Dispatch one trusted dataset row to its deterministic mapper."""
+256 |     if source == "e9t/nsmc":
+    |
+
+PLR0911 Too many return statements (11 > 6)
+   --> kojev/data_gold.py:254:5
+    |
+254 | def _row_to_examples(source: str, row: Row, split: str) -> list[Example]:
+    |     ^^^^^^^^^^^^^^^^
+255 |     """Dispatch one trusted dataset row to its deterministic mapper."""
+256 |     if source == "e9t/nsmc":
+    |
+
+E501 Line too long (97 > 88)
+   --> kojev/data_gold.py:280:81
+    |
+278 |         return [_example(text, [
+279 |             _question(QuestionType.CHOICE, "문장의 의도를 고르시오.", options, gold),
+280 |             _question(QuestionType.NOUL, "질문이다.", ["아니오", "예"], int(text.endswith("?"))),
+    |                                                                                         ^^^^^^^^^
+281 |         ], source, split)]
+282 |     if source in {"lawcompany/KLAID", "lawcompany/KLAID:ljp"}:
+    |
+
+E501 Line too long (114 > 88)
+   --> kojev/data_gold.py:288:76
+    |
+286 |         return [_example(_text(row, "fact"), [
+287 |             _question(QuestionType.CHOICE, "적용되는 법조를 고르시오.", options, gold),
+288 |             _question(QuestionType.NOUL, "형법 조항이 적용된다.", ["아니오", "예"], int(laws.startswith("형법"))),
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+289 |         ], source, split)]
+290 |     raise ValueError(f"unsupported gold source: {source}")
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/data_gold.py:290:11
+    |
+288 |             _question(QuestionType.NOUL, "형법 조항이 적용된다.", ["아니오", "예"], int(laws.startswith("형법"))),
+289 |         ], source, split)]
+290 |     raise ValueError(f"unsupported gold source: {source}")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+EM102 Exception must not use an f-string literal, assign to variable first
+   --> kojev/data_gold.py:290:22
+    |
+288 |             _question(QuestionType.NOUL, "형법 조항이 적용된다.", ["아니오", "예"], int(laws.startswith("형법"))),
+289 |         ], source, split)]
+290 |     raise ValueError(f"unsupported gold source: {source}")
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: Assign to variable; remove f-string literal
+
+E501 Line too long (101 > 88)
+   --> kojev/data_gold.py:294:89
+    |
+293 | def _source_name(config: SourceConfig) -> str:
+294 |     return config["source"] if config["config"] is None else f"{config['source']}:{config['config']}"
+    |                                                                                         ^^^^^^^^^^^^^
+
+PLC0415 `import` should be at the top-level of a file
+   --> kojev/data_gold.py:298:5
+    |
+297 | def _iter_source_rows(config: SourceConfig, split: str) -> Iterator[Row]:
+298 |     from datasets import load_dataset
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+299 |
+300 |     kwargs = {} if config["config"] is None else {"name": config["config"]}
+    |
+
+TRY003 Avoid specifying long messages outside the exception class
+   --> kojev/data_gold.py:304:19
+    |
+302 |     for row in dataset:
+303 |         if not isinstance(row, Mapping):
+304 |             raise TypeError("Hugging Face row is not a mapping")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+305 |         yield row
+    |
+
+EM101 Exception must not use a string literal, assign to variable first
+   --> kojev/data_gold.py:304:29
+    |
+302 |     for row in dataset:
+303 |         if not isinstance(row, Mapping):
+304 |             raise TypeError("Hugging Face row is not a mapping")
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+305 |         yield row
+    |
+help: Assign to variable; remove string literal
+
+S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+   --> kojev/data_gold.py:320:19
+    |
+318 |                 continue
+319 |             rows = list(_iter_source_rows(config, hf_split))
+320 |             rng = random.Random(0)
+    |                   ^^^^^^^^^^^^^^^^
+321 |             rng.shuffle(rows)
+322 |             selected = rows[:_SPLIT_CAPS[split]]
+    |
+
+S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+   --> kojev/data_gold.py:352:15
+    |
+350 |             }
+351 |     for split, examples in buckets.items():
+352 |         rng = random.Random(0)
+    |               ^^^^^^^^^^^^^^^^
+353 |         ordered = list(examples)
+354 |         rng.shuffle(ordered)
+    |
+
+E501 Line too long (129 > 88)
+   --> kojev/data_gold.py:356:89
+    |
+354 |         rng.shuffle(ordered)
+355 |         write_jsonl(out / f"{split}.jsonl", ordered)
+356 |     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+357 |     return summary
+    |
+
+E501 Line too long (93 > 88)
+   --> kojev/data_gold.py:382:89
+    |
+381 | def _main() -> int:
+382 |     parser = argparse.ArgumentParser(description="Build or validate the Korean gold corpus.")
+    |                                                                                         ^^^^^
+383 |     parser.add_argument("--out", type=Path, default=Path("data/gold"))
+384 |     parser.add_argument("--validate", type=Path)
+    |
+
+T201 `print` found
+   --> kojev/data_gold.py:390:13
+    |
+388 |         errors = [error for path in paths for error in validate_jsonl(path)]
+389 |         for error in errors:
+390 |             print(error)
+    |             ^^^^^
+391 |         return int(bool(errors))
+392 |     build_gold(args.out)
+    |
+help: Remove `print`
+
+F401 [*] `pytest` imported but unused
+  --> tests/test_data_gold.py:8:8
+   |
+ 6 | from typing import TYPE_CHECKING
+ 7 |
+ 8 | import pytest
+   |        ^^^^^^
+ 9 |
+10 | from kojev.data_gold import (
+   |
+help: Remove unused import: `pytest`
+  |
+7 |
+  - import pytest
+8 |
+  |
+
+Found 50 errors.
+[*] 1 fixable with the `--fix` option (9 hidden fixes can be enabled with the `--unsafe-fixes` option).
+=== basedpyright ===
+/Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:238:5 - error: Function "_map_generic_choice" is not accessed (reportUnusedFunction)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:246:5 - error: Function "_string_list" is not accessed (reportUnusedFunction)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:298:10 - error: Stub file not found for "datasets" (reportMissingTypeStubs)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:298:26 - error: Type of "load_dataset" is partially unknown
+    Type of "load_dataset" is "Overload[(path: str, name: str | None = None, data_dir: str | None = None, data_files: str | Sequence[str] | Mapping[str, str | Sequence[str]] | None = None, split: None = None, cache_dir: str | None = None, features: Features | None = None, download_config: DownloadConfig | None = None, download_mode: DownloadMode | str | None = None, verification_mode: VerificationMode | str | None = None, keep_in_memory: bool | None = None, save_infos: bool = False, revision: str | Version | None = None, token: bool | str | None = None, streaming: Literal[False] = False, num_proc: int | None = None, storage_options: dict[Unknown, Unknown] | None = None, **config_kwargs: Any) -> DatasetDict, (path: str, name: str | None = None, data_dir: str | None = None, data_files: str | Sequence[str] | Mapping[str, str | Sequence[str]] | None = None, *, split: str | Split | list[str] | list[Split], cache_dir: str | None = None, features: Features | None = None, download_config: DownloadConfig | None = None, download_mode: DownloadMode | str | None = None, verification_mode: VerificationMode | str | None = None, keep_in_memory: bool | None = None, save_infos: bool = False, revision: Version | str | None = None, token: bool | str | None = None, streaming: Literal[False] = False, num_proc: int | None = None, storage_options: dict[Unknown, Unknown] | None = None, **config_kwargs: Any) -> Dataset, (path: str, name: str | None = None, data_dir: str | None = None, data_files: str | Sequence[str] | Mapping[str, str | Sequence[str]] | None = None, split: None = None, cache_dir: str | None = None, features: Features | None = None, download_config: DownloadConfig | None = None, download_mode: DownloadMode | str | None = None, verification_mode: VerificationMode | str | None = None, keep_in_memory: bool | None = None, save_infos: bool = False, revision: Version | str | None = None, token: bool | str | None = None, *, streaming: Literal[True], num_proc: int | None = None, storage_options: dict[Unknown, Unknown] | None = None, **config_kwargs: Any) -> IterableDatasetDict, (path: str, name: str | None = None, data_dir: str | None = None, data_files: str | Sequence[str] | Mapping[str, str | Sequence[str]] | None = None, *, split: str | Split | list[str] | list[Split], cache_dir: str | None = None, features: Features | None = None, download_config: DownloadConfig | None = None, download_mode: DownloadMode | str | None = None, verification_mode: VerificationMode | str | None = None, keep_in_memory: bool | None = None, save_infos: bool = False, revision: Version | str | None = None, token: bool | str | None = None, streaming: Literal[True], num_proc: int | None = None, storage_options: dict[Unknown, Unknown] | None = None, **config_kwargs: Any) -> IterableDataset]" (reportUnknownVariableType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:5 - error: Type of "dataset" is unknown (reportUnknownVariableType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:15 - error: No overloads for "load_dataset" match the provided arguments (reportCallIssue)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:61 - error: Argument of type "str" cannot be assigned to parameter "features" of type "Features | None" in function "load_dataset"
+    Type "str" is not assignable to type "Features | None"
+      "str" is not assignable to "Features"
+      "str" is not assignable to "None" (reportArgumentType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:61 - error: Argument of type "str" cannot be assigned to parameter "download_config" of type "DownloadConfig | None" in function "load_dataset"
+    Type "str" is not assignable to type "DownloadConfig | None"
+      "str" is not assignable to "DownloadConfig"
+      "str" is not assignable to "None" (reportArgumentType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:61 - error: Argument of type "str" cannot be assigned to parameter "keep_in_memory" of type "bool | None" in function "load_dataset"
+    Type "str" is not assignable to type "bool | None"
+      "str" is not assignable to "bool"
+      "str" is not assignable to "None" (reportArgumentType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:61 - error: Argument of type "str" cannot be assigned to parameter "save_infos" of type "bool" in function "load_dataset"
+    "str" is not assignable to "bool" (reportArgumentType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:61 - error: Argument of type "str" cannot be assigned to parameter "streaming" of type "Literal[True]" in function "load_dataset"
+    "str" is not assignable to "Literal[True]" (reportArgumentType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:61 - error: Argument of type "str" cannot be assigned to parameter "num_proc" of type "int | None" in function "load_dataset"
+    Type "str" is not assignable to type "int | None"
+      "str" is not assignable to "int"
+      "str" is not assignable to "None" (reportArgumentType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:301:61 - error: Argument of type "str" cannot be assigned to parameter "storage_options" of type "dict[Unknown, Unknown] | None" in function "load_dataset"
+    Type "str" is not assignable to type "dict[Unknown, Unknown] | None"
+      "str" is not assignable to "dict[Unknown, Unknown]"
+      "str" is not assignable to "None" (reportArgumentType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:302:9 - error: Type of "row" is unknown (reportUnknownVariableType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:305:15 - error: Return type of generator function must be compatible with "Generator[Mapping[Unknown, object], Any, Any]"
+    "Generator[Mapping[Unknown, object], Unknown, Unknown]" is not assignable to "Iterator[Row]"
+      Type parameter "_T_co@Iterator" is covariant, but "Mapping[Unknown, object]" is not a subtype of "Row"
+        "Mapping[Unknown, object]" is not assignable to "Mapping[str, RowValue]"
+          Type parameter "_VT_co@Mapping" is covariant, but "object" is not a subtype of "RowValue"
+            Type "object" is not assignable to type "RowValue" (reportReturnType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:326:21 - error: Type of "append" is partially unknown
+    Type of "append" is "(object: Unknown, /) -> None" (reportUnknownMemberType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:333:25 - error: Type of "append" is partially unknown
+    Type of "append" is "(object: Unknown, /) -> None" (reportUnknownMemberType)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:356:5 - warning: Result of call expression is of type "int" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:369:17 - warning: Result of call expression is of type "Example" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:383:5 - warning: Result of call expression is of type "Action" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:384:5 - warning: Result of call expression is of type "Action" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:386:8 - error: Type of "validate" is Any (reportAny)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:387:24 - error: Type of "validate" is Any (reportAny)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:387:24 - error: Type of "glob" is Any (reportAny)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:387:24 - error: Argument type is Any
+    Argument corresponds to parameter "iterable" in function "sorted" (reportAny)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:388:29 - error: Type of "path" is Any (reportAny)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:388:71 - error: Argument type is Any
+    Argument corresponds to parameter "path" in function "validate_jsonl" (reportAny)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:392:5 - warning: Result of call expression is of type "dict[str, dict[str, int | str]]" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:392:16 - error: Type of "out" is Any (reportAny)
+  /Volumes/SSD1/1/KoJev-todo3/kojev/data_gold.py:392:16 - error: Argument type is Any
+    Argument corresponds to parameter "out" in function "build_gold" (reportAny)
+/Volumes/SSD1/1/KoJev-todo3/tests/test_data_gold.py
+  /Volumes/SSD1/1/KoJev-todo3/tests/test_data_gold.py:8:8 - error: Import "pytest" is not accessed (reportUnusedImport)
+  /Volumes/SSD1/1/KoJev-todo3/tests/test_data_gold.py:100:5 - error: Type of "valid" is partially unknown
+    Type of "valid" is "dict[str, str | list[dict[str, str | list[str] | int | dict[Unknown, Unknown]]]]" (reportUnknownVariableType)
+  /Volumes/SSD1/1/KoJev-todo3/tests/test_data_gold.py:114:5 - warning: Result of call expression is of type "int" and is not used; assign to variable "_" if this is intentional (reportUnusedCallResult)
+27 errors, 6 warnings, 0 notes
+=== real build ===
+Using the latest cached version of the dataset since e9t/nsmc couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/e9t___nsmc/default/0.0.0/153263700c285ac0997b3e2a2d80b826aaf672d6 (last modified on Sun Sep 20 01:23:12 2026).
+Using the latest cached version of the dataset since e9t/nsmc couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/e9t___nsmc/default/0.0.0/153263700c285ac0997b3e2a2d80b826aaf672d6 (last modified on Sun Sep 20 01:23:12 2026).
+Using the latest cached version of the dataset since jeanlee/kmhas_korean_hate_speech couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/jeanlee___kmhas_korean_hate_speech/default/0.0.0/5df3b7429d68f0ffc89dfbd0159cc72f29fad63c (last modified on Sun Sep 20 01:23:20 2026).
+Using the latest cached version of the dataset since searle-j/kote couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'dichotomized' at /Volumes/SSD1/huggingface/datasets/searle-j___kote/dichotomized/0.0.0/66f0eefe4b675a5d5411c7aa08e2c97fc9a9b17f (last modified on Sun Sep 20 01:30:05 2026).
+Using the latest cached version of the dataset since searle-j/kote couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'dichotomized' at /Volumes/SSD1/huggingface/datasets/searle-j___kote/dichotomized/0.0.0/66f0eefe4b675a5d5411c7aa08e2c97fc9a9b17f (last modified on Sun Sep 20 01:30:05 2026).
+Using the latest cached version of the dataset since lawcompany/KLAID couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/lawcompany___klaid/default/0.0.0/4461690da8a3fb20194488f9712b1b2503571426 (last modified on Sun Sep 20 01:29:21 2026).
+=== measured summary and files ===
+summary_source_entries= 18
+unique_dataset_sources= 12
+summary_train_states= 96000
+summary_train_questions= 302085
+jsonl_lines test.jsonl 1000
+jsonl_lines train.jsonl 103999
+jsonl_lines val.jsonl 2500
+kobest_entries= []
+korquad_entries= ['KorQuAD/squad_kor_v1:train']
+=== clean validate ===
+clean_validate_exit=0
+=== malformed JSON validate ===
+/tmp/kojev-gold-corrupt-audit/train.jsonl:2: invalid JSON
+malformed_validate_exit=1
+=== schema-invalid empty-question validate ===
+empty_questions_validate_exit=0

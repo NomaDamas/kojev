@@ -12,7 +12,14 @@ from typing import Final, TypedDict
 from datasets import load_dataset
 from pydantic import ValidationError
 
-from kojev.schema import Example, JsonValue, Question, QuestionType, write_jsonl
+from kojev.schema import (
+    Example,
+    JsonValue,
+    Question,
+    QuestionType,
+    SchemaError,
+    write_jsonl,
+)
 
 RowValue = (
     str | int | float | bool | list[str] | list[int] | Mapping[str, str | int | float]
@@ -440,6 +447,35 @@ _SIMPLE_MAPPERS: dict[str, Mapper] = {
 }
 
 
+def _is_blank_state_error(error: ValidationError) -> bool:
+    """Report whether a validation failure is the blank-state invariant."""
+    return SchemaError.blank_state().reason in str(error)
+
+
+def _korquad_examples(
+    row: Row, split: str, negative_question: str | None
+) -> list[Example]:
+    """Build one KorQuAD pair, dropping rows whose upstream text is blank."""
+    try:
+        return [
+            build_korquad_pair(row, split=split, negative_question=negative_question)
+        ]
+    except ValidationError as error:
+        if _is_blank_state_error(error):
+            return []
+        raise
+
+
+def _mapped_examples(source: str, row: Row, split: str) -> list[Example]:
+    """Map one row, dropping rows whose upstream text is blank."""
+    try:
+        return _row_to_examples(source, row, split)
+    except ValidationError as error:
+        if _is_blank_state_error(error):
+            return []
+        raise
+
+
 def _row_to_examples(source: str, row: Row, split: str) -> list[Example]:
     """Dispatch one trusted dataset row to its deterministic mapper."""
     mapper = _SIMPLE_MAPPERS.get(source)
@@ -525,10 +561,13 @@ def build_gold(out: Path) -> dict[str, dict[str, int | str]]:
                 key=lambda row: json.dumps(row, ensure_ascii=False, sort_keys=True)
             )
             selected = rows[: _SPLIT_CAPS[split]]
+            dropped = 0
             if source_name == "KorQuAD/squad_kor_v1":
                 mapped: list[Example] = []
                 for index, row in enumerate(selected):
-                    mapped.append(build_korquad_pair(row, split=split))
+                    positive = _korquad_examples(row, split, None)
+                    dropped += 1 - len(positive)
+                    mapped.extend(positive)
                     negative = next(
                         (
                             candidate
@@ -538,23 +577,21 @@ def build_gold(out: Path) -> dict[str, dict[str, int | str]]:
                         None,
                     )
                     if negative is not None:
-                        mapped.append(
-                            build_korquad_pair(
-                                row,
-                                split=split,
-                                negative_question=_text(negative, "question"),
-                            )
+                        mapped.extend(
+                            _korquad_examples(row, split, _text(negative, "question"))
                         )
             else:
-                mapped = [
-                    example
-                    for row in selected
-                    for example in _row_to_examples(source_name, row, split)
-                ]
+                mapped = []
+                for row in selected:
+                    examples = _mapped_examples(source_name, row, split)
+                    if not examples:
+                        dropped += 1
+                    mapped.extend(examples)
             buckets[split].extend(mapped)
             summary[f"{source_name}:{split}"] = {
-                "states": len(selected),
+                "states": len(selected) - dropped,
                 "questions": sum(len(x.questions) for x in mapped),
+                "dropped_blank_state": dropped,
             }
     for split, examples in buckets.items():
         ordered = sorted(

@@ -68,6 +68,11 @@ class SchemaError(ValueError):
             reason=f"examples require at least one question (minimum {_QUESTION_MIN})"
         )
 
+    @classmethod
+    def blank_state(cls) -> SchemaError:
+        """Reject an example whose state carries no visible text."""
+        return cls(reason="examples require a non-blank state")
+
 
 class QuestionType(StrEnum):
     """Closed set of typed-decision primitives."""
@@ -121,6 +126,8 @@ class Example(BaseModel):
     def _validate_questions(self) -> Self:
         if len(self.questions) < _QUESTION_MIN:
             raise SchemaError.empty_questions()
+        if not self.state.strip():
+            raise SchemaError.blank_state()
         return self
 
 
