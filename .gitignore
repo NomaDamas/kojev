@@ -1,0 +1,30 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.basedpyright/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Local / cluster artifacts
+data/
+runs/
+hf-cache/
+
+# Agent / editor noise
+.senpi/
+.omo/senpi-task/
+.omo/ulw-execute/
+.omo/ulw-loop/
+.omo/ulw-research/
+.omo/tmp-pg/
+.omo/drafts/
+.omo/boulder.json
+-.png
+.DS_Store
