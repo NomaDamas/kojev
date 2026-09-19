@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from collections.abc import Callable, Iterator, Mapping
@@ -118,6 +119,7 @@ _KOTE_LABELS: Final = [
     "안심/신뢰",
 ]
 _SPLIT_CAPS: Final = {"train": 8000, "val": 500, "test": 1000}
+_SPLIT_SEED: Final = 0
 _YNAT_POLITICS_LABEL: Final = 6
 
 
@@ -545,6 +547,33 @@ def _iter_source_rows(config: SourceConfig, split: str) -> Iterator[Row]:
     yield from dataset
 
 
+def _shuffle_key(row: Row) -> str:
+    """Order rows deterministically under the split seed, stable across runtimes."""
+    payload = json.dumps(row, ensure_ascii=False, sort_keys=True)
+    digest = hashlib.sha256(f"{_SPLIT_SEED}:{payload}".encode())
+    return digest.hexdigest()
+
+
+def _source_split_rows(config: SourceConfig) -> dict[str, list[Row]]:
+    """Pool a source's rows and carve deterministic per-source train/val/test.
+
+    Every source contributes to all three splits: the gold test set must span
+    sources rather than only those datasets that ship an upstream test split.
+    """
+    rows: list[Row] = []
+    for hf_split in config["splits"]:
+        rows.extend(_iter_source_rows(config, hf_split))
+    rows.sort(key=_shuffle_key)
+    test_end = _SPLIT_CAPS["test"]
+    val_end = test_end + _SPLIT_CAPS["val"]
+    train_end = val_end + _SPLIT_CAPS["train"]
+    return {
+        "test": rows[:test_end],
+        "val": rows[test_end:val_end],
+        "train": rows[val_end:train_end],
+    }
+
+
 def build_gold(out: Path) -> dict[str, dict[str, int | str]]:
     """Download, map, cap, and write the deterministic gold corpus."""
     out.mkdir(parents=True, exist_ok=True)
@@ -552,15 +581,7 @@ def build_gold(out: Path) -> dict[str, dict[str, int | str]]:
     summary: dict[str, dict[str, int | str]] = {}
     for config in SOURCES:
         source_name = _source_name(config)
-        for hf_split in config["splits"]:
-            split = "val" if hf_split in {"validation", "valid", "dev"} else hf_split
-            if source_name == "KorQuAD/squad_kor_v1" and hf_split != "train":
-                continue
-            rows = list(_iter_source_rows(config, hf_split))
-            rows.sort(
-                key=lambda row: json.dumps(row, ensure_ascii=False, sort_keys=True)
-            )
-            selected = rows[: _SPLIT_CAPS[split]]
+        for split, selected in _source_split_rows(config).items():
             dropped = 0
             if source_name == "KorQuAD/squad_kor_v1":
                 mapped: list[Example] = []
