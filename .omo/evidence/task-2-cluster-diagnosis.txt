@@ -1,0 +1,104 @@
+KoJev todo 2 - gpu01 cluster diagnosis and template evolution
+Worktree: /Volumes/SSD1/1/KoJev-todo2
+Branch: feat/infra
+Commit preserving this work: 2076e20856b0553573e862f76f59c1d3e3b95951
+
+STATUS: todo 2 is NOT complete. The required proof is `sacct COMPLETED` plus job
+stdout printing CUDA `True`. That has never been observed, so the plan checkbox
+remains UNCHECKED. This file records what was measured and fixed so the proof
+can be obtained as soon as the cluster is reachable.
+
+FAILURE SEQUENCE (each fix exposed the next constraint)
+  13597  FAILED     concurrent jobs collided on a shared repo .venv
+  13599  FAILED     uv cache under /data/home exhausted the home filesystem
+  13601  FAILED     10:30  PyPI download did not finish inside the wall clock
+  13602  FAILED            same class as 13601
+  13603  CANCELLED  41:59  still downloading; cancelled by orchestrator after
+                           diagnosing that a per-job cache re-downloads ~4GB
+  13620  RUNNING->  28:03  cleared dependency acquisition in ~2 minutes using the
+         (timeout)         warm shared cache, then exceeded the 30-minute limit
+                           installing torch's ~10k files into a PER-JOB venv
+
+MEASUREMENTS (all taken on gpu01)
+  PyPI connectivity            41.6 MB/s, HTTP 200
+  /data2 sequential write      14.8 MB/s (20MB conv=fsync) - healthy
+  /data2 small-file create     100 files in 38,765 ms  => 2.58 files/sec
+  /dev/shm small-file create   100 files in 28 ms      => 3,571 files/sec
+  ratio                        1,384x
+  / (root filesystem)          1.8T, 100% FULL, 890M free -> no local scratch
+  node load                    load average 22, 48 users
+  GPUs                         NVIDIA RTX PRO 6000 Blackwell Max-Q, driver 580.173.02
+  mount                        gpu03:/data2 nfs4 vers=4.2 rsize/wsize=1048576 hard
+
+ROOT CAUSE
+  /data2 is NFS with healthy sequential throughput but pathological small-file
+  metadata cost. Python environments are tens of thousands of small files, so
+  ANY per-job environment construction is fundamentally too slow here. The
+  network was never the real problem.
+
+CORRECTION 1 - shared warm package cache
+  Both templates defaulted UV_CACHE_DIR to /data2/jeffrey/kojev/runs/uv-cache-${SLURM_JOB_ID}.
+  sbatch does not propagate the submitting shell's UV_CACHE_DIR, so every job
+  ignored any warm cache and re-downloaded the multi-GB CUDA wheel set.
+  Now: UV_CACHE_DIR defaults to the shared /data2/jeffrey/kojev/uv-cache.
+  Verified in job 13620: "Resolved 92 packages in 1ms" with ZERO Downloading lines.
+
+CORRECTION 2 - skip dev dependencies on the cluster
+  `uv sync` installs the dev group by default. basedpyright ships ~20k tiny
+  typeshed stub files and drags in nodejs-wheel-binaries; unpacking those over
+  NFS dominated wall clock for zero runtime benefit. The cluster trains, it does
+  not lint.
+  Now: `uv sync --no-dev`.
+  Verified: package downloads dropped from 29 to 1 (torch only).
+
+CORRECTION 3 - hardlink instead of copy
+  UV_LINK_MODE=copy duplicated torch (~2GB, ~10k files) into every job venv.
+  Cache and venv share the /data2 mount, so hardlinking is correct and removing
+  a job venv only decrements link counts.
+  Now: UV_LINK_MODE=hardlink.
+
+CORRECTION 4 - prebuilt shared venv (addresses 13620)
+  Even hardlinking ~10k torch files is metadata-bound and exceeded the 30-minute
+  smoke limit. Jobs must not build environments at all.
+  Now: templates prefer /data2/jeffrey/kojev/venv-shared when it exists,
+  exporting UV_PROJECT_ENVIRONMENT/VIRTUAL_ENV/PATH at it, and fall back to a
+  per-job `uv sync --no-dev` only when it is absent. Jobs invoke
+  `uv run --no-sync` so they can never mutate the shared environment - which
+  also makes the original 13597 .venv race impossible by construction.
+  Promotion is by SYMLINK (venv-shared -> runs/venv-prewarm2) rather than a
+  rename, so the venv's baked absolute paths stay valid.
+
+SELF-INFLICTED INCIDENTS (recorded honestly)
+  1. A broad `rm -rf /data2/jeffrey/kojev/uv-cache/.tmp*` was left running for
+     roughly 90 minutes. The shell froze the glob into an explicit 52-directory
+     list at launch, and the rebuilt `uv sync` then created a staging directory
+     already on that list, so the rm deleted new work as fast as uv wrote it.
+     Detected by measuring file count twice: 27,424 -> 27,240, a NEGATIVE delta.
+     A build whose staging shrinks is not slow, it is losing a race.
+     Lesson: never point a broad recursive delete at a directory an active build
+     is using.
+  2. Seven concurrent ssh monitors, several on 20-second intervals, plus manual
+     checks, contributed to gpu01 refusing ssh connections entirely.
+     Lesson: monitor intervals must be sized to the remote host's tolerance, or
+     the monitoring denies the visibility it exists to provide.
+
+TEMPLATE INVARIANTS NOW LOCKED BY tests/test_sync_slurm.py (15 tests, green)
+  - shared uv cache present; per-job cache path absent
+  - `uv sync --no-dev`
+  - UV_LINK_MODE=hardlink; copy absent
+  - prebuilt shared venv preferred; `uv run --no-sync` so jobs never mutate it
+  - gpu01-only rtx6000 GRES, correct partitions, cpus, memory, time
+  - rsync excludes .git/.venv/data; no destination under /, /data or /data1
+
+PRESERVED NEGATIVE EVIDENCE
+  Wrong-GRES rejection captured earlier:
+    sbatch: error: Batch job submission failed: Requested node configuration is
+    not available
+    sbatch_exit=1
+
+REMAINING WORK FOR THE CHECKBOX
+  1. Symlink /data2/jeffrey/kojev/venv-shared -> runs/venv-prewarm2 once torch is
+     confirmed present in that venv.
+  2. Sync the corrected templates and submit a gpu01-only smoke job.
+  3. Capture `sacct COMPLETED` and stdout `True`.
+  Only then may todo 2 be checked.
