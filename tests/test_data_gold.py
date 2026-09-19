@@ -15,7 +15,7 @@ from kojev.data_gold import (
     map_unsmile_row,
     validate_jsonl,
 )
-from kojev.schema import QuestionType
+from kojev.schema import Example, JsonValue, QuestionType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -97,7 +97,7 @@ def test_unsmile_emits_one_noul_per_category_and_single_label_choice() -> None:
 
 def test_validation_reports_malformed_line_number(tmp_path: Path) -> None:
     path = tmp_path / "broken.jsonl"
-    valid = {
+    valid: dict[str, JsonValue] = {
         "state": "상태",
         "questions": [
             {
@@ -111,7 +111,7 @@ def test_validation_reports_malformed_line_number(tmp_path: Path) -> None:
         "source": "fixture",
         "split": "train",
     }
-    path.write_text(
+    _ = path.write_text(
         json.dumps(valid, ensure_ascii=False)
         + "\nnot json\n"
         + json.dumps(valid, ensure_ascii=False)
@@ -122,3 +122,15 @@ def test_validation_reports_malformed_line_number(tmp_path: Path) -> None:
     errors = validate_jsonl(path)
 
     assert errors == [f"{path}:2: invalid JSON"]
+
+
+def test_validation_rejects_example_with_no_questions() -> None:
+    with pytest.raises(ValueError, match="at least one question"):
+        _ = Example.model_validate(
+            {
+                "state": "상태",
+                "questions": [],
+                "source": "fixture",
+                "split": "train",
+            }
+        )

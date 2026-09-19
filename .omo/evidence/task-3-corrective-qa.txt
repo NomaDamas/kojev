@@ -1,0 +1,46 @@
+Todo 3 corrective manual QA evidence
+Date: 2026-09-19
+Worktree: /Volumes/SSD1/1/KoJev-todo3
+Branch: feat/data-gold
+
+Static checks:
+$ .venv/bin/ruff check .
+All checks passed!
+$ .venv/bin/basedpyright
+0 errors, 0 warnings, 0 notes
+$ .venv/bin/pytest tests/test_data_gold.py tests/test_schema.py -q
+13 passed in 0.46s
+$ .venv/bin/pytest -q
+13 passed in 0.46s
+
+Real source build surface:
+$ uv run python -m kojev.data_gold --out /tmp/kojev-gold-corrective
+Exit: 0
+Observed source loader messages show actual Hugging Face datasets loaded from local cache fallback where the Hub was unavailable. No synthetic rows were generated.
+Measured from /tmp/kojev-gold-corrective/summary.json and generated JSONL:
+- source_count=12
+- train_states=96000
+- train_questions=304018
+- JSONL lines: train.jsonl=103999, val.jsonl=2500, test.jsonl=1000
+- kobest_entries=[]
+- korquad_entries=['KorQuAD/squad_kor_v1:train']
+
+Clean validation:
+$ uv run python -m kojev.data_gold --validate /tmp/kojev-gold-corrective
+Exit: 0
+No diagnostics.
+
+Malformed JSON corruption:
+Copied train.jsonl, replaced line 2 with `not json`, then ran:
+$ uv run python -m kojev.data_gold --validate /tmp/kojev-gold-corrective-corrupt
+Observed: /tmp/kojev-gold-corrective-corrupt/train.jsonl:2: invalid JSON
+Exit: 1
+
+Schema-invalid empty-question corruption:
+Copied train.jsonl, replaced line 2 questions with [], then ran:
+$ uv run python -m kojev.data_gold --validate /tmp/kojev-gold-corrective-empty
+Observed: /tmp/kojev-gold-corrective-empty/train.jsonl:2: Value error, examples require at least one question (minimum 1)
+Exit: 1
+
+Cleanup:
+Temporary QA directories and transcript were removed after this evidence was copied into the repository evidence directory.
