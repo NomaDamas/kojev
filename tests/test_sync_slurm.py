@@ -52,6 +52,15 @@ def test_templates_hardlink_from_the_shared_cache_instead_of_copying() -> None:
         assert "export UV_LINK_MODE=copy" not in text
 
 
+def test_templates_tolerate_the_documented_double_dash_invocation() -> None:
+    # The plan's command is `sbatch smoke.sbatch -- python -m kojev.train ...`.
+    # sbatch forwards the leading `--` as $1, which would otherwise be executed.
+    for path in (SMOKE, TRAIN):
+        text = _text(path)
+        assert 'if [ "${1:-}" = "--" ]; then' in text
+        assert "shift" in text
+
+
 def test_templates_prefer_a_prebuilt_shared_venv_and_never_mutate_it() -> None:
     # Installing torch (~10k files) into a per-job venv exceeded the smoke wall
     # clock on this NFS mount and exhausted job 13620. Jobs must reuse a

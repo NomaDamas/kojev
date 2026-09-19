@@ -39,6 +39,11 @@ else
   uv venv --allow-existing "$UV_PROJECT_ENVIRONMENT"
   uv sync --no-dev
 fi
+# The plan documents `sbatch smoke.sbatch -- python -m kojev.train ...`; sbatch
+# forwards that leading `--` as $1, so drop it before dispatching.
+if [ "${1:-}" = "--" ]; then
+  shift
+fi
 if [ "$#" -eq 0 ]; then
   set -- python -c "import torch; print(torch.cuda.is_available())"
 fi
