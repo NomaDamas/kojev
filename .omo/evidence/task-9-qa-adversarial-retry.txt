@@ -1,0 +1,2 @@
+attempts= 3
+answers= {1: 0}

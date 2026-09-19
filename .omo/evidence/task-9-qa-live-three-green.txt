@@ -1,0 +1,4 @@
+{"answers": {}, "ledger_records": 1, "nested_logprobs_tokens": 1, "request": 1, "request_cost_usd": 9.919000000000001e-06, "status": "success"}
+{"answers": {}, "ledger_records": 2, "nested_logprobs_tokens": 1, "request": 2, "request_cost_usd": 9.919000000000001e-06, "status": "success"}
+{"answers": {}, "ledger_records": 3, "nested_logprobs_tokens": 1, "request": 3, "request_cost_usd": 9.919000000000001e-06, "status": "success"}
+{"ledger_records": 3, "model": "qwen/qwen3-vl-8b-instruct", "secret_logged": false, "successful_requests": 3, "total_cost_usd": 2.9757000000000003e-05}

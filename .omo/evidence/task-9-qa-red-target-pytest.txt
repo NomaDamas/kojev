@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Volumes/SSD1/worktrees/kojev-task-9-teacher
+configfile: pyproject.toml
+plugins: cov-7.1.0, anyio-4.15.1
+collected 4 items
+
+tests/test_teacher.py ..F.                                               [100%]
+
+=================================== FAILURES ===================================
+___________ test_retries_429_and_5xx_with_bounded_attempts[asyncio] ____________
+
+tmp_path = PosixPath('/private/var/folders/8w/_x12f_056yv_z1x45vr_f2cm0000gp/T/pytest-of-jeffrey/pytest-201/test_retries_429_and_5xx_with_0')
+
+    @pytest.mark.anyio
+    async def test_retries_429_and_5xx_with_bounded_attempts(tmp_path: Path) -> None:
+        # Given transient provider failures followed by a valid response
+        attempts = 0
+
+        def handler(_: httpx.Request) -> httpx.Response:
+            nonlocal attempts
+            attempts += 1
+            if attempts < 3:
+                return httpx.Response(429 if attempts == 1 else 503)
+            return _response()
+
+        client = TeacherClient(
+            api_key="test-key",
+            ledger_path=tmp_path / "ledger.jsonl",
+            http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+            retry_delays=(0.0, 0.0),
+        )
+
+        # When the request is made
+        result = await client.ask("state", ["question"])
+
+        # Then bounded retries recover without duplicate ledger charges
+>       assert result.answers == {1: 0, 2: 1}
+E       assert {1: 0} == {1: 0, 2: 1}
+E
+E         Omitting 1 identical items, use -vv to show
+E         Right contains 1 more item:
+E         {2: 1}
+E         Use -v to get more diff
+
+tests/test_teacher.py:145: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_teacher.py::test_retries_429_and_5xx_with_bounded_attempts[asyncio]
+========================= 1 failed, 3 passed in 0.09s ==========================

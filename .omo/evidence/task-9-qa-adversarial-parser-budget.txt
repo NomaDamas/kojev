@@ -1,0 +1,4 @@
+parser_injection= {1: 2, 2: 1}
+budget_result_type= BudgetReached
+provider_calls= 0
+marker_present= True
