@@ -238,10 +238,11 @@ def _collect(
     kinds: list[QuestionType] = []
     sources: list[str] = []
     _ = model.eval()
+    device = model_device(model)
     with torch.no_grad():
         for start in range(0, len(examples), 4):
             chunk = examples[start : start + 4]
-            output = forward(model, collate(chunk))
+            output = forward(model, _to_device(collate(chunk), device))
             question_index = 0
             for example in chunk:
                 for question in example.questions:
@@ -284,6 +285,18 @@ def select_device() -> torch.device:
     """
     if torch.cuda.is_available():
         return torch.device("cuda")
+    return torch.device("cpu")
+
+
+def model_device(model: nn.Module) -> torch.device:
+    """Return the device the model's parameters live on.
+
+    Evaluation collates its own batches, so it needs the same device the
+    training loop moved the model to. Deriving it from the model keeps the two
+    paths from drifting apart, which is exactly what gpu01 job 13632 hit.
+    """
+    for parameter in model.parameters():
+        return parameter.device
     return torch.device("cpu")
 
 
