@@ -10,17 +10,21 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Protocol, TypedDict, override
+from typing import TYPE_CHECKING, Final, Protocol, TypedDict, cast, override
 
 from pydantic import TypeAdapter
 
 from kojev.schema import Example, JsonValue, Question, QuestionType
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
 
 type Row = dict[str, JsonValue]
 type Probabilities = tuple[float, ...]
 
 KOBEST_CONFIGS: Final = ("boolq", "copa", "wic", "hellaswag", "sentineg")
 KLUE_TASKS: Final = ("ynat", "nli", "sts")
+TASK_COLUMNS: Final = KOBEST_CONFIGS + KLUE_TASKS
 _BINARY: Final = ["아니오", "예"]
 _NLI: Final = ["함의", "중립", "모순"]
 _STS: Final = ["전혀 다름", "다름", "약간 다름", "비슷함", "거의 같음", "완전히 같음"]
@@ -289,6 +293,26 @@ def metric_report(
     return ReportPayload(tasks=tasks, kinds=kinds, total_count=len(items))
 
 
+def render_task_grid(
+    models: Sequence[tuple[str, Mapping[str, MetricPayload]]],
+) -> str:
+    """Render a wide accuracy table: one row per model, eight task columns."""
+    header = "| model | " + " | ".join(TASK_COLUMNS) + " |"
+    rule = "| --- | " + " | ".join(["---:"] * len(TASK_COLUMNS)) + " |"
+    lines = [header, rule]
+    for name, tasks in models:
+        cells = [name]
+        for task in TASK_COLUMNS:
+            payload = tasks.get(task)
+            if payload is None:
+                raise BenchmarkError(
+                    f"grid is missing task {task!r} for model {name!r}"
+                )
+            cells.append(f"{payload['accuracy']:.3f}")
+        lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines) + "\n"
+
+
 def assert_no_kobest_contamination(
     training_manifest: Path, kobest_ids: set[str]
 ) -> None:
@@ -330,16 +354,54 @@ def load_benchmark_items(
     return tuple(items[:limit])
 
 
-def main() -> None:
-    """Run the deterministic random baseline and write its JSON report."""
-    if "--help" in sys.argv:
-        _ = sys.stdout.write(
-            "usage: python -m kojev.bench [--model random] [--limit N] [--output PATH] [--training-manifest PATH]\n"
-        )
-        return
-    values = {"model": "random", "limit": "200", "output": "benchmark-report.json"}
-    training_manifest: Path | None = None
-    arguments = iter(sys.argv[1:])
+def _render_named_grids(grids: list[str], results_path: Path | None) -> str:
+    """Load NAME=PATH JSON reports and render the eight-task accuracy grid."""
+    models: list[tuple[str, dict[str, MetricPayload]]] = []
+    for spec in grids:
+        name, separator, raw = spec.partition("=")
+        if not separator or not name or not raw:
+            raise BenchmarkError(reason=f"--grid expects NAME=PATH, got: {spec}")
+        path = Path(raw)
+        if not path.is_file():
+            raise BenchmarkError(reason=f"grid report does not exist: {path}")
+        loaded = cast("object", json.loads(path.read_text(encoding="utf-8")))
+        if not isinstance(loaded, dict):
+            raise BenchmarkError(reason=f"grid report missing tasks object: {path}")
+        entries = cast("dict[str, object]", loaded)
+        raw_tasks = entries.get("tasks")
+        if not isinstance(raw_tasks, dict):
+            raise BenchmarkError(reason=f"grid report missing tasks object: {path}")
+        tasks = cast("dict[str, MetricPayload]", raw_tasks)
+        models.append((name, tasks))
+    table = render_task_grid(models)
+    if results_path is not None:
+        results_path.parent.mkdir(parents=True, exist_ok=True)
+        _ = results_path.write_text(table, encoding="utf-8")
+    return table
+
+
+class _Cli(TypedDict):
+    """Parsed argv for the bench CLI."""
+
+    model: str
+    limit: str
+    output: str
+    manifest: Path | None
+    grids: list[str]
+    results: Path | None
+
+
+def _parse_cli(argv: list[str]) -> _Cli:
+    """Parse bench flags without argparse."""
+    values: _Cli = {
+        "model": "random",
+        "limit": "200",
+        "output": "benchmark-report.json",
+        "manifest": None,
+        "grids": [],
+        "results": None,
+    }
+    arguments = iter(argv)
     for argument in arguments:
         if argument == "--model":
             values["model"] = next(arguments)
@@ -348,9 +410,36 @@ def main() -> None:
         elif argument == "--output":
             values["output"] = next(arguments)
         elif argument == "--training-manifest":
-            training_manifest = Path(next(arguments))
+            values["manifest"] = Path(next(arguments))
+        elif argument == "--grid":
+            values["grids"].append(next(arguments))
+        elif argument == "--results":
+            values["results"] = Path(next(arguments))
         else:
             raise BenchmarkError(reason=f"unknown argument: {argument}")
+    return values
+
+
+def main() -> None:
+    """Run the deterministic random baseline and write its JSON report."""
+    if "--help" in sys.argv:
+        usage = (
+            "usage: python -m kojev.bench [--model random] [--limit N] "
+            "[--output PATH] [--training-manifest PATH] "
+            "[--grid NAME=PATH ...] [--results PATH]\n"
+        )
+        _ = sys.stdout.write(usage)
+        return
+    parsed = _parse_cli(sys.argv[1:])
+    if parsed["grids"]:
+        _ = sys.stdout.write(_render_named_grids(parsed["grids"], parsed["results"]))
+        return
+    values = {
+        "model": parsed["model"],
+        "limit": parsed["limit"],
+        "output": parsed["output"],
+    }
+    training_manifest = parsed["manifest"]
     if values["model"] != "random":
         raise BenchmarkError(reason="only --model random is implemented")
     limit = int(values["limit"])
