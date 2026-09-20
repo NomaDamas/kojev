@@ -563,7 +563,7 @@ def _render_results(
                 if isinstance(overall, dict):
                     acc = str(overall.get("accuracy", "n/a"))
                     brier = str(overall.get("brier", "n/a"))
-                    ece = str(overall.get("ece", "n/a"))
+                    ece = str(overall.get("ece_15", overall.get("ece", "n/a")))
             cells = (
                 model_name,
                 split_name,
