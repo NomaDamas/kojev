@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import math
+import sys
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Final
+from pathlib import Path
+from typing import Final, cast
 
 import torch
 from torch import Tensor
@@ -111,3 +115,96 @@ def rlcd_gate(held_out_metric_delta: float, config: RLCDConfig) -> GateDecision:
     if held_out_metric_delta >= config.gate_delta_threshold:
         return GateDecision.GO
     return GateDecision.NO_GO
+
+
+class GateInputError(RuntimeError):
+    """A gate run cannot proceed because its declared inputs are unusable."""
+
+    @classmethod
+    def missing_metrics(cls, path: Path) -> GateInputError:
+        """Reject a held-out metrics path that does not exist."""
+        return cls(f"held-out metrics file does not exist: {path}")
+
+    @classmethod
+    def malformed_metrics(cls, path: Path, detail: str) -> GateInputError:
+        """Reject a metrics file that exists but cannot supply both metrics."""
+        return cls(f"held-out metrics file is unusable: {path}: {detail}")
+
+
+class _GateArgs(argparse.Namespace):
+    """Typed mutable namespace populated by argparse."""
+
+    metrics: Path = Path("runs/rlcd/metrics.json")
+    out: Path = Path("runs/rlcd")
+    gate_delta_threshold: float = _DEFAULT_GATE_DELTA_THRESHOLD
+
+
+def _parse_args(argv: list[str] | None) -> _GateArgs:
+    parser = argparse.ArgumentParser(
+        prog="kojev.rlcd",
+        description="Score an RLCD stage against the held-out GO/NO-GO gate.",
+    )
+    _ = parser.add_argument("--metrics", type=Path, required=True)
+    _ = parser.add_argument("--out", type=Path, required=True)
+    _ = parser.add_argument(
+        "--gate-delta-threshold",
+        type=float,
+        default=_DEFAULT_GATE_DELTA_THRESHOLD,
+    )
+    return parser.parse_args(argv, namespace=_GateArgs())
+
+
+def _read_metric_pair(path: Path) -> tuple[float, float]:
+    """Read the baseline and candidate held-out metrics from disk."""
+    if not path.is_file():
+        raise GateInputError.missing_metrics(path)
+    raw = cast("object", json.loads(path.read_text(encoding="utf-8")))
+    if not isinstance(raw, dict):
+        raise GateInputError.malformed_metrics(path, "expected a JSON object")
+    entries = cast("dict[object, object]", raw)
+    values: list[float] = []
+    for key in ("baseline_metric", "candidate_metric"):
+        value = entries.get(key)
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            raise GateInputError.malformed_metrics(path, f"{key} must be a number")
+        values.append(float(value))
+    return values[0], values[1]
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Write a GO/NO-GO report for one RLCD stage, or fail without writing one.
+
+    The verdict comes from :func:`rlcd_gate`, the same function the unit tests
+    pin, so the CLI cannot drift from the gate semantics. Inputs are validated
+    before the output directory is created, which keeps a failed run from
+    leaving a half-written report behind.
+    """
+    args = _parse_args(argv)
+    try:
+        baseline_metric, candidate_metric = _read_metric_pair(args.metrics)
+    except GateInputError as error:
+        print(str(error), file=sys.stderr)  # noqa: T201
+        return 1
+
+    delta = candidate_metric - baseline_metric
+    config = RLCDConfig(gate_delta_threshold=args.gate_delta_threshold)
+    verdict = rlcd_gate(delta, config)
+    report: dict[str, object] = {
+        "verdict": verdict.value,
+        "baseline_metric": baseline_metric,
+        "candidate_metric": candidate_metric,
+        "held_out_metric_delta": delta,
+        "gate_delta_threshold": config.gate_delta_threshold,
+        "metrics_path": str(args.metrics),
+    }
+    args.out.mkdir(parents=True, exist_ok=True)
+    _ = (args.out / "report.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    print(json.dumps({"verdict": verdict.value, "delta": delta}))  # noqa: T201
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover - CLI entry point
+    raise SystemExit(main())
