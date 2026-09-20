@@ -1,0 +1,26 @@
+# KoJev todo 14: gpu01 latency protocol (local half)
+
+Plan: 1 state x 10 questions e2e p50/p95 (20 repeats, 3 warmups) +
+forward-only + throughput batch 8/32. evaluate() previously timed each
+split example once, with no warmups and no forward/e2e split.
+
+## RED
+
+    ImportError: cannot import name 'measure_protocol_latency'
+
+## Pins
+
+- 3 slow (1000ms) warmups are executed and discarded; e2e p50/p95 are 10ms
+- 20 e2e samples, 20 forward samples (4ms), forward p50 < e2e p50
+- batch 8 throughput is 1000 qps on a 10ms/10-question clock
+- --latency-protocol appends a markdown table to RESULTS.md
+
+## Mutation
+
+Deleting the warmup loop makes p95 (and the assertion) 1000ms instead of 10ms.
+
+## GREEN
+
+    159 passed, ruff/pyright clean
+
+Not submitted: no median-seed checkpoint yet. eval.sbatch is ready.

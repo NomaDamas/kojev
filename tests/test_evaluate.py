@@ -15,6 +15,7 @@ from kojev.evaluate import (
     evaluate,
     load_open_jev,
     main,
+    measure_protocol_latency,
     resolve_checkpoint,
     wrap_kojev_model,
     wrap_open_jev,
@@ -408,3 +409,84 @@ def test_cli_rejects_missing_open_jev_package_without_writing_results(
     )
     assert exit_code != 0
     assert not results.exists()
+
+
+class _Clock:
+    """Monotonic test clock in seconds; the model advances it instead of sleeping."""
+
+    now: float
+
+    def __init__(self) -> None:
+        self.now = 0.0
+
+    def __call__(self) -> float:
+        return self.now
+
+    def advance_ms(self, milliseconds: float) -> None:
+        self.now += milliseconds / 1000.0
+
+
+class _PhasedModel:
+    """First three decide() calls are slow; later ones are fast. Forwards cheaper."""
+
+    clock: _Clock
+    decide_calls: int
+    forward_calls: int
+
+    def __init__(self, clock: _Clock) -> None:
+        self.clock = clock
+        self.decide_calls = 0
+        self.forward_calls = 0
+
+    def decide(
+        self, state: str, questions: tuple[Question, ...]
+    ) -> tuple[tuple[float, ...], ...]:
+        _ = state
+        self.decide_calls += 1
+        self.clock.advance_ms(1000.0 if self.decide_calls <= 3 else 10.0)
+        return tuple((0.5, 0.5) for _question in questions)
+
+    def forward_only(self, state: str, questions: tuple[Question, ...]) -> None:
+        _ = state, questions
+        self.forward_calls += 1
+        self.clock.advance_ms(4.0)
+
+
+def _ten_questions() -> tuple[Question, ...]:
+    return tuple(_noul(f"속성 {index}이다.", 0) for index in range(10))
+
+
+def test_protocol_latency_drops_warmups_and_records_twenty_repeats() -> None:
+    """Warmups of 1000ms must not enter the e2e sample."""
+    clock = _Clock()
+    model = _PhasedModel(clock)
+    report = measure_protocol_latency(
+        model,
+        "상태",
+        _ten_questions(),
+        clock=clock,
+    )
+    assert report.e2e_count == 20
+    assert report.warmups == 3
+    assert report.e2e_p50_ms == pytest.approx(10.0)
+    assert report.e2e_p95_ms == pytest.approx(10.0)
+    assert model.decide_calls >= 23
+
+
+def test_protocol_latency_separates_forward_only_from_e2e() -> None:
+    clock = _Clock()
+    model = _PhasedModel(clock)
+    report = measure_protocol_latency(model, "상태", _ten_questions(), clock=clock)
+    assert report.forward_count == 20
+    assert report.forward_p50_ms == pytest.approx(4.0)
+    assert report.forward_p50_ms < report.e2e_p50_ms
+
+
+def test_protocol_latency_reports_throughput_at_batch_8_and_32() -> None:
+    clock = _Clock()
+    model = _PhasedModel(clock)
+    report = measure_protocol_latency(model, "상태", _ten_questions(), clock=clock)
+    assert report.throughput_qps_batch8 > 0
+    assert report.throughput_qps_batch32 > 0
+    # 8 states * 10 questions / (8 * 10ms) = 1000 qps after warmups are spent.
+    assert report.throughput_qps_batch8 == pytest.approx(1000.0)
