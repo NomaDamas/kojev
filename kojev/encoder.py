@@ -32,6 +32,18 @@ class Tokenizer(Protocol):
         ...
 
 
+class SizedTokenizer(Tokenizer, Protocol):
+    """A tokenizer that also reports its vocabulary size.
+
+    Only the pretrained loader needs this: span packing itself never asks how
+    large the vocabulary is, so the offline fixtures stay free of ``__len__``.
+    """
+
+    def __len__(self) -> int:
+        """Return the vocabulary size including registered special tokens."""
+        ...
+
+
 class BackboneOutput(Protocol):
     """Contextual token states returned by an encoder."""
 
@@ -60,16 +72,29 @@ class Backbone(Protocol):
         ...
 
 
+class ResizableBackbone(Backbone, Protocol):
+    """A backbone whose token embedding table can be widened.
+
+    Only the pretrained loader needs this. Offline fixtures allocate an
+    embedding table directly and never resize, so they stay free of this method.
+    """
+
+    def resize_token_embeddings(self, new_num_tokens: int) -> object:
+        """Resize the token embedding table to hold exactly this many ids."""
+        ...
+
+
 if TYPE_CHECKING:
 
-    def _load_pretrained(_model_name: str) -> tuple[Backbone, Tokenizer]: ...
+    def _load_pretrained(
+        _model_name: str,
+    ) -> tuple[ResizableBackbone, SizedTokenizer]: ...
 else:
 
-    def _load_pretrained(model_name: str) -> tuple[Backbone, Tokenizer]:
+    def _load_pretrained(model_name: str) -> tuple[ResizableBackbone, SizedTokenizer]:
         tokenizer = PreTrainedTokenizerFast.from_pretrained(model_name)
         config = ModernBertConfig.from_pretrained(model_name)
         backbone = ModernBertModel.from_pretrained(model_name, config=config)
-        _ = backbone.resize_token_embeddings(len(tokenizer))
         return backbone, tokenizer
 
 
@@ -262,7 +287,13 @@ class KoJevModel(nn.Module):
     ) -> tuple[KoJevModel, SpanCollator]:
         """Load A.X-Encoder, register markers, and resize token embeddings."""
         backbone, tokenizer = _load_pretrained(model_name)
-        return cls(backbone, head_hidden_size), SpanCollator(tokenizer)
+        # SpanCollator registers the three marker tokens, which lengthens the
+        # tokenizer. The embedding table must be sized AFTER that, otherwise the
+        # markers receive ids past the end of the table and every batch raises
+        # IndexError inside tok_embeddings (gpu01 job 13625).
+        collator = SpanCollator(tokenizer)
+        _ = backbone.resize_token_embeddings(len(tokenizer))
+        return cls(backbone, head_hidden_size), collator
 
     @override
     def forward(self, batch: SpanBatch) -> EncoderOutput:

@@ -123,6 +123,102 @@ def _tiny_model() -> tuple[KoJevModel, SpanCollator]:
     return model, collator
 
 
+class ExactVocabTokenizer:
+    """Tokenizer whose length grows when marker tokens are registered.
+
+
+    This mirrors a real Hugging Face tokenizer: ``len(tokenizer)`` counts the
+    base vocabulary plus any added special tokens, so registering markers makes
+    it longer than the checkpoint's configured ``vocab_size``.
+    """
+
+    base_size: int
+
+    def __init__(self, base_size: int) -> None:
+        self.base_size = base_size
+        self.special: dict[str, int] = {}
+
+    def __len__(self) -> int:
+        return self.base_size + len(self.special)
+
+    def add_special_tokens(self, payload: dict[str, list[str]]) -> int:
+        added = 0
+        for token in payload["additional_special_tokens"]:
+            if token not in self.special:
+                self.special[token] = self.base_size + len(self.special)
+                added += 1
+        return added
+
+    def encode(self, text: str, add_special_tokens: bool = False) -> list[int]:
+        del add_special_tokens
+        if text in self.special:
+            return [self.special[text]]
+        return [(hash(token) % self.base_size) for token in text.split()]
+
+
+class ResizingBackbone(nn.Module):
+    """Backbone whose embedding table is exactly as wide as it was resized to."""
+
+    config: TinyConfig
+    embedding: nn.Embedding
+
+    def __init__(self, vocab_size: int, hidden_size: int = 8) -> None:
+        super().__init__()
+        self.config = TinyConfig(hidden_size)
+        self.embedding = nn.Embedding(vocab_size, hidden_size)
+
+    def resize_token_embeddings(self, new_num_tokens: int) -> nn.Embedding:
+        self.embedding = nn.Embedding(new_num_tokens, self.config.hidden_size)
+        return self.embedding
+
+    @override
+    def forward(
+        self,
+        input_ids: Tensor,
+        attention_mask: Tensor | None = None,
+    ) -> TinyOutput:
+        del attention_mask
+        return TinyOutput(self.embedding.forward(input_ids))
+
+
+def test_from_pretrained_sizes_embeddings_after_registering_marker_tokens(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Marker ids must index inside the embedding table.
+
+    Regression for gpu01 job 13625, which died after 20 minutes with
+    ``IndexError: index out of range in self`` inside ``tok_embeddings``. The
+    loader resized the embedding table to ``len(tokenizer)`` BEFORE
+    ``SpanCollator`` registered its three marker tokens, so the markers received
+    ids just past the end of the table. Every sequence begins with a marker, so
+    every batch raised. The tiny fixtures never caught this because they
+    construct ``KoJevModel`` directly and hand it an oversized embedding table.
+    """
+    base_size = 64
+    tokenizer = ExactVocabTokenizer(base_size)
+
+    def _fake_load(model_name: str) -> tuple[ResizingBackbone, ExactVocabTokenizer]:
+        del model_name
+        # The checkpoint's table is exactly as wide as its own vocabulary,
+        # which is the real A.X-Encoder-base situation (50000 rows, 50000 ids).
+        return ResizingBackbone(len(tokenizer)), tokenizer
+
+    monkeypatch.setattr("kojev.encoder._load_pretrained", _fake_load)
+
+    model, collator = KoJevModel.from_pretrained("stub-backbone")
+    batch = collator(_examples())
+
+    backbone = model.backbone
+    assert isinstance(backbone, ResizingBackbone)
+    rows: int = backbone.embedding.num_embeddings
+    assert int(batch.input_ids.max()) < rows, (
+        f"collated ids reach {int(batch.input_ids.max())} but the embedding table "
+        f"has only {rows} rows"
+    )
+    # Reproduce the cluster failure directly: this raised IndexError before the fix.
+    _ = model.forward(batch)
+
+
 def test_collator_marks_spans_without_marker_hidden_state_readout() -> None:
     # Given examples and a tokenizer with task marker support
     model, collator = _tiny_model()
