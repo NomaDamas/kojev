@@ -2,18 +2,34 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, cast, override
 
 import pytest
 import torch
+from tokenizers import Tokenizer as HFTokenizer
+from tokenizers.models import WordLevel
+from tokenizers.pre_tokenizers import Whitespace
 from torch import Tensor, nn
-from transformers import ModernBertConfig, ModernBertModel
+from transformers import (
+    DebertaV2Config,
+    ModernBertConfig,
+    ModernBertModel,
+    PreTrainedTokenizerFast,
+)
 
-from kojev.encoder import KoJevModel, SpanCollator
+from kojev.encoder import (
+    CheckpointProvenance,
+    KoJevModel,
+    SpanCollator,
+    Tokenizer,
+    load_checkpoint,
+)
 from kojev.schema import Example, Question, QuestionType
 
 if TYPE_CHECKING:
+    from pathlib import Path
 
     def _train_step(_loss: Tensor, _optimizer: torch.optim.Optimizer) -> None: ...
 else:
@@ -219,6 +235,48 @@ def test_from_pretrained_sizes_embeddings_after_registering_marker_tokens(
     _ = model.forward(batch)
 
 
+def test_deberta_v2_pretrained_path_uses_auto_loader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A deberta-v2-shaped checkpoint must use the generic loader path."""
+    config = DebertaV2Config(
+        vocab_size=64,
+        hidden_size=8,
+        intermediate_size=16,
+        num_hidden_layers=1,
+        num_attention_heads=2,
+    )
+    tokenizer = ExactVocabTokenizer(config.vocab_size)
+    backbone = ResizingBackbone(config.vocab_size, hidden_size=config.hidden_size)
+    calls: list[str] = []
+
+    def fake_config(name: str) -> DebertaV2Config:
+        calls.append(f"config:{name}")
+        return config
+
+    def fake_model(name: str, *, config: DebertaV2Config) -> ResizingBackbone:
+        calls.append(f"model:{name}:{config.model_type}")
+        return backbone
+
+    def fake_tokenizer(name: str, *, use_fast: bool) -> ExactVocabTokenizer:
+        assert use_fast is True
+        calls.append(f"tokenizer:{name}")
+        return tokenizer
+
+    monkeypatch.setattr("kojev.encoder.AutoConfig.from_pretrained", fake_config)
+    monkeypatch.setattr("kojev.encoder.AutoModel.from_pretrained", fake_model)
+    monkeypatch.setattr("kojev.encoder.AutoTokenizer.from_pretrained", fake_tokenizer)
+
+    model, _ = KoJevModel.from_pretrained("synthetic-deberta")
+
+    assert calls == [
+        "tokenizer:synthetic-deberta",
+        "config:synthetic-deberta",
+        "model:synthetic-deberta:deberta-v2",
+    ]
+    assert model.backbone is backbone
+
+
 def test_collator_marks_spans_without_marker_hidden_state_readout() -> None:
     # Given examples and a tokenizer with task marker support
     model, collator = _tiny_model()
@@ -327,3 +385,74 @@ def test_schema_rejects_three_hundred_choice_options_before_model() -> None:
             instructions="선택",
             options=[str(index) for index in range(300)],
         )
+
+
+def test_checkpoint_round_trip_is_offline_and_preserves_outputs(
+    tmp_path: Path,
+) -> None:
+    """Saved backbone, tokenizer, and head must reload without the Hub."""
+    unknown_marker = "[UNK]"
+    padding_marker = "[PAD]"
+    vocab = {unknown_marker: 0, padding_marker: 1}
+    for token in ("배송", "빠르다", "평가", "나쁨", "좋음"):
+        vocab[token] = len(vocab)
+    tokenizer_backend = HFTokenizer(WordLevel(vocab, unk_token=unknown_marker))
+    tokenizer_backend.pre_tokenizer = Whitespace()
+    tokenizer = PreTrainedTokenizerFast(
+        tokenizer_object=tokenizer_backend,
+        unk_token=unknown_marker,
+        pad_token=padding_marker,
+    )
+    backbone = ModernBertModel(
+        ModernBertConfig(
+            vocab_size=len(vocab),
+            hidden_size=16,
+            intermediate_size=32,
+            num_hidden_layers=1,
+            num_attention_heads=2,
+            max_position_embeddings=128,
+            pad_token_id=1,
+        )
+    )
+    # A real Hugging Face tokenizer provides every behaviour SpanCollator uses,
+    # but its signatures are wider than the narrow Tokenizer protocol, so the
+    # structural check has to be relaxed through `object`. The round-trip
+    # assertions below are what actually prove the adaptation is sound.
+    protocol_tokenizer = cast("Tokenizer", cast("object", tokenizer))
+    collator = SpanCollator(protocol_tokenizer, max_length=64)
+    _ = backbone.resize_token_embeddings(len(tokenizer))
+    model = KoJevModel(backbone, head_hidden_size=16)
+    example = _examples()[0]
+    original = model.forward(collator([example]))
+    checkpoint = tmp_path / "checkpoint"
+
+    model.save_checkpoint(
+        checkpoint,
+        collator,
+        CheckpointProvenance(
+            temperature=1.25,
+            model_name="synthetic/modernbert",
+            seed=7,
+            train_path="gold.jsonl",
+            val_path="val.jsonl",
+        ),
+    )
+
+    loaded, loaded_collator, metadata = load_checkpoint(checkpoint)
+    reloaded = loaded.forward(loaded_collator([example]))
+
+    torch.testing.assert_close(reloaded.logits, original.logits, rtol=1e-6, atol=1e-6)
+    torch.testing.assert_close(
+        reloaded.probabilities, original.probabilities, rtol=1e-6, atol=1e-6
+    )
+    # get_input_embeddings() is the architecture-agnostic accessor: ModernBERT
+    # names its table `tok_embeddings` while DeBERTa uses `word_embeddings`, and
+    # this loader must work for both.
+    reloaded_backbone = loaded.backbone
+    assert isinstance(reloaded_backbone, ModernBertModel)
+    embedding_rows: int = reloaded_backbone.get_input_embeddings().num_embeddings
+    assert max(loaded_collator.marker_ids) < embedding_rows
+    assert metadata["temperature"] == 1.25
+    assert (checkpoint / "head.safetensors").is_file()
+    assert (checkpoint / "tokenizer_config.json").is_file()
+    assert json.loads((checkpoint / "kojev_config.json").read_text())["seed"] == 7

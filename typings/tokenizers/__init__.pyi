@@ -1,0 +1,3 @@
+class Tokenizer:
+    pre_tokenizer: object
+    def __init__(self, model: object) -> None: ...
