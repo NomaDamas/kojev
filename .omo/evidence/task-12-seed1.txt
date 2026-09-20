@@ -1,0 +1,9 @@
+# Full SFT seed 1 (job 13686)
+
+COMPLETED 00:33:39 ExitCode 0:0
+run /data2/jeffrey/kojev/runs/sft-full-seed1
+diverged=false  temperature=1.05  train=103952  val=6499
+overall acc=0.7215  majority=0.6446  gap=+0.0769
+choice +0.216  noul +0.027  score +0.032
+unsmile +0.531  3i4k +0.175  nsmc +0.032
+Seed 0 gap was +0.070; seed 1 is healthy and slightly stronger.
