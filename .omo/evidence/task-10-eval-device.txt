@@ -1,0 +1,24 @@
+# KoJev: evaluation left its batches on the CPU
+
+Job 13632 FAILED in 00:00:46 with:
+
+    RuntimeError: Expected all tensors to be on the same device, but got index
+    is on cpu, different from other tensors on cuda:0
+
+The training loop moved its batches to the GPU, but _collect collates FRESH
+batches for validation and left them on CPU. Fixing the training loop alone was
+not enough: the same device discipline has to hold everywhere a batch is made.
+
+Fix: model_device(model) derives the device from the model's own parameters, and
+_collect moves each evaluation batch onto it. Deriving rather than threading the
+device keeps the two paths from drifting apart again.
+
+Non-tautology proof: reverting the eval-path move fails the new test.
+
+    E   AssertionError: evaluation never moved a batch: 1 moves
+    E   assert 1 > 1
+
+The count works because a 2-example run performs a single optimizer step, so any
+move beyond the first must have come from evaluation.
+
+Gates: 126 passed, ruff clean, format clean, basedpyright 0 errors.

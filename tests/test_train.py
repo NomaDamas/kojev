@@ -12,6 +12,7 @@ import torch
 from pydantic import TypeAdapter
 from torch import nn
 
+import kojev.train as train_module
 from kojev.encoder import EncoderOutput
 from kojev.schema import Example, Question, QuestionType, write_jsonl
 from kojev.train import (
@@ -19,6 +20,7 @@ from kojev.train import (
     DivergenceWatch,
     TrainReport,
     fit_temperature,
+    model_device,
     run_training,
     select_device,
     training_loss,
@@ -214,3 +216,58 @@ def test_select_device_falls_back_to_cpu_without_an_accelerator(
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
 
     assert select_device().type == "cpu"
+
+
+def test_model_device_reports_where_the_parameters_live() -> None:
+    """Evaluation derives its device from the model, so this must be exact."""
+    model = nn.Linear(1, 2)
+
+    assert model_device(model) == next(model.parameters()).device
+
+
+def test_evaluation_moves_its_batches_onto_the_model_device(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The eval path must move batches, not only the training loop.
+
+    Regression for gpu01 job 13632. The training loop moved its batches to the
+    GPU but `_collect` collated fresh batches for validation and left them on
+    CPU, so the first evaluation raised:
+
+        RuntimeError: Expected all tensors to be on the same device, but got
+        index is on cpu, different from other tensors on cuda:0
+
+    Counting the moves proves the evaluation path participates: a run with more
+    evaluation passes than optimizer steps cannot reach this count from the
+    training loop alone.
+    """
+    real_to_device = train_module._to_device  # pyright: ignore[reportPrivateUsage]
+    moves: list[int] = []
+
+    def _counting_to_device(batch: Batch, device: torch.device) -> Batch:
+        moves.append(1)
+        return real_to_device(batch, device)
+
+    monkeypatch.setattr(train_module, "_to_device", _counting_to_device)
+
+    train_path = tmp_path / "train.jsonl"
+    val_path = tmp_path / "val.jsonl"
+    write_jsonl(train_path, [_example()] * 2)
+    write_jsonl(val_path, [_example("val")] * 2)
+    _ = run_training(
+        train_path=train_path,
+        val_path=val_path,
+        out_dir=tmp_path / "run",
+        epochs=1,
+        seed=4,
+        limit=2,
+        model=nn.Linear(1, 2),
+        collate_fn=lambda examples: (torch.ones(len(examples), 1),),
+        forward_fn=_linear_forward,
+        model_name="synthetic/backbone",
+        distill_weight=0.5,
+    )
+
+    # One optimizer step over 2 examples at the default batch size, so any count
+    # beyond that came from evaluation collating its own batches.
+    assert len(moves) > 1, f"evaluation never moved a batch: {len(moves)} moves"
