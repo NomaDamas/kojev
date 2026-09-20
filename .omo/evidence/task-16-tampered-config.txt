@@ -1,0 +1,6 @@
+# Tampered release-bundle temperature (todo 16 failure QA)
+
+Copied /tmp/kojev-restore-v0, set kojev_config.json temperature to "hot".
+load_checkpoint raised EncodingError:
+  kojev_config.json field 'temperature' must be int or float, got str
+Did not load the backbone.
