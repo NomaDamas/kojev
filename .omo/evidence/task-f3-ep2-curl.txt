@@ -1,0 +1,6 @@
+# F3 curl against product kojev-v0 (seed2-ep2 restore)
+
+KOJEV_CKPT=/data2/jeffrey/kojev/restore-v0
+POST /v1/systemone fixture req.json -> 200 answers choice/score/noul usage.input_tokens=13
+malformed missing type -> 422 validation_error
+kill uvicorn; kill -0 fails (DEAD_OK)

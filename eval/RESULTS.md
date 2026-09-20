@@ -2,6 +2,16 @@
 
 | model | split | states | acc | f1 | brier | ece | p50_ms | p95_ms | report |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| ep2 | boolq | 1404 | 0.49002849002849 | 0.4669726482964572 | 0.5539532490197465 | 0.1465447083582566 | 17.849247553385794 | 24.69983184710145 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | copa | 1000 | 0.475 | 0.4437563504483324 | 0.6168990681474521 | 0.22068983411788942 | 12.67628453206271 | 21.440348122268915 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | gold-val | 6499 | 0.7643660373465387 | 0.06067378617075781 | 0.2963234998570294 | 0.01904241391003631 | 13.799390057101846 | 25.980914011597633 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | hellaswag | 500 | 0.318 | 0.30243816946012453 | 0.7995937691540421 | 0.1656169663667679 | 14.132559997960925 | 16.720139887183905 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | nli | 2153 | 0.36321411983279145 | 0.3473982423681776 | 0.6822338907342594 | 0.0846745591771586 | 13.768109027296305 | 17.21272198483348 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | ood | 6345 | 0.41564343033935996 | 0.2395725141330317 | 0.6830420771139961 | 0.23468673217547859 | 13.697112910449505 | 27.623936999589205 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | sentineg | 396 | 0.5050505050505051 | 0.37250590175597453 | 0.6599653035169095 | 0.26112297026797976 | 12.416991405189037 | 15.525581082329154 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | sts | 519 | 0.14258188824662812 | 0.10526349817130037 | 0.8906938168223134 | 0.17447990905457608 | 15.869108960032463 | 20.261491183191538 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | wic | 1260 | 0.5007936507936508 | 0.4475991465924686 | 0.549155743386283 | 0.14054939576557707 | 13.104327488690615 | 17.010973067954183 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
+| ep2 | ynat | 7825 | 0.2152076677316294 | 0.19419190334252737 | 0.8472392322486615 | 0.123704530722417 | 13.617625925689936 | 21.856333129107952 | /data2/jeffrey/kojev/runs/eval-full/report-ep2.json |
 | main | boolq | 1404 | 0.5014245014245015 | 0.44875088341204583 | 0.5221045923753058 | 0.09150265280337755 | 13.299362966790795 | 17.97109702602029 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
 | main | copa | 1000 | 0.471 | 0.44826349016626144 | 0.5948480176940331 | 0.18650106585025789 | 11.623582569882274 | 16.135317040607333 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
 | main | gold-val | 6499 | 0.7190240379655422 | 0.04997744835209397 | 0.33308753775170247 | 0.03451031681819311 | 14.596455032005906 | 26.61545993760228 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
@@ -69,32 +79,9 @@
 
 | model | e2e_p50 | e2e_p95 | fwd_p50 | fwd_p95 | qps_b8 | qps_b32 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| ep2 | 20.553 | 25.824 | 0.000 | 0.000 | 489.4 | 468.2 |
 | main | 16.399 | 18.222 | 0.000 | 0.000 | 614.7 | 586.6 |
-| control | 18.272 | 19.417 | 0.000 | 0.000 | 555.5 | 545.2 |
 
 ## KoBEST vs English OpenJev
 
-Acceptance wanted KoJev main > OpenJev on >=4/5 KoBEST tasks.
-Measured (acc): boolq 0.501 vs 0.712; copa 0.471 vs 0.596; wic 0.467 vs 0.494;
-hellaswag 0.280 vs 0.398; sentineg 0.490 vs 0.851. **Wins: 0/5.**
-In-domain gold-val still favors KoJev (0.719 vs OpenJev 0.522).
-OpenJev skipped 500 overflow families on gold-val (512 window).
-
-## Majority baselines
-
-Gold-label majority class per split (independent of model).
-
-| split | questions | majority_acc |
-| --- | ---: | ---: |
-| gold-val | 19386 | 0.644640 |
-| ood | 10343 | 0.482259 |
-| boolq | 1404 | 0.502137 |
-| copa | 1000 | 0.517000 |
-| wic | 1260 | 0.511905 |
-| hellaswag | 500 | 0.274000 |
-| sentineg | 396 | 0.502525 |
-| ynat | 7825 | 0.402556 |
-| nli | 2153 | 0.337204 |
-| sts | 519 | 0.233141 |
-
-KoJev main is at or below majority on 4/5 KoBEST tasks (hellaswag +0.006).
+Product ep2 vs OpenJev: **1/5 wins** (wic only). Need >=4/5. Contamination: clean.
