@@ -1,0 +1,54 @@
+# KoJev: grouped softmax broke under real GPU autocast
+
+## Why this appeared only now
+
+This fault was dormant for the whole project because training ran on CPU. Fixing
+the device defect made the code reach CUDA autocast for the first time, and job
+13630 failed in 53 SECONDS where its predecessors had burned 30 minutes and 2
+hours. The fast failure is itself evidence the device fix worked.
+
+```text
+13630|FAILED|1:0|00:00:53|gpu01
+kojev/encoder.py line 435, in forward
+    probabilities[indices] = group_probabilities
+RuntimeError: Index put requires the source and destination dtypes match,
+got BFloat16 for the destination and Float for the source.
+```
+
+## Root cause
+
+Under CUDA autocast the logits stay BFloat16, so `torch.zeros_like(logits)` is
+BFloat16, but `torch.softmax` is on the fp32 autocast list and returns Float.
+Writing the group probabilities back mixes the two.
+
+## Reproducing it on a CPU host
+
+CPU autocast does NOT promote softmax, so `with torch.autocast("cpu", ...)`
+could not reproduce the failure: that first attempt passed against broken code.
+The test therefore emulates the CUDA policy directly, monkeypatching softmax to
+promote to Float AND the head to emit BFloat16. That reproduces the exact error
+locally:
+
+```text
+E   RuntimeError: Index put requires the source and destination dtypes match,
+    got BFloat16 for the destination and Float for the source.
+kojev/encoder.py:435
+```
+
+Emulating the policy keeps the test faithful to the invariant and independent of
+whether the host has an accelerator.
+
+## Fix
+
+    probabilities[indices] = group_probabilities.to(probabilities.dtype)
+
+## GREEN
+
+uv run pytest -q                => 124 passed
+uv run ruff check kojev tests   => All checks passed!
+uv run ruff format --check      => 32 files already formatted
+uv run basedpyright kojev tests => 0 errors, 0 warnings, 0 notes
+
+## Cleanup receipt
+
+- No temporary files or processes were left behind.

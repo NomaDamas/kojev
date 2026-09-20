@@ -432,7 +432,10 @@ class KoJevModel(nn.Module):
             indices = torch.tensor(group, device=logits.device)
             group_logits = logits[indices]
             group_probabilities = torch.softmax(group_logits, dim=0)
-            probabilities[indices] = group_probabilities
+            # Autocast promotes softmax to fp32 on CUDA while the logits stay in
+            # reduced precision, so the write back has to match the destination
+            # dtype explicitly (gpu01 job 13630).
+            probabilities[indices] = group_probabilities.to(probabilities.dtype)
             if gold is not None:
                 target = torch.tensor([gold], device=logits.device)
                 one_hot = (
