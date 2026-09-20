@@ -13,7 +13,7 @@ from statistics import median
 from typing import TYPE_CHECKING, Final, cast, override
 
 from kojev.bench import DecisionModel, Metrics, calibration_metrics
-from kojev.schema import Example, Question, read_jsonl
+from kojev.schema import Example, Question, QuestionType, read_jsonl
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -22,6 +22,9 @@ if TYPE_CHECKING:
 
 _P95: Final = 0.95
 _MIN_FOR_P95: Final = 2
+_PROTOCOL_REPEATS: Final = 20
+_PROTOCOL_WARMUPS: Final = 3
+_PROTOCOL_QUESTION_COUNT: Final = 10
 
 
 class EvaluationError(RuntimeError):
@@ -89,6 +92,37 @@ class LatencySummary:
         return {"count": self.count, "p50_ms": self.p50_ms, "p95_ms": self.p95_ms}
 
 
+@dataclass(frozen=True, slots=True)
+class ProtocolLatency:
+    """gpu01 latency protocol: warmups dropped, e2e vs forward, batch throughput."""
+
+    e2e_p50_ms: float
+    e2e_p95_ms: float
+    e2e_count: int
+    forward_p50_ms: float
+    forward_p95_ms: float
+    forward_count: int
+    throughput_qps_batch8: float
+    throughput_qps_batch32: float
+    warmups: int
+    repeats: int
+
+    def as_payload(self) -> dict[str, JsonValue]:
+        """Render for RESULTS.md and the JSON report."""
+        return {
+            "e2e_p50_ms": self.e2e_p50_ms,
+            "e2e_p95_ms": self.e2e_p95_ms,
+            "e2e_count": self.e2e_count,
+            "forward_p50_ms": self.forward_p50_ms,
+            "forward_p95_ms": self.forward_p95_ms,
+            "forward_count": self.forward_count,
+            "throughput_qps_batch8": self.throughput_qps_batch8,
+            "throughput_qps_batch32": self.throughput_qps_batch32,
+            "warmups": self.warmups,
+            "repeats": self.repeats,
+        }
+
+
 def resolve_checkpoint(path: Path) -> Path:
     """Validate a checkpoint path before any evaluation work begins.
 
@@ -147,6 +181,83 @@ def _summarise_latency(samples: Sequence[float]) -> LatencySummary:
         count=len(samples),
         p50_ms=float(median(samples)),
         p95_ms=_percentile(samples, _P95),
+    )
+
+
+def _tick(clock: Callable[[], float] | None) -> float:
+    if clock is None:
+        return time.perf_counter()
+    return clock()
+
+
+def protocol_questions() -> tuple[Question, ...]:
+    """Ten noul questions for the 1-state x 10-question latency fixture."""
+    return tuple(
+        Question(
+            type=QuestionType.NOUL,
+            instructions=f"속성 {index}이다.",
+            options=["아니오", "예"],
+            gold=0,
+            meta={},
+        )
+        for index in range(_PROTOCOL_QUESTION_COUNT)
+    )
+
+
+def measure_protocol_latency(
+    model: DecisionModel,
+    state: str,
+    questions: tuple[Question, ...],
+    *,
+    clock: Callable[[], float] | None = None,
+) -> ProtocolLatency:
+    """Time e2e decide() and optional forward_only after dropping warmups.
+
+    Warmup calls are executed and discarded. Only ``repeats`` samples enter
+    p50/p95. Throughput is questions/second over sequential batches of 8 and 32
+    states, each carrying the same question set.
+    """
+    repeats = _PROTOCOL_REPEATS
+    warmups = _PROTOCOL_WARMUPS
+    forward = getattr(model, "forward_only", None)
+    for _warmup in range(warmups):
+        _ = model.decide(state, questions)
+        if callable(forward):
+            _ = forward(state, questions)
+    e2e_samples: list[float] = []
+    for _repeat in range(repeats):
+        started = _tick(clock)
+        _ = model.decide(state, questions)
+        e2e_samples.append((_tick(clock) - started) * 1000.0)
+    forward_samples: list[float] = []
+    if callable(forward):
+        for _repeat in range(repeats):
+            started = _tick(clock)
+            _ = forward(state, questions)
+            forward_samples.append((_tick(clock) - started) * 1000.0)
+
+    def _throughput(batch: int) -> float:
+        started = _tick(clock)
+        for _item in range(batch):
+            _ = model.decide(state, questions)
+        elapsed = _tick(clock) - started
+        if elapsed <= 0.0:
+            return 0.0
+        return (batch * len(questions)) / elapsed
+
+    e2e = _summarise_latency(e2e_samples)
+    fwd = _summarise_latency(forward_samples)
+    return ProtocolLatency(
+        e2e_p50_ms=e2e.p50_ms,
+        e2e_p95_ms=e2e.p95_ms,
+        e2e_count=e2e.count,
+        forward_p50_ms=fwd.p50_ms,
+        forward_p95_ms=fwd.p95_ms,
+        forward_count=fwd.count,
+        throughput_qps_batch8=_throughput(8),
+        throughput_qps_batch32=_throughput(32),
+        warmups=warmups,
+        repeats=repeats,
     )
 
 
@@ -370,6 +481,7 @@ class _EvalArgs(argparse.Namespace):
     split: list[str] | None = None
     out: Path = Path("eval/report.json")
     results: Path = Path("eval/RESULTS.md")
+    latency_protocol: bool = False
 
 
 def _parse_pairs(values: Sequence[str], flag: str) -> tuple[tuple[str, Path], ...]:
@@ -384,8 +496,11 @@ def _parse_pairs(values: Sequence[str], flag: str) -> tuple[tuple[str, Path], ..
     return tuple(pairs)
 
 
-def _render_results(rows: Sequence[tuple[str, str, dict[str, JsonValue]]]) -> str:
-    """Render one Markdown row per model and split, traceable to its report."""
+def _render_results(
+    rows: Sequence[tuple[str, str, dict[str, JsonValue]]],
+    protocol: Sequence[tuple[str, ProtocolLatency]] = (),
+) -> str:
+    """Render split tables plus the optional gpu01 latency protocol table."""
     lines = [
         "# KoJev evaluation results",
         "",
@@ -407,6 +522,29 @@ def _render_results(rows: Sequence[tuple[str, str, dict[str, JsonValue]]]) -> st
             states = str(split_payload.get("states", "n/a"))
             cells = (model_name, split_name, states, p50, p95, report_path)
             lines.append("| " + " | ".join(cells) + " |")
+    if protocol:
+        lines.extend(
+            [
+                "",
+                "## Latency protocol",
+                "",
+                "1 state x 10 questions; 3 warmups dropped; 20 repeats.",
+                "",
+                "| model | e2e_p50 | e2e_p95 | fwd_p50 | fwd_p95 | qps_b8 | qps_b32 |",
+                "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for model_name, measured in protocol:
+            cells = (
+                model_name,
+                f"{measured.e2e_p50_ms:.3f}",
+                f"{measured.e2e_p95_ms:.3f}",
+                f"{measured.forward_p50_ms:.3f}",
+                f"{measured.forward_p95_ms:.3f}",
+                f"{measured.throughput_qps_batch8:.1f}",
+                f"{measured.throughput_qps_batch32:.1f}",
+            )
+            lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 
 
@@ -420,6 +558,11 @@ def _parse_args(argv: list[str] | None) -> _EvalArgs:
     _ = parser.add_argument("--split", action="append", required=True)
     _ = parser.add_argument("--out", type=Path, required=True)
     _ = parser.add_argument("--results", type=Path, required=True)
+    _ = parser.add_argument(
+        "--latency-protocol",
+        action="store_true",
+        help="1x10 questions, 3 warmups, 20 repeats, batch 8/32 qps",
+    )
     return parser.parse_args(argv, namespace=_EvalArgs())
 
 
@@ -435,6 +578,8 @@ def main(argv: list[str] | None = None) -> int:
         models = _parse_pairs(args.checkpoint or [], "--checkpoint")
         splits = _parse_pairs(args.split or [], "--split")
         rows: list[tuple[str, str, dict[str, JsonValue]]] = []
+        protocol_rows: list[tuple[str, ProtocolLatency]] = []
+        fixture = protocol_questions()
         for model_name, checkpoint in models:
             # Validate BEFORE loading: resolve_checkpoint raises the typed
             # EvaluationError, whereas a loader handed a missing directory would
@@ -462,12 +607,21 @@ def main(argv: list[str] | None = None) -> int:
                 decision_model,
             )
             rows.append((model_name, str(report_path), payload))
+            if args.latency_protocol:
+                protocol_rows.append(
+                    (
+                        model_name,
+                        measure_protocol_latency(
+                            decision_model, "지연 측정 상태", fixture
+                        ),
+                    )
+                )
     except EvaluationError as error:
         print(str(error), file=sys.stderr)  # noqa: T201
         return 1
 
     args.results.parent.mkdir(parents=True, exist_ok=True)
-    _ = args.results.write_text(_render_results(rows), encoding="utf-8")
+    _ = args.results.write_text(_render_results(rows, protocol_rows), encoding="utf-8")
     print(json.dumps({"results": str(args.results), "models": len(rows)}))  # noqa: T201
     return 0
 
