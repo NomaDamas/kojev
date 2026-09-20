@@ -13,8 +13,11 @@ from kojev.evaluate import (
     EvaluationError,
     assert_no_train_contamination,
     evaluate,
+    load_open_jev,
     main,
     resolve_checkpoint,
+    wrap_kojev_model,
+    wrap_open_jev,
 )
 from kojev.schema import Example, Question, QuestionType, write_jsonl
 
@@ -300,3 +303,108 @@ def test_cli_emits_a_results_table_for_each_named_checkpoint(
     assert "| model |" in rendered
     assert "main" in rendered
     assert "gold_test" in rendered
+
+
+class _FakeKojev:
+    """Mimics KoJevModel.decide(example, collator)."""
+
+    def __init__(self) -> None:
+        self.seen_state: str | None = None
+
+    def decide(self, example: Example, collator: object) -> tuple[object, ...]:
+        _ = collator
+        self.seen_state = example.state
+        return tuple(
+            type("Answer", (), {"probabilities": (0.25, 0.75)})()
+            for _question in example.questions
+        )
+
+
+def test_wrap_kojev_model_matches_the_decision_model_contract() -> None:
+    """evaluate() calls decide(state, questions), not decide(example).
+
+    The production loader used to forward KoJevModel.decide(example, collator)
+    as if it were a DecisionModel. That only passed because CLI tests
+    monkeypatched the loader.
+    """
+    inner = _FakeKojev()
+    wrapped = wrap_kojev_model(inner, object())
+    question = _noul("긍정이다.", 1)
+    vectors = wrapped.decide("배가 고프다", (question,))
+    assert inner.seen_state == "배가 고프다"
+    assert vectors == ((0.25, 0.75),)
+
+
+class _FakeOpenJev:
+    def decide(self, state: str, questions: object) -> list[dict[str, object]]:
+        _ = state
+        rows: list[dict[str, object]] = []
+        payload = cast("list[dict[str, object]]", questions)
+        for item in payload:
+            options = cast("list[str]", item["options"])
+            mass = 1.0 / len(options)
+            rows.append({"probabilities": dict.fromkeys(options, mass)})
+        return rows
+
+
+def test_wrap_open_jev_emits_option_ordered_probability_tuples() -> None:
+    """The public baseline returns a dict keyed by option text."""
+    wrapped = wrap_open_jev(_FakeOpenJev())
+    question = Question(
+        type=QuestionType.CHOICE,
+        instructions="주제",
+        options=["수수료", "환불", "기타"],
+        gold=1,
+        meta={},
+    )
+    vectors = wrapped.decide("charged twice", (question,))
+    assert len(vectors) == 1
+    assert len(vectors[0]) == 3
+    assert vectors[0][0] == pytest.approx(1 / 3)
+    assert vectors[0][1] == pytest.approx(1 / 3)
+    assert vectors[0][2] == pytest.approx(1 / 3)
+
+
+def test_load_open_jev_raises_typed_error_when_the_package_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _missing(name: str, *args: object, **kwargs: object) -> object:
+        del args, kwargs
+        raise ImportError(name)
+
+    monkeypatch.setattr("kojev.evaluate.importlib.import_module", _missing)
+
+    with pytest.raises(EvaluationError, match="open-jev"):
+        _ = load_open_jev("com-kotobalabs/open-jev-deberta-v3-large")
+
+
+def test_cli_rejects_missing_open_jev_package_without_writing_results(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    train = tmp_path / "train.jsonl"
+    test = tmp_path / "test.jsonl"
+    write_jsonl(train, [_example("훈련 상태", 1, split="train")])
+    write_jsonl(test, [_example("평가 상태", 1)])
+    results = tmp_path / "RESULTS.md"
+
+    def _missing(name: str, *args: object, **kwargs: object) -> object:
+        del args, kwargs
+        raise ImportError(name)
+
+    monkeypatch.setattr("kojev.evaluate.importlib.import_module", _missing)
+    exit_code = main(
+        [
+            "--checkpoint",
+            "english=com-kotobalabs/open-jev-deberta-v3-large",
+            "--train",
+            str(train),
+            "--split",
+            f"gold_test={test}",
+            "--out",
+            str(tmp_path / "report.json"),
+            "--results",
+            str(results),
+        ]
+    )
+    assert exit_code != 0
+    assert not results.exists()
