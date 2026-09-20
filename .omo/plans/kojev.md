@@ -235,7 +235,7 @@ Your next move: run `/ulw-execute` on this plan (plan-reviewer high-accuracy rev
   QA scenarios: happy = RESULTS.md rendered + the assert log line; failure = harness on a checkpoint path that does not exist exits nonzero with a clear error (exercised once). Evidence .omo/evidence/task-14-kojev.txt
   Commit: Y | feat(eval): full benchmark + ood + latency results
 
-- [ ] 15. Serving shim: decide() + /v1/systemone endpoint
+- [x] 15. Serving shim: decide() + /v1/systemone endpoint
   Recommended task executor category: unspecified-low
   What to do / Must NOT do: `kojev/serve.py`: FastAPI app exposing POST /v1/systemone accepting {model, state, questions:{name:{type,instructions,criteria|options}}} (Jev wire shape) -> {model, answers:{name:{choice|score|noul, probabilities, confidence}}, usage:{input_tokens}}; maps criteria dict/list to schema options; loads the main checkpoint (env KOJEV_CKPT). 422 with {detail:{error_type,message}} on malformed questions. Local only (uvicorn 127.0.0.1). Must NOT: no auth layer, no public bind, no text generation endpoint.
   Parallelization: Wave 5 | Blocked by: 6,12 | Blocks: 16
