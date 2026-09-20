@@ -459,12 +459,28 @@ def _train_epochs(
                     runtime.forward,
                     1.0,
                 )
+                _write_progress(config.out_dir, step, loss_value, metrics)
                 _ = runtime.model.train()
             if watch.observe(loss_value):
                 break
         if watch.diverged:
             break
     return losses, metrics, watch
+
+
+def _write_progress(
+    out_dir: Path,
+    step: int,
+    loss: float,
+    metrics: dict[str, dict[str, float | int]],
+) -> None:
+    """Persist a heartbeat so a silent full-SFT job can be inspected mid-run."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    payload = {"step": step, "loss": loss, "metrics": metrics}
+    _ = (out_dir / "progress.json").write_text(
+        json.dumps(payload, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
 
 def _persist_report(context: _ReportContext) -> TrainReport:

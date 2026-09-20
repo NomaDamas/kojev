@@ -191,6 +191,32 @@ def test_report_contains_required_keys(tmp_path: Path) -> None:
     assert report["data_counts"]["train_questions_distill"] == 0
 
 
+def test_quarter_epoch_eval_writes_progress_json(tmp_path: Path) -> None:
+    """Quarter-epoch eval must persist progress.json as a mid-run heartbeat."""
+    train_path = tmp_path / "train.jsonl"
+    val_path = tmp_path / "val.jsonl"
+    write_jsonl(train_path, [_example()] * 2)
+    write_jsonl(val_path, [_example("val")])
+    out_dir = tmp_path / "run"
+    _ = run_training(
+        train_path=train_path,
+        val_path=val_path,
+        out_dir=out_dir,
+        epochs=1,
+        seed=4,
+        limit=2,
+        model=nn.Linear(1, 2),
+        collate_fn=lambda examples: (torch.ones(len(examples), 1),),
+        forward_fn=_linear_forward,
+    )
+    payload = TypeAdapter(dict[str, object]).validate_json(
+        (out_dir / "progress.json").read_text(encoding="utf-8")
+    )
+    assert payload["step"] == 1
+    assert "metrics" in payload
+    assert "loss" in payload
+
+
 def _linear_forward(model: nn.Module, batch: Batch) -> EncoderOutput:
     if not isinstance(model, nn.Linear):
         msg = "linear test requires nn.Linear"
