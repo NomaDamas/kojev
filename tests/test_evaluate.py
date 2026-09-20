@@ -406,6 +406,18 @@ def test_wrap_open_jev_emits_option_ordered_probability_tuples() -> None:
     assert vectors[0][2] == pytest.approx(1 / 3)
 
 
+def test_wrap_open_jev_maps_max_len_overflow_to_encoding_error() -> None:
+    class _OverflowOpenJev:
+        def decide(self, state: str, questions: object) -> list[dict[str, object]]:
+            del state, questions
+            reason = "sequence 1699 > max_len 512: state + 2 questions"
+            raise ValueError(reason)
+
+    wrapped = wrap_open_jev(_OverflowOpenJev())
+    with pytest.raises(EncodingError, match="exceed max_length"):
+        _ = wrapped.decide("넘침", (_noul("긍정이다.", 1),))
+
+
 def test_evaluate_accepts_openjev_hub_id_when_model_is_injected(
     tmp_path: Path,
 ) -> None:
