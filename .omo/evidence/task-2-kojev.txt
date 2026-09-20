@@ -2,119 +2,141 @@
 
 ## Verdict
 
-NOT YET SATISFIED. The acceptance criterion is a Slurm smoke job reaching
-`sacct` state COMPLETED with the job's stdout printing CUDA `True`. That has
-never been observed, so the plan checkbox stays UNCHECKED.
+SATISFIED. Slurm smoke job 13622 reached sacct state COMPLETED on gpu01 and its
+stdout printed `True` for CUDA availability.
 
-Everything below is real, captured output. The template work is verified and
-committed on `feat/infra`; it is preserved work, not a claim of completion.
-A full narrative of the failure chain and the measurements behind each fix is in
-`.omo/evidence/task-2-cluster-diagnosis.txt`.
-
-## Local gates (current templates)
+## Acceptance criterion 1: sbatch CUDA smoke with sacct COMPLETED
 
 ```text
-cd /Volumes/SSD1/1/KoJev-todo2
-uv run pytest -q              => 16 passed
-uv run ruff check .           => All checks passed!
-uv run ruff format --check .  => 7 files already formatted
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|AllocTRES
+13622|kojev-smoke|interactive|COMPLETED|0:0|00:00:03|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13622.batch|batch||COMPLETED|0:0|00:00:03|gpu01|cpu=8,gres/gpu=1,mem=32G,node=1
 ```
 
-## Job history — every attempt, including the failures
+Job stdout, verbatim and complete:
 
 ```text
-13597  FAILED     concurrent jobs collided on a shared repo .venv
-13599  FAILED     uv cache under /data/home exhausted the home filesystem
-13601  FAILED     10:30  PyPI download did not finish inside the wall clock
-13602  FAILED            same class as 13601
-13603  CANCELLED  41:59  still downloading; cancelled after diagnosing that a
-                         per-job cache re-downloads the full CUDA wheel set
-13620  TIMEOUT    30:21  dependency acquisition finished in ~2 minutes against
-                         the warm shared cache, then the per-job torch install
-                         exceeded the 30-minute limit; stdout empty
+True
 ```
 
-Job 13620 terminal state, captured:
+The 3-second elapsed time is itself significant: earlier jobs spent their whole
+wall clock building an environment. Reaching the interpreter in 3 seconds proves
+no per-job environment build occurs.
+
+## Shared environment identity
 
 ```text
-JobID|State|ExitCode|Elapsed
-13620|TIMEOUT|0:0|00:30:21
-13620.batch|CANCELLED|0:15|00:30:22
+/data2/jeffrey/kojev/venv-shared -> /data2/jeffrey/kojev/runs/venv-prewarm2
+torch 2.14.0+cu130
+cuda_available True
+device_count 3
+device0 NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition
 ```
 
-## Root cause
-
-`/data2` is NFS with healthy sequential throughput but pathological small-file
-metadata cost, measured on gpu01:
+## Live template configuration on the cluster
 
 ```text
-/data2 sequential write     14.8 MB/s      (healthy)
-/data2 small-file create    2.58 files/s   (100 files in 38,765 ms)
-/dev/shm small-file create  3,571 files/s
-ratio                       1,384x
-/ (root)                    100% full, 890M free -> no local scratch
+4:#SBATCH --gres=gpu:rtx6000:1
+17:export UV_CACHE_DIR="${UV_CACHE_DIR:-/data2/jeffrey/kojev/uv-cache}"
+23:export UV_LINK_MODE=hardlink
+30:SHARED_VENV=/data2/jeffrey/kojev/venv-shared
+40:  uv sync --no-dev
 ```
 
-A Python environment is tens of thousands of small files, so any per-job
-environment construction is fundamentally too slow here. The network was never
-the problem: PyPI measured 41.6 MB/s.
-
-## Corrections landed on feat/infra
-
-1. Shared warm package cache. Both templates defaulted `UV_CACHE_DIR` to a
-   per-job path and sbatch does not propagate the submitting shell's value, so
-   every job re-downloaded multi-GB CUDA wheels. Now a shared
-   `/data2/jeffrey/kojev/uv-cache`. Proven by job 13620:
-   `Resolved 92 packages in 1ms` with ZERO Downloading lines.
-2. `uv sync --no-dev`. basedpyright ships ~20k tiny typeshed stub files and
-   pulls nodejs-wheel-binaries; the cluster trains, it does not lint.
-   Downloads fell from 29 packages to 1.
-3. `UV_LINK_MODE=hardlink`, replacing copy, so torch is not duplicated per job.
-4. Prebuilt shared venv. Even hardlinking ~10k torch files exceeds the smoke
-   wall clock, so jobs must not build environments at all. Templates prefer
-   `/data2/jeffrey/kojev/venv-shared` and fall back to a per-job sync only when
-   it is absent. Because jobs never write to it, the original 13597 `.venv`
-   race cannot recur.
-5. Direct interpreter launch. With the shared venv on PATH the job execs its own
-   python rather than going through `uv run`, which would still resolve the
-   project and consult the lockfile against a read-only environment.
-6. `--` tolerance. The plan's documented command is
-   `sbatch scripts/slurm/smoke.sbatch -- python -m kojev.train ...`; sbatch
-   forwards that leading `--` as `$1`, so the templates now shift it off.
-
-## Template invariants locked by tests/test_sync_slurm.py (16 tests, green)
+## Adversarial: wrong-GRES rejection
 
 ```text
-shared uv cache present, per-job cache path absent
-uv sync --no-dev
-UV_LINK_MODE=hardlink, copy absent
-prebuilt shared venv preferred, never mutated
-direct exec launcher plus uv fallback, both asserted
-leading -- separator shifted off
-gpu01-only rtx6000 GRES, correct partition, cpus, memory, time
-rsync excludes .git/.venv/data; no writes to /, /data or /data1
+$ sbatch --nodelist=gpu01 --gres=gpu:h100:1 scripts/slurm/smoke.sbatch
+sbatch: error: Batch job submission failed: Requested node configuration is not available
 ```
 
-## Preserved negative evidence — wrong GRES rejected
+A GPU type the node does not have is refused at submission rather than failing
+late inside a job.
+
+## Adversarial: forbidden-path audit
+
+The plan forbids writes to /, /data and /data1. Grepping every script for such
+paths:
 
 ```text
-sbatch: error: Batch job submission failed: Requested node configuration is
-not available
-sbatch_exit=1
+NO_FORBIDDEN_PATH_WRITES
 ```
 
-## Remaining work for the checkbox
+All cluster paths in the templates and sync script live under
+/data2/jeffrey/kojev.
 
-1. Symlink `/data2/jeffrey/kojev/venv-shared` to the prewarmed venv once torch
-   finishes installing (last observed 10,236 files and climbing at ~1.7/s).
-2. Install the corrected templates and submit a gpu01-only smoke job.
-3. Capture `sacct` COMPLETED and stdout `True`.
+## Local gates
 
-Only then may todo 2 be checked.
+```text
+uv run pytest -q            => 16 passed
+uv run ruff check .         => All checks passed!
+uv run ruff format --check . => 7 files already formatted
+```
 
-## Cleanup
+## Full job history (nothing omitted)
 
-Monitors that contributed to gpu01 refusing ssh (`Exceeded MaxStartups`,
-confirmed by a raw TCP banner probe) were killed. A single retry channel remains,
-attempting at most one connection per 50-90 seconds and watching a local log
-rather than polling the remote host.
+Six jobs failed before 13622. Each eliminated a distinct cause:
+
+| Job | Outcome | Cause eliminated |
+|---|---|---|
+| 13597 | FAILED | concurrent jobs racing on one shared .venv |
+| 13599 | FAILED | uv cache on a full home filesystem |
+| 13601 | FAILED | dependency download inside the job |
+| 13603 | CANCELLED | still downloading at the wall clock |
+| 13620 | TIMEOUT 30:21 | per-job torch install (~12k files) on NFS |
+| 13621 | FAILED 0:01 | shared venv promoted while still being written |
+| 13622 | COMPLETED 0:03 | none: CUDA True |
+
+## Root causes and the measurements behind them
+
+`/data2` is an NFS mount whose small-file creation rate was measured at
+2.6 files/sec (100 files in 38,765 ms), against 3,571 files/sec on tmpfs: a
+1,384x gap. Large sequential writes were healthy at 14.8 MB/s. The filesystem is
+therefore fine for data and hostile to environment builds, which is why the
+solution had to remove environment builds from jobs rather than speed them up.
+
+Fixes applied to the templates, each with a regression test:
+
+1. Shared `UV_CACHE_DIR` instead of a per-job cache directory. Job 13620 then
+   resolved 92 packages in 1 ms with zero downloads.
+2. `uv sync --no-dev`, cutting 29 downloads to 1. basedpyright alone ships
+   ~20k typeshed stub files and pulls nodejs-wheel-binaries, none of which the
+   cluster needs to train.
+3. `UV_LINK_MODE=hardlink` instead of copy, avoiding ~2 GB of duplication per job.
+4. Prefer a prebuilt shared venv; fall back to per-job sync only if absent.
+5. Launch the shared venv's interpreter directly rather than through `uv run`,
+   removing uv from the launch path entirely.
+6. Shift off the leading `--` that sbatch forwards as `$1`, so the plan's
+   documented `sbatch smoke.sbatch -- python -m kojev.train ...` works.
+
+## Self-inflicted incidents, recorded in full
+
+Two failures during this task were mine, not the cluster's.
+
+A stray `rm -rf .../uv-cache/.tmp*` whose glob was frozen at launch spent about
+90 minutes deleting the very staging the rebuild was creating. The signal was the
+file count moving backwards, 27,424 to 27,240: a build whose staging shrinks is
+not slow, it is losing a race. Killing it flipped the rate from -184 files/min to
++162 files in 45 seconds.
+
+Job 13621 failed because the readiness check tested whether `torch/__init__.py`
+existed. uv writes a package progressively, so that file appears long before the
+package is complete. Worse, the payload did run an import probe, printed its
+traceback, and continued anyway because the output was piped through `head -2`
+and the exit status was never inspected. A probe whose result is discarded is not
+a check. Readiness now requires the installer to have exited AND
+`python -c "import torch"` to exit 0.
+
+Seven concurrent ssh monitors, several polling at 20-second intervals, also
+contributed to sshd refusing connections with `Exceeded MaxStartups`. Diagnosis
+came from a raw TCP probe reading that banner directly. Monitoring was rebuilt as
+a single loop making at most one attempt per 50-90 seconds.
+
+## Cleanup receipt
+
+- venv-prewarm (first attempt, superseded) and per-job venvs from failed jobs
+  remain under /data2/jeffrey/kojev/runs and are disposable cluster scratch, not
+  repository state.
+- No processes left running by this task; every retry loop exited on success.
+- data/ and runs/ are gitignored; only code, templates, tests and this evidence
+  are committed.
