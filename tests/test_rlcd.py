@@ -1,4 +1,4 @@
-"""Deterministic CPU tests for the RLCD objective and gate."""
+"""Expected-utility RLCD objective and the four-clause GO/NO-GO gate."""
 
 from __future__ import annotations
 
@@ -12,9 +12,9 @@ from torch import nn
 
 from kojev.rlcd import (
     GateDecision,
+    GateTable,
     RLCDConfig,
     RLCDInputs,
-    RunningMeanBaseline,
     main,
     rlcd_gate,
     rlcd_loss,
@@ -25,29 +25,90 @@ if TYPE_CHECKING:
 
 
 def _read_report(path: Path) -> dict[str, object]:
-    """Read a gate report as typed data rather than Any."""
     raw = cast("object", json.loads(path.read_text(encoding="utf-8")))
     assert isinstance(raw, dict)
     entries = cast("dict[object, object]", raw)
     return {str(key): value for key, value in entries.items()}
 
 
-def test_loss_is_differentiable_for_grouped_distributions() -> None:
-    """Given model logits, the RLCD loss backpropagates finite gradients."""
-    model: nn.Linear = nn.Linear(3, 4, bias=False)
+def _go_table(**changes: float) -> GateTable:
+    """A table that clears every KEEP clause, with named overrides for failures."""
+    values: dict[str, float] = {
+        "ece_baseline": 0.080,
+        "ece_candidate": 0.070,
+        "selective_acc_baseline": 0.700,
+        "selective_acc_candidate": 0.700,
+        "in_domain_acc_baseline": 0.670,
+        "in_domain_acc_candidate": 0.669,
+        "brier_baseline": 0.380,
+        "brier_candidate": 0.381,
+        "ood_acc_baseline": 0.550,
+        "ood_acc_candidate": 0.545,
+    }
+    values.update(changes)
+    return GateTable(**values)
+
+
+def test_gate_keeps_when_all_four_clauses_hold() -> None:
+    """ECE improved 1pt, in-domain drop 0.1pt, Brier 0.001, OOD drop 0.5pt."""
+    assert rlcd_gate(_go_table()) is GateDecision.GO
+
+
+def test_gate_keeps_when_selective_accuracy_improves_instead_of_ece() -> None:
+    """The quality clause is a disjunction: selective-acc +2pt also qualifies."""
+    table = _go_table(ece_candidate=0.080, selective_acc_candidate=0.721)
+    assert rlcd_gate(table) is GateDecision.GO
+
+
+def test_acc_drop_clause_produces_no_go() -> None:
+    """Named failure: in-domain accuracy dropping more than 0.5pt is NO-GO.
+
+    Even a large ECE win must not override the acc-drop clause.
+    """
+    table = _go_table(ece_candidate=0.020, in_domain_acc_candidate=0.660)
+    assert rlcd_gate(table) is GateDecision.NO_GO
+
+
+def test_brier_drop_clause_produces_no_go() -> None:
+    table = _go_table(brier_candidate=0.390)
+    assert rlcd_gate(table) is GateDecision.NO_GO
+
+
+def test_ood_acc_drop_clause_produces_no_go() -> None:
+    table = _go_table(ood_acc_candidate=0.530)
+    assert rlcd_gate(table) is GateDecision.NO_GO
+
+
+def test_quality_clause_requires_ece_or_selective_gain() -> None:
+    """Neither ECE nor selective accuracy improved: NO-GO even if acc holds."""
+    table = _go_table(ece_candidate=0.080, selective_acc_candidate=0.700)
+    assert rlcd_gate(table) is GateDecision.NO_GO
+
+
+def test_non_finite_metrics_are_no_go() -> None:
+    table = _go_table(ece_candidate=float("nan"))
+    assert rlcd_gate(table) is GateDecision.NO_GO
+
+
+def test_expected_utility_loss_is_pathwise_differentiable() -> None:
+    """Gradients must flow through p_gold, not through a detached REINFORCE reward.
+
+    The plan forbids REINFORCE-on-gold: it is redundant with CE in expectation.
+    A linear map from features to logits has to receive a finite, nonzero grad.
+    """
+    model: nn.Linear = nn.Linear(3, 2, bias=False)
     features = torch.tensor([[1.0, -0.5, 0.25], [0.5, 0.75, -1.0]])
-    logits: torch.Tensor = features @ model.weight.transpose(0, 1)
-    positive: torch.Tensor = torch.softmax(logits, dim=1)
-    negative: torch.Tensor = torch.softmax(logits * 0.5, dim=1)
+    logits = features @ model.weight.transpose(0, 1)
+    probabilities = torch.softmax(logits, dim=1)
+    frozen = probabilities.detach()
 
     loss = rlcd_loss(
         RLCDInputs(
-            positive,
-            negative,
-            groups=((0, 1), (2, 3)),
+            probabilities=(probabilities[0], probabilities[1]),
             gold_indices=(0, 1),
+            frozen_probabilities=(frozen[0], frozen[1]),
         ),
-        RunningMeanBaseline(),
+        RLCDConfig(lambda_cal=0.5, beta=0.1),
     )
     torch.autograd.backward((loss,))
 
@@ -57,107 +118,83 @@ def test_loss_is_differentiable_for_grouped_distributions() -> None:
     assert not torch.all(model.weight.grad == 0)
 
 
-def test_running_baseline_reduces_fixed_stream_variance() -> None:
-    """Given a fixed reward stream, centering by its running mean reduces variance."""
-    rewards = (1.0, 3.0, 1.0, 3.0, 1.0, 3.0)
-    baseline = RunningMeanBaseline()
-    adjusted = tuple(baseline.update(reward) for reward in rewards)
-
-    assert torch.tensor(adjusted).var(unbiased=False) < torch.tensor(rewards).var(
-        unbiased=False
-    )
-
-
-def test_gate_goes_only_when_delta_clears_threshold() -> None:
-    """Given named gate thresholds, clear, weak, and invalid deltas are classified."""
-    config = RLCDConfig(gate_delta_threshold=0.05)
-
-    assert rlcd_gate(0.051, config) is GateDecision.GO
-    assert rlcd_gate(0.05, config) is GateDecision.GO
-    assert rlcd_gate(0.049, config) is GateDecision.NO_GO
-    assert rlcd_gate(float("nan"), config) is GateDecision.NO_GO
-    assert rlcd_gate(float("inf"), config) is GateDecision.NO_GO
-
-
-@pytest.mark.parametrize(
-    ("positive", "negative"),
-    [
-        (torch.tensor([[0.5, 0.5]]), torch.tensor([[0.5, 0.5]])),
-        (torch.tensor([[1.0 - 1e-7, 1e-7]]), torch.tensor([[1e-7, 1.0 - 1e-7]])),
-    ],
-)
-def test_loss_is_finite_on_uniform_and_near_deterministic_inputs(
-    positive: torch.Tensor, negative: torch.Tensor
-) -> None:
-    """Given valid edge distributions, the loss remains finite."""
+def test_utility_term_is_minus_one_when_acting_on_a_certain_gold() -> None:
+    """s≈1 and p_gold=1 ⇒ expected utility U_ok=+1 ⇒ L_util=-1 (no cal, no KL)."""
+    peaked = torch.tensor([1.0 - 1e-7, 1e-7], requires_grad=True)
     loss = rlcd_loss(
-        RLCDInputs(positive, negative, groups=((0, 1),), gold_indices=(0,)),
-        RunningMeanBaseline(),
+        RLCDInputs(
+            probabilities=(peaked,),
+            gold_indices=(0,),
+            frozen_probabilities=(peaked.detach(),),
+        ),
+        RLCDConfig(lambda_cal=0.0, beta=0.0),
     )
+    # sigmoid((1-0.6)/0.05)=sigmoid(8)≈0.99966, so L_util is just shy of -U_ok.
+    assert float(loss.detach()) == pytest.approx(-1.0, abs=2e-3)
 
-    assert math.isfinite(float(loss))
 
-
-def _metrics_file(path: Path, before: float, after: float) -> Path:
-    """Write a held-out metrics pair the CLI can read without a GPU."""
-    _ = path.write_text(
-        json.dumps({"baseline_metric": before, "candidate_metric": after}),
-        encoding="utf-8",
+def test_utility_term_is_plus_four_when_acting_on_a_certain_error() -> None:
+    """s≈1 and p_gold=0 ⇒ expected utility U_err=-4 ⇒ L_util=+4."""
+    peaked = torch.tensor([1e-7, 1.0 - 1e-7], requires_grad=True)
+    loss = rlcd_loss(
+        RLCDInputs(
+            probabilities=(peaked,),
+            gold_indices=(0,),
+            frozen_probabilities=(peaked.detach(),),
+        ),
+        RLCDConfig(lambda_cal=0.0, beta=0.0),
     )
+    assert float(loss.detach()) == pytest.approx(4.0, abs=2e-3)
+
+
+def _metrics_file(path: Path, table: GateTable) -> Path:
+    payload = {
+        "baseline": {
+            "ece": table.ece_baseline,
+            "selective_acc": table.selective_acc_baseline,
+            "in_domain_acc": table.in_domain_acc_baseline,
+            "brier": table.brier_baseline,
+            "ood_acc": table.ood_acc_baseline,
+        },
+        "candidate": {
+            "ece": table.ece_candidate,
+            "selective_acc": table.selective_acc_candidate,
+            "in_domain_acc": table.in_domain_acc_candidate,
+            "brier": table.brier_candidate,
+            "ood_acc": table.ood_acc_candidate,
+        },
+    }
+    _ = path.write_text(json.dumps(payload), encoding="utf-8")
     return path
 
 
-def test_cli_writes_gate_verdict_and_delta_into_report(tmp_path: Path) -> None:
-    """The CLI must persist the gate verdict and the delta it was computed from.
-
-    Plan todo 13 requires one Slurm RLCD run whose report.json carries a GO or
-    NO-GO verdict. The verdict must come from the already-tested rlcd_gate, not
-    from a reimplementation, so a delta above the default 0.01 threshold has to
-    produce GO and the recorded delta has to match the inputs exactly.
-    """
-    metrics = _metrics_file(tmp_path / "metrics.json", before=0.700, after=0.725)
+def test_cli_writes_go_verdict_from_a_four_clause_table(tmp_path: Path) -> None:
+    metrics = _metrics_file(tmp_path / "metrics.json", _go_table())
     out_dir = tmp_path / "run"
-
-    exit_code = main(
-        [
-            "--metrics",
-            str(metrics),
-            "--out",
-            str(out_dir),
-        ]
-    )
-
+    exit_code = main(["--metrics", str(metrics), "--out", str(out_dir)])
     assert exit_code == 0
     report = _read_report(out_dir / "report.json")
     assert report["verdict"] == GateDecision.GO.value
-    # 0.725 - 0.700 computed in float: assert the recorded delta, not a rounding.
-    assert report["held_out_metric_delta"] == pytest.approx(0.725 - 0.700, abs=1e-12)
-    assert report["baseline_metric"] == pytest.approx(0.700)
-    assert report["candidate_metric"] == pytest.approx(0.725)
-    assert report["gate_delta_threshold"] == pytest.approx(0.01)
+    assert report["in_domain_acc_drop"] == pytest.approx(0.001)
 
 
-def test_cli_reports_no_go_when_delta_misses_threshold(tmp_path: Path) -> None:
-    """A delta below the threshold must be recorded as NO-GO, not suppressed."""
-    metrics = _metrics_file(tmp_path / "metrics.json", before=0.700, after=0.705)
+def test_cli_reports_no_go_on_acc_drop_and_names_the_clause(tmp_path: Path) -> None:
+    table = _go_table(ece_candidate=0.020, in_domain_acc_candidate=0.660)
+    metrics = _metrics_file(tmp_path / "metrics.json", table)
     out_dir = tmp_path / "run"
-
     exit_code = main(["--metrics", str(metrics), "--out", str(out_dir)])
-
     assert exit_code == 0
     report = _read_report(out_dir / "report.json")
     assert report["verdict"] == GateDecision.NO_GO.value
+    assert report["failed_clauses"] == ["in_domain_acc_drop"]
 
 
 def test_cli_rejects_a_missing_metrics_file_without_writing_a_report(
     tmp_path: Path,
 ) -> None:
-    """A missing input must fail loudly and leave no partial report behind."""
     out_dir = tmp_path / "run"
-
     exit_code = main(
         ["--metrics", str(tmp_path / "absent.json"), "--out", str(out_dir)]
     )
-
     assert exit_code != 0
     assert not (out_dir / "report.json").exists()

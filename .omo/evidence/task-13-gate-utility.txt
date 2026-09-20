@@ -1,0 +1,49 @@
+# KoJev todo 13: expected-utility loss + four-clause gate (local half)
+
+The Slurm GO/NO-GO run still waits on the todo-12 main checkpoint. This
+increment replaces a REINFORCE-on-gold objective and a one-number gate,
+both of which contradicted the plan, with the specified pathwise utility
+loss and the four KEEP clauses.
+
+## Defect
+
+kojev/rlcd.py was a contrastive REINFORCE loss with a detached reward and
+`rlcd_gate(held_out_metric_delta)` against a single 0.01 threshold.
+
+The plan forbids REINFORCE-on-gold ("redundant with CE in expectation") and
+requires KEEP only if:
+
+    [ECE improves >= 0.005 OR selective acc@0.6 improves >= 2pt]
+    AND in-domain acc drop <= 0.5pt
+    AND Brier degradation <= 0.005
+    AND OOD acc drop <= 1pt
+
+Acceptance: "gate logic unit-tested on synthetic metric tables incl. all
+four gate clauses"; named failure: "synthetic metrics violating the
+acc-drop clause produce NO-GO".
+
+## RED
+
+    $ uv run pytest tests/test_rlcd.py -q
+    ImportError: cannot import name 'GateTable' from 'kojev.rlcd'
+    exit 2
+
+## GREEN
+
+    uv run pytest tests/test_rlcd.py -q  => 13 passed
+    uv run pytest -q                     => 148 passed
+    ruff check / format                  => clean
+    basedpyright kojev tests             => 0 errors, 0 warnings
+
+## Mutation
+
+Commenting out the in-domain acc-drop clause makes the named failure test
+and the CLI acc-drop test report GO:
+
+    E   AssertionError: assert 'GO' == 'NO-GO'
+
+## What is still open for todo 13
+
+One Slurm RLCD run COMPLETED with a GO or NO-GO verdict in report.json,
+initialized from the todo-12 median-seed checkpoint. That run is blocked
+on jobs 13685-13687 / 13692 / 13693 (PENDING QOSMaxGRESPerUser).

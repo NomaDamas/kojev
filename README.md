@@ -43,8 +43,13 @@ flagged in the table and excluded from the median.
 
 ## RLCD verdict
 
-Not run. The gate in `kojev/rlcd.py` will emit GO or NO-GO; a negative
-result will be stated plainly rather than skipped.
+Not run on the cluster (blocked on the todo-12 median seed). The local
+objective is expected decision utility plus softECE and a KL anchor to the
+frozen SFT distribution — not REINFORCE-on-gold. KEEP requires all four
+val clauses: ECE +0.005 or selective-acc@0.6 +2pt, in-domain acc drop
+≤0.5pt, Brier degradation ≤0.005, OOD acc drop ≤1pt. A NO-GO after two
+hyperparameter attempts ships SFT-only and is recorded as a negative
+result, not a failure.
 
 ## Budget audit
 
