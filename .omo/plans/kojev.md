@@ -208,7 +208,7 @@ Your next move: run `/ulw-execute` on this plan (plan-reviewer high-accuracy rev
   QA scenarios: happy = summary counts + ledger tail; failure = restart-after-kill produces no dupes (asserted by request-id set size == line count). Evidence .omo/evidence/task-11-kojev.txt
   Commit: Y | feat(distill): teacher-labeled goldless korean families
 
-- [ ] 12. Full SFT runs: 3 seeds + control arm + distill arm
+- [x] 12. Full SFT runs: 3 seeds + control arm + distill arm
   Recommended task executor category: deep
   What to do / Must NOT do: sbatch on batch partition, 5 runs: (A) A.X-Encoder-base, gold only, augment 0.7, 1 epoch, seeds 0/1/2; (B) kakaobank/kf-deberta-base seed 0 gold-only (diagnostic control — if A collapses but B trains, it's backbone instability, not data); (C) A.X seed 0, gold + distill families mixed (distill questions weighted 0.5 in loss). Pick main checkpoint = median val-acc seed of (A); record seed spread. If >=2 of 3 (A) runs diverge: retry once at lr 1e-5 + warmup 10%; if still diverging, ESCALATE to user with (B) evidence rather than silently switching backbone. Must NOT: no cherry-picking best seed for the report (median rule); no kobest anywhere.
   Parallelization: Wave 4 | Blocked by: 10,11 | Blocks: 13,14,15

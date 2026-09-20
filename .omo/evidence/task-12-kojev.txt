@@ -1,0 +1,14 @@
+# Todo 12 full SFT (cluster)
+
+Five 1-epoch report.json COMPLETED, diverged=false on 3/3 A seeds.
+A-seed acc: 0.7145 / 0.7215 / 0.7211. 1-epoch median seed2 = 0.7211 (missed 0.75).
+Distill 0.7327 did not hurt 1-epoch gold (slightly above).
+Control DeBERTa 0.9132 is 512-window subset (val majority 0.6664 vs gold 0.6446),
+not the same val; -3pt vs control is not comparable.
+
+Product ckpt: continue-train seed2 --init-from (job 13717 COMPLETED, diverged=false)
+  /data2/jeffrey/kojev/runs/sft-full-seed2-ep2/checkpoint
+  overall acc 0.7635 vs majority 0.6446 (+0.119)
+  brier 0.297  ece 0.0157
+  choice 0.520  noul 0.847  score 0.440
+Clears the 0.75 gate. Escalation N/A (0 diverged 1-epoch A seeds).
