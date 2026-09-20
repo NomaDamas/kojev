@@ -208,6 +208,10 @@ def _metrics(
     predictions = probabilities.argmax(dim=1)
     count = int(labels.numel())
     accuracy = float((predictions == labels).float().mean().item())
+    # Majority-class baseline, defined exactly as data_ood.py defines it: the
+    # share of the most frequent gold label. An accuracy without its baseline
+    # cannot be judged, and todo 10's gate is stated as a margin over it.
+    majority = float(labels.bincount().max().item()) / count if count else 0.0
     targets = functional.one_hot(labels, probabilities.shape[1]).to(probabilities.dtype)
     brier = float(torch.square(probabilities - targets).sum(dim=1).mean().item())
     confidence = probabilities.max(dim=1).values
@@ -224,7 +228,13 @@ def _metrics(
                 float(correct[mask].mean().item())
                 - float(confidence[mask].mean().item())
             )
-    return {"count": count, "accuracy": accuracy, "brier": brier, "ece": ece}
+    return {
+        "count": count,
+        "accuracy": accuracy,
+        "majority": majority,
+        "brier": brier,
+        "ece": ece,
+    }
 
 
 def _collect(

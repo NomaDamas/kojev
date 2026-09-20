@@ -271,3 +271,55 @@ def test_evaluation_moves_its_batches_onto_the_model_device(
     # One optimizer step over 2 examples at the default batch size, so any count
     # beyond that came from evaluation collating its own batches.
     assert len(moves) > 1, f"evaluation never moved a batch: {len(moves)} moves"
+
+
+def test_report_metrics_carry_a_majority_baseline(tmp_path: Path) -> None:
+    """Every metric group must publish the majority-class baseline.
+
+    Todo 10's acceptance gate is `val_acc_all - majority_all >= 0.05`. Job
+    13634 COMPLETED and produced a well-formed report whose metric groups were
+    overall, three kind: groups and eight source: groups, none of which carried
+    a majority entry, so the gate could not be evaluated from the report at all.
+    A baseline is what makes an accuracy number mean anything, so it belongs
+    beside every accuracy the report emits.
+    """
+    train_path = tmp_path / "train.jsonl"
+    val_path = tmp_path / "val.jsonl"
+    write_jsonl(train_path, [_example()] * 2)
+    write_jsonl(val_path, [_example("val")] * 2)
+
+    report = run_training(
+        train_path=train_path,
+        val_path=val_path,
+        out_dir=tmp_path / "run",
+        epochs=1,
+        seed=4,
+        limit=2,
+        model=nn.Linear(1, 2),
+        collate_fn=lambda examples: (torch.ones(len(examples), 1),),
+        forward_fn=_linear_forward,
+        model_name="synthetic/backbone",
+        distill_weight=0.5,
+    )
+
+    metrics = report["metrics"]
+    assert metrics, "report published no metrics"
+    for group, values in metrics.items():
+        assert "majority" in values, f"{group} has no majority baseline"
+        assert 0.0 <= float(values["majority"]) <= 1.0
+
+
+def test_majority_baseline_matches_hand_computed_share() -> None:
+    """The baseline must be the share of the most frequent gold label.
+
+    Asserting only that a `majority` key exists would pass for any number, so
+    the value is pinned against a hand-computed case: three zeros and one one
+    give a majority share of 3/4.
+    """
+    logits = torch.zeros(4, 2)
+    labels = torch.tensor([0, 0, 0, 1])
+
+    values = train_module._metrics(logits, labels, 1.0)  # pyright: ignore[reportPrivateUsage]
+
+    assert values["majority"] == pytest.approx(0.75)
+    assert values["count"] == 4
