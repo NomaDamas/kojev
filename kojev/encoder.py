@@ -24,6 +24,7 @@ _MARKERS: Final = ("[STATE]", "[Q]", "[OPT]")
 _DEFAULT_BACKBONE: Final = "skt/A.X-Encoder-base"
 _HEAD_WEIGHTS: Final = "head.safetensors"
 _KOJEV_CONFIG: Final = "kojev_config.json"
+_PLAN_MAX_LENGTH: Final = 4096
 
 
 @dataclass(frozen=True, slots=True)
@@ -199,6 +200,14 @@ class DecisionAnswer:
     noul: float | None
 
 
+def _collator_max_length(backbone: Backbone) -> int:
+    """Cap packing to the backbone's native window, never above the plan budget."""
+    native = getattr(backbone.config, "max_position_embeddings", None)
+    if isinstance(native, int) and native > 0:
+        return min(_PLAN_MAX_LENGTH, native)
+    return _PLAN_MAX_LENGTH
+
+
 class SpanCollator:
     """Pack state and all questions while truncating state tokens first."""
 
@@ -368,7 +377,11 @@ class KoJevModel(nn.Module):
         # tokenizer. The embedding table must be sized AFTER that, otherwise the
         # markers receive ids past the end of the table and every batch raises
         # IndexError inside tok_embeddings (gpu01 job 13625).
-        collator = SpanCollator(tokenizer, distill_weight=distill_weight)
+        collator = SpanCollator(
+            tokenizer,
+            max_length=_collator_max_length(backbone),
+            distill_weight=distill_weight,
+        )
         _ = backbone.resize_token_embeddings(len(tokenizer))
         return cls(backbone, head_hidden_size), collator
 
