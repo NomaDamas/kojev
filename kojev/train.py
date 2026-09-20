@@ -667,6 +667,8 @@ class CliArgs:
     model: str
     distill: Path | None
     distill_weight: float
+    backbone_lr: float
+    head_lr: float
 
 
 def _parse_args() -> CliArgs:
@@ -685,6 +687,10 @@ def _parse_args() -> CliArgs:
     _ = parser.add_argument("--model", default="skt/A.X-Encoder-base")
     _ = parser.add_argument("--distill", type=Path)
     _ = parser.add_argument("--distill-weight", type=float, default=0.5)
+    # The seed escalation rule retries a diverged run at a lower learning rate,
+    # so both rates must be reachable here, not only recorded in report.json.
+    _ = parser.add_argument("--backbone-lr", type=float, default=2e-5)
+    _ = parser.add_argument("--head-lr", type=float, default=1e-3)
     namespace = parser.parse_args(sys.argv[1:])
     return CliArgs(
         train=Path(namespace.train),  # pyright: ignore[reportAny]
@@ -700,6 +706,8 @@ def _parse_args() -> CliArgs:
         model=namespace.model,  # pyright: ignore[reportAny]
         distill=namespace.distill,  # pyright: ignore[reportAny]
         distill_weight=namespace.distill_weight,  # pyright: ignore[reportAny]
+        backbone_lr=namespace.backbone_lr,  # pyright: ignore[reportAny]
+        head_lr=namespace.head_lr,  # pyright: ignore[reportAny]
     )
 
 
@@ -731,6 +739,8 @@ def main() -> None:
         model_name=args.model,
         distill_path=args.distill,
         distill_weight=args.distill_weight,
+        backbone_lr=args.backbone_lr,
+        head_lr=args.head_lr,
     )
     _ = report
     print(json.dumps({"report": str(args.out / "report.json")}, ensure_ascii=False))  # noqa: T201

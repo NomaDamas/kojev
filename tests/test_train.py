@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
+import sys
+
 import pytest
 import torch
 from pydantic import TypeAdapter
@@ -323,3 +325,35 @@ def test_majority_baseline_matches_hand_computed_share() -> None:
 
     assert values["majority"] == pytest.approx(0.75)
     assert values["count"] == 4
+
+
+def test_cli_exposes_learning_rate_flags(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The lr escalation path must be reachable from the command line.
+
+    Job 13635 died in 11 seconds with
+
+        train.py: error: unrecognized arguments: --backbone-lr 1e-5
+
+    `backbone_lr` and `head_lr` were already TrainConfig fields and were already
+    written into report.json, but argparse never exposed them. Todo 12's
+    escalation rule is to retry a diverged seed at a lower learning rate, so
+    without these flags that rule cannot be carried out at all.
+    """
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "kojev.train",
+            "--out",
+            "run",
+            "--backbone-lr",
+            "1e-5",
+            "--head-lr",
+            "5e-4",
+        ],
+    )
+
+    args = train_module._parse_args()  # pyright: ignore[reportPrivateUsage]
+
+    assert args.backbone_lr == pytest.approx(1e-5)
+    assert args.head_lr == pytest.approx(5e-4)

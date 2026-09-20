@@ -1,0 +1,38 @@
+# KoJev: the learning rates were reportable but not settable
+
+Job 13635 died in 11 seconds:
+
+    train.py: error: unrecognized arguments: --backbone-lr 1e-5
+
+backbone_lr and head_lr were already TrainConfig fields, already threaded through
+run_training, and already written into report.json. Only argparse never exposed
+them. The plan's escalation rule is to retry a diverged seed at a LOWER learning
+rate, so without these flags that rule could not be carried out at all.
+
+This is the same shape of gap as the missing majority baseline: the capability
+existed everywhere except the one place the work needed to reach it, which is
+why reading report.json made the knob look available.
+
+## RED
+
+    kojev.train: error: unrecognized arguments: --backbone-lr 1e-5 --head-lr 5e-4
+    E   SystemExit: 2
+
+## Fix
+
+--backbone-lr and --head-lr added, defaulting to the existing 2e-5 and 1e-3 so
+current behaviour is unchanged, and passed through main() to run_training.
+
+## Real surface
+
+    $ python -m kojev.train --help
+      --backbone-lr BACKBONE_LR
+      --head-lr HEAD_LR
+
+## Note on a self-inflicted detour
+
+`ruff --fix` rewrote the word "Todo" in my new comment to "TODO", which then
+tripped TD004 (missing colon in TODO). The first correction missed because it
+still matched the pre-rewrite text. The comment no longer uses the word.
+
+Gates: 130 passed, ruff clean, format clean, basedpyright 0 errors.
