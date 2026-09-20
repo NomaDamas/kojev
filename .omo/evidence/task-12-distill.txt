@@ -1,0 +1,11 @@
+# Full SFT distill arm C (job 13699)
+
+COMPLETED 00:49:36 ExitCode 0:0
+run /data2/jeffrey/kojev/runs/sft-full-distill
+diverged=false  temperature=1.10
+train=137292 (gold 103952 + distill 33340)  distill_questions=100020
+overall acc=0.7327  majority=0.6446  gap=+0.0881
+A-seed median ~0.721; distill is +1.2pt (does not hurt gold families).
+choice +0.266  noul +0.024  score +0.108
+nsmc +0.050  ynat +0.180  unsmile +0.534
+Remaining: control DeBERTa job 13701 (native 512 window).
