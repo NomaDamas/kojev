@@ -14,28 +14,29 @@ OpenRouter. KoBEST is fully held out of training.
 
 ## Status
 
-Todos 1–11, 13, 15 are done. Todos 12, 14, 16 and F1–F4 are open.
+Todos 1–13, 15, 16 are done. Todos 14 and F1–F4 are open.
 
-- Todo 12: five `report.json` files. Arm A 3/3 healthy (0.7145 / 0.7215 /
-  0.7211). Median seed 2 is **0.7211**, which **misses the 0.75 gate**.
-  Distill 0.7327 does not hurt gold. Control DeBERTa 0.9132 is the 512-window
-  subset, not the same val.
+- Todo 12: five 1-epoch reports, A-seeds 3/3 healthy. Product ckpt is
+  seed2 continued one epoch (job 13717) at **0.7635** vs majority 0.6446.
+  Control DeBERTa 0.9132 is the 512-window subset, not the same val.
 - Todo 13: two RLCD attempts NO-GO. Ship SFT-only.
-- Todo 14: six-model `eval/RESULTS.md` (3 A.X seeds + distill + DeBERTa
-  control + OpenJev). Latency protocol on gpu01. KoJev main **loses 0/5
-  KoBEST** to English OpenJev (in-domain gold-val still 0.719 vs 0.522).
-- Todo 16: bundle at `/data2/jeffrey/kojev/release/kojev-v0`; fresh venv
-  round-trip and tampered-config EncodingError are recorded. Ledger $2.945571.
+- Todo 14: six-model `eval/RESULTS.md` plus latency. 1-epoch KoJev lost
+  0/5 KoBEST to English OpenJev; ep2 KoBEST rescore is in flight (13718).
+- Todo 16: bundle rebuilt from seed2-ep2 at `/data2/jeffrey/kojev/release/kojev-v0`.
+  Ledger $2.945571.
 
 ## Results
 
 Full tables live in [eval/RESULTS.md](eval/RESULTS.md). Headline from the
-median A.X gold-only seed (`sft-full-seed2`, job 13687, 103,952 train
-states, 1 epoch, `diverged=false`):
+product checkpoint (`sft-full-seed2-ep2`, job 13717, continued from median
+seed 2, `diverged=false`):
 
 | slice | acc | majority | gap |
 |---|---:|---:|---:|
-| overall | 0.7211 | 0.6446 | +0.0764 |
+| overall | 0.7635 | 0.6446 | +0.1189 |
+| choice | 0.5201 | 0.2417 | +0.2784 |
+| noul | 0.8475 | 0.7853 | +0.0622 |
+| score | 0.4400 | 0.3460 | +0.0940 |
 | choice | 0.4601 | 0.2417 | +0.2184 |
 | noul | 0.8106 | 0.7853 | +0.0252 |
 | score | 0.3900 | 0.3460 | +0.0440 |
