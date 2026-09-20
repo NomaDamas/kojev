@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Final, cast, override
 import torch
 
 from kojev.bench import DecisionModel, Metrics, calibration_metrics
+from kojev.encoder import QUESTIONS_EXCEED_MAX_LENGTH, EncodingError
 from kojev.schema import Example, Question, QuestionType, read_jsonl
 
 if TYPE_CHECKING:
@@ -64,6 +65,11 @@ class EvaluationError(RuntimeError):
         """Reject an evaluation split that shares states with training."""
         detail = f"{overlap} state(s) also appear in train, e.g. {sample!r}"
         return cls(f"contamination in {name}: {detail}")
+
+    @classmethod
+    def all_overflowed(cls) -> EvaluationError:
+        """Reject a split whose every example exceeds the collator window."""
+        return cls("every example overflowed max_length")
 
     @classmethod
     def missing_baseline(cls, model_id: str) -> EvaluationError:
@@ -285,10 +291,17 @@ def _score_split(
     by_source: dict[str, tuple[list[int], list[tuple[float, ...]]]] = {}
     samples: list[float] = []
 
+    skipped = 0
     for example in examples:
         questions = tuple(example.questions)
         started = time.perf_counter()
-        vectors = model.decide(example.state, questions)
+        try:
+            vectors = model.decide(example.state, questions)
+        except EncodingError as error:
+            if error.reason == QUESTIONS_EXCEED_MAX_LENGTH:
+                skipped += 1
+                continue
+            raise
         samples.append((time.perf_counter() - started) * 1000.0)
         for question, vector in zip(questions, vectors, strict=True):
             gold = question.gold
@@ -303,7 +316,10 @@ def _score_split(
             source_bucket[0].append(gold)
             source_bucket[1].append(vector)
 
+    if not golds:
+        raise EvaluationError.all_overflowed()
     tables: dict[str, JsonValue] = {
+        "skipped_overflow": skipped,
         "overall": _metric_payload(
             calibration_metrics(tuple(golds), tuple(probabilities)), len(golds)
         ),
@@ -508,8 +524,8 @@ def _render_results(
     lines = [
         "# KoJev evaluation results",
         "",
-        "| model | split | states | p50_ms | p95_ms | report |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| model | split | states | acc | brier | ece | p50_ms | p95_ms | report |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for model_name, report_path, payload in rows:
         splits = payload.get("splits")
@@ -524,7 +540,25 @@ def _render_results(
                 p50 = str(latency.get("p50_ms", "n/a"))
                 p95 = str(latency.get("p95_ms", "n/a"))
             states = str(split_payload.get("states", "n/a"))
-            cells = (model_name, split_name, states, p50, p95, report_path)
+            acc = brier = ece = "n/a"
+            tables = split_payload.get("tables")
+            if isinstance(tables, dict):
+                overall = tables.get("overall")
+                if isinstance(overall, dict):
+                    acc = str(overall.get("accuracy", "n/a"))
+                    brier = str(overall.get("brier", "n/a"))
+                    ece = str(overall.get("ece", "n/a"))
+            cells = (
+                model_name,
+                split_name,
+                states,
+                acc,
+                brier,
+                ece,
+                p50,
+                p95,
+                report_path,
+            )
             lines.append("| " + " | ".join(cells) + " |")
     if protocol:
         lines.extend(

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import math
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, override
 
 import pytest
 
+from kojev.encoder import EncodingError
 from kojev.evaluate import (
     EvaluationConfig,
     EvaluationError,
@@ -90,6 +91,45 @@ def test_empty_checkpoint_directory_is_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(EvaluationError, match="directory is empty"):
         _ = resolve_checkpoint(empty)
+
+
+def test_score_split_skips_examples_that_overflow_the_window(
+    tmp_path: Path,
+) -> None:
+    """kf-deberta 512-window eval must skip packed overflows, not abort."""
+    train = tmp_path / "train.jsonl"
+    test = tmp_path / "test.jsonl"
+    write_jsonl(train, [_example("학습 상태", 1, split="train")])
+    write_jsonl(
+        test,
+        [_example("평가 A", 1), _example("넘침", 1), _example("평가 B", 1)],
+    )
+    out = tmp_path / "report.json"
+
+    class _OverflowModel(_FixedModel):
+        @override
+        def decide(
+            self, state: str, questions: tuple[Question, ...]
+        ) -> tuple[tuple[float, ...], ...]:
+            if state == "넘침":
+                raise EncodingError.questions_exceed_budget()
+            return super().decide(state, questions)
+
+    payload = evaluate(
+        EvaluationConfig(
+            checkpoint=_checkpoint(tmp_path),
+            train=train,
+            splits=(("gold_test", test),),
+            out=out,
+        ),
+        _OverflowModel([(0.25, 0.75), (0.25, 0.75)]),
+    )
+    splits = cast("dict[str, object]", payload["splits"])
+    split = cast("dict[str, object]", splits["gold_test"])
+    tables = cast("dict[str, object]", split["tables"])
+    overall = cast("dict[str, object]", tables["overall"])
+    assert tables["skipped_overflow"] == 1
+    assert math.isclose(float(cast("float", overall["accuracy"])), 1.0, rel_tol=1e-9)
 
 
 def test_contamination_check_fails_when_a_train_state_is_injected() -> None:
@@ -176,7 +216,7 @@ def test_report_contains_per_kind_and_per_source_tables_and_latency(
     assert isinstance(gold_test, dict)
     tables = gold_test["tables"]
     assert isinstance(tables, dict)
-    assert set(tables) == {"overall", "kinds", "sources"}
+    assert set(tables) == {"overall", "kinds", "sources", "skipped_overflow"}
     kinds = tables["kinds"]
     sources = tables["sources"]
     assert isinstance(kinds, dict)

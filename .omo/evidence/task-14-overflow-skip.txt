@@ -1,0 +1,6 @@
+# Eval job 13709 FAILED 00:36:23 on control DeBERTa
+
+Four A.X reports written (main/seed0/seed1/distill). Control 512-window
+raised EncodingError questions exceed max_length on an eval family.
+_score_split now skips those examples (skipped_overflow in tables).
+RESULTS.md columns include acc/brier/ece.
