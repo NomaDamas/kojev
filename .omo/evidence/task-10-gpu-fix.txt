@@ -1,0 +1,73 @@
+# KoJev: the trainer never used the GPU it was allocated
+
+## The defect
+
+kojev/train.py ran the minibatch loop under torch.autocast("cpu", ...). The
+autocast device was hardcoded to cpu, and grepping the package for .to(, cuda or
+device found NO placement of the model or batch onto an accelerator. Training
+therefore ran entirely on CPU while holding an rtx6000 allocated by Slurm.
+
+## How it was found
+
+Not from an error: every job exited on its wall clock, which reads as "the smoke
+is slow" rather than "the smoke is on the wrong device". The trigger was an
+arithmetic sanity check. Job 13627 spent 2 hours on a 2,000-example smoke, about
+2.4 seconds per batch of 4, which is implausible for a base encoder on a
+Blackwell GPU, so device placement was the first suspect.
+
+## Cost of the defect
+
+| Job | Limit | Outcome |
+|---|---|---|
+| 13626 | 30m | TIMEOUT 00:30:17, no report |
+| 13627 | 2h  | TIMEOUT 02:00:29, no report |
+
+Both held a GPU that was never used. Todo 12 asks for five full arms over 103,950
+examples each; on CPU that is unreachable, so this defect would have blocked
+todos 12, 13, 14, 15 and 16 indefinitely.
+
+## RED proof
+
+ImportError: cannot import name 'select_device' from 'kojev.train'
+
+## Fix
+
+- select_device() returns CUDA when available and CPU otherwise, as a public,
+  unit-tested function rather than an implicit assumption.
+- The model is moved to the device ONCE, before the optimizer iterates its
+  parameters.
+- Collated batches are moved via _to_device, which rebuilds SpanBatch with its
+  tensors on the device and leaves the span index tuples untouched.
+- torch.autocast(loop.device.type, ...) now follows the real device.
+
+## GREEN
+
+uv run pytest -q                => 123 passed
+uv run ruff check kojev tests   => All checks passed!
+uv run ruff format --check      => 32 files already formatted
+uv run basedpyright kojev tests => 0 errors, 0 warnings, 0 notes
+
+## Non-tautology proof (mutation)
+
+Reverting select_device to always return CPU fails the suite:
+
+    E       AssertionError: assert 'cpu' == 'cuda'
+    1 failed, 8 passed
+
+The CPU fallback is asserted separately, so offline runs stay covered.
+
+## A mistake made and caught during this fix
+
+Inserting the device field matched the shared field block of BOTH _TrainingLoop
+and _ReportContext, silently adding it to the latter and shifting its started
+argument:
+
+    TypeError: _ReportContext.__init__() missing 1 required positional argument: 'started'
+
+Caught by the existing report test, and removed from _ReportContext, which does
+not need it.
+
+## Cleanup receipt
+
+- The mutation check ran in a disposable copy under /var/folders and was removed.
+- No cluster commands were issued while fixing this.

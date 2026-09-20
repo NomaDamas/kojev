@@ -20,6 +20,7 @@ from kojev.train import (
     TrainReport,
     fit_temperature,
     run_training,
+    select_device,
     training_loss,
 )
 
@@ -187,3 +188,29 @@ def _linear_forward(model: nn.Module, batch: Batch) -> EncoderOutput:
     )
     groups = tuple((index, index + 1) for index in range(0, logits.numel(), 2))
     return EncoderOutput(logits, probabilities, groups, loss)
+
+
+def test_select_device_prefers_cuda_when_it_is_available(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Training must run on the GPU the Slurm job allocated.
+
+    Regression for gpu01 jobs 13626 and 13627. The training loop hardcoded
+    `torch.autocast("cpu", ...)` and never moved the model or batch to an
+    accelerator, so both jobs trained entirely on CPU and exhausted their wall
+    clocks (30 minutes and 2 hours) on a 2,000-example smoke while holding an
+    idle rtx6000. The smoke had already proved torch.cuda.is_available() is True
+    on that node, so the GPU was allocated and then unused.
+    """
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+
+    assert select_device().type == "cuda"
+
+
+def test_select_device_falls_back_to_cpu_without_an_accelerator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Offline CPU runs must keep working unchanged."""
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+
+    assert select_device().type == "cpu"
