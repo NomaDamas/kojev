@@ -1,0 +1,8 @@
+# Release bundle from median seed 2 (not yet todo-16 complete)
+
+python -m kojev.release build sft-full-seed2/checkpoint -> /data2/jeffrey/kojev/release/kojev-v0
+6 files: config, head.safetensors, kojev_config.json, model.safetensors, tokenizer.json, tokenizer_config.json
+restore -> /tmp/kojev-restore-v0
+decide() on 3 fixture states (CPU, venv-shared) distinct noul:
+  맑다 0.132 / 실망 0.151 / 회의 0.375
+Fresh gpu01 venv + RESULTS.md tables still required for todo 16.
