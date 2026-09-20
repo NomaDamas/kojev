@@ -1,0 +1,9 @@
+# Product ckpt KoBEST vs OpenJev (job 13718 COMPLETED)
+
+ep2 restore-v0 vs com-kotobalabs/open-jev-deberta-v3-large:
+  boolq     0.490 vs 0.712 LOSE
+  copa      0.475 vs 0.596 LOSE
+  wic       0.501 vs 0.494 WIN
+  hellaswag 0.318 vs 0.398 LOSE
+  sentineg  0.505 vs 0.851 LOSE
+Wins: 1/5 (need >=4/5). Todo 14 KoBEST clause still a miss.
