@@ -1,0 +1,21 @@
+# F1 remaining-gap audit (todos 12 and 14 still open)
+
+Checked 1-11, 13, 15, 16 against their evidence files.
+Must-NOT greps (local checkout):
+  data_gold paths do not list kobest as a training source
+  ledger cap $95/$100 is in kojev/label.py
+  cluster writes stay under /data2/jeffrey/kojev
+
+OPEN
+- Todo 12: five report.json COMPLETED, A-seeds 3/3 diverged=false.
+  Median seed2 overall 0.7211 misses 0.75. Control 0.9132 is 512-window
+  subset (not same val). Distill 0.7327 vs median 0.7211 is +1.16pt
+  (plan said within 1pt). Job 13717 is a second epoch from seed2
+  (--init-from) to chase 0.75; plan specified 1 epoch.
+- Todo 14: eval/RESULTS.md has 6 models x 10 splits + latency protocol
+  + majority baselines + missing-checkpoint failure + contamination=clean
+  in each report. KoJev main vs OpenJev KoBEST wins 0/5 (need >=4/5).
+  In-domain gold-val still favors KoJev 0.719 vs 0.522.
+- F2-F4 wait on 12 and 14.
+
+Verdict: not APPROVE until 12/14 numeric gates are met or explicitly waived.
