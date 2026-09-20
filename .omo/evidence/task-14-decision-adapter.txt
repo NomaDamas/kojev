@@ -1,0 +1,37 @@
+# KoJev todo 14: DecisionModel adapter + OpenJev baseline loader (local half)
+
+evaluate() calls DecisionModel.decide(state, questions). The production
+loader forwarded KoJevModel.decide(example, collator) under that name. Unit
+tests never caught it because they monkeypatched _load_decision_model.
+
+The public English baseline com-kotobalabs/open-jev-deberta-v3-large is
+loaded via typed_decisions.open_jev.OpenJev.from_pretrained (its bundled
+loader). A missing package raises EvaluationError naming open-jev, and the
+CLI writes no RESULTS.md.
+
+## RED
+
+    ImportError: cannot import name 'load_open_jev' from 'kojev.evaluate'
+
+## Mutation
+
+Forwarding decide(state, questions) into KoJevModel.decide:
+
+    AttributeError: 'str' object has no attribute 'state'
+
+## GREEN
+
+    tests/test_evaluate.py  14 passed
+    pytest -q               156 passed
+    ruff / basedpyright     clean
+
+## Also this turn
+
+OOD rebuilt from local gold and rsynced to gpu01:
+
+    states 6345, questions 10343, 6 families
+    /data2/jeffrey/kojev/data/ood/test.jsonl  (6345 lines)
+
+Cluster rlcd.py already contains half_epoch_steps (loop synced).
+Todo 14 stays unchecked: full RESULTS table and gpu01 latency still wait
+on the five SFT checkpoints.

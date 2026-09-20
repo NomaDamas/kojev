@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import median
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, Final, cast, override
 
 from kojev.bench import DecisionModel, Metrics, calibration_metrics
-from kojev.schema import Example, read_jsonl
+from kojev.schema import Example, Question, read_jsonl
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
     from kojev.schema import JsonValue
 
@@ -58,6 +59,11 @@ class EvaluationError(RuntimeError):
         """Reject an evaluation split that shares states with training."""
         detail = f"{overlap} state(s) also appear in train, e.g. {sample!r}"
         return cls(f"contamination in {name}: {detail}")
+
+    @classmethod
+    def missing_baseline(cls, model_id: str) -> EvaluationError:
+        """Reject a public OpenJev baseline that cannot be imported or loaded."""
+        return cls(f"open-jev baseline is unavailable: {model_id}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -239,6 +245,110 @@ def evaluate(config: EvaluationConfig, model: DecisionModel) -> dict[str, JsonVa
     return report
 
 
+_OPEN_JEV_ID: Final = "com-kotobalabs/open-jev-deberta-v3-large"
+
+
+def wrap_kojev_model(model: object, collator: object) -> DecisionModel:
+    """Adapt KoJevModel.decide(example, collator) to decide(state, questions)."""
+
+    class _Wrapped:
+        def decide(
+            self, state: str, questions: tuple[Question, ...]
+        ) -> tuple[tuple[float, ...], ...]:
+            example = Example(
+                state=state,
+                questions=list(questions),
+                source="eval",
+                split="eval",
+            )
+            answers = cast(
+                "Sequence[object]",
+                model.decide(example, collator),  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+            )
+            vectors: list[tuple[float, ...]] = []
+            for answer in answers:
+                raw_probabilities = cast(
+                    "object",
+                    getattr(answer, "probabilities"),  # noqa: B009
+                )
+                values = cast("Sequence[object]", raw_probabilities)
+                vectors.append(tuple(float(cast("float", value)) for value in values))
+            return tuple(vectors)
+
+    return _Wrapped()
+
+
+def wrap_open_jev(model: object) -> DecisionModel:
+    """Adapt OpenJev.decide(state, dict questions) to option-ordered tuples."""
+
+    class _Wrapped:
+        def decide(
+            self, state: str, questions: tuple[Question, ...]
+        ) -> tuple[tuple[float, ...], ...]:
+            payload: list[dict[str, object]] = []
+            for question in questions:
+                item: dict[str, object] = {
+                    "type": question.type.value,
+                    "instructions": question.instructions,
+                    "options": list(question.options),
+                }
+                payload.append(item)
+            raw = model.decide(state, payload)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
+            rows = cast("list[dict[str, object]]", raw)
+            vectors: list[tuple[float, ...]] = []
+            for question, row in zip(questions, rows, strict=True):
+                probabilities = row.get("probabilities")
+                if isinstance(probabilities, dict):
+                    vectors.append(
+                        tuple(
+                            float(cast("float", probabilities[option]))
+                            for option in question.options
+                        )
+                    )
+                    continue
+                if not isinstance(probabilities, (list, tuple)):
+                    raise EvaluationError.invalid_checkpoint(
+                        Path(_OPEN_JEV_ID), "probabilities missing from OpenJev answer"
+                    )
+                values = cast("Sequence[object]", probabilities)
+                vectors.append(tuple(float(cast("float", value)) for value in values))
+            return tuple(vectors)
+
+    return _Wrapped()
+
+
+def load_open_jev(model_id: str) -> DecisionModel:
+    """Load the public English OpenJev baseline through its bundled loader."""
+    try:
+        module = importlib.import_module("typed_decisions.open_jev")
+        loader = cast("object", getattr(module, "OpenJev"))  # noqa: B009
+        pretrained = cast(
+            "Callable[[str], object]",
+            getattr(loader, "from_pretrained"),  # noqa: B009
+        )
+        loaded = pretrained(model_id)
+    except EvaluationError:
+        raise
+    except Exception as error:
+        raise EvaluationError.missing_baseline(model_id) from error
+    return wrap_open_jev(loaded)
+
+
+def is_open_jev_ref(path: Path) -> bool:
+    """Return whether a --checkpoint value names the public OpenJev baseline."""
+    text = str(path)
+    return "open-jev" in text or text.startswith("hf:")
+
+
+def _open_jev_id(path: Path) -> str:
+    text = str(path)
+    if text.startswith("hf:"):
+        return text.removeprefix("hf:")
+    if "open-jev" in text:
+        return text
+    return _OPEN_JEV_ID
+
+
 if TYPE_CHECKING:
 
     def _load_decision_model(_checkpoint: Path) -> DecisionModel: ...
@@ -247,12 +357,7 @@ else:
 
     def _load_decision_model(checkpoint: Path) -> DecisionModel:
         model, collator, _ = load_checkpoint(checkpoint)
-
-        class _CheckpointModel:
-            def decide(self, example: Example) -> object:
-                return model.decide(example, collator)
-
-        return _CheckpointModel()
+        return wrap_kojev_model(model, collator)
 
 
 class _EvalArgs(argparse.Namespace):
@@ -333,8 +438,13 @@ def main(argv: list[str] | None = None) -> int:
         for model_name, checkpoint in models:
             # Validate BEFORE loading: resolve_checkpoint raises the typed
             # EvaluationError, whereas a loader handed a missing directory would
-            # raise an untyped error and escape this handler.
-            _ = resolve_checkpoint(checkpoint)
+            # raise an untyped error and escape this handler. The public English
+            # baseline is a Hugging Face id, not a local directory.
+            if is_open_jev_ref(checkpoint):
+                decision_model = load_open_jev(_open_jev_id(checkpoint))
+            else:
+                _ = resolve_checkpoint(checkpoint)
+                decision_model = _load_decision_model(checkpoint)
             report_path = (
                 args.out
                 if len(models) == 1
@@ -349,7 +459,7 @@ def main(argv: list[str] | None = None) -> int:
                     splits=splits,
                     out=report_path,
                 ),
-                _load_decision_model(checkpoint),
+                decision_model,
             )
             rows.append((model_name, str(report_path), payload))
     except EvaluationError as error:
