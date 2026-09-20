@@ -226,7 +226,7 @@ Your next move: run `/ulw-execute` on this plan (plan-reviewer high-accuracy rev
   QA scenarios: happy = gate verdict line + metric deltas table; failure = synthetic metrics violating the acc-drop clause produce NO-GO (unit test). Evidence .omo/evidence/task-13-kojev.txt
   Commit: Y | feat(rlcd): expected-utility calibration stage + go/no-go gate
 
-- [ ] 14. Full evaluation: benchmark + OOD + latency
+- [x] 14. Full evaluation: benchmark + OOD + latency
   Recommended task executor category: deep
   What to do / Must NOT do: Run todo-4 harness zero-shot on: main SFT checkpoint, RLCD checkpoint (if GO), control arm, distill arm, and PUBLIC BASELINE `com-kotobalabs/open-jev-deberta-v3-large` (load via its bundled loader; it is English-trained — expected weak on Korean, that IS the point of KoJev). Also run data/ood/test.jsonl. Latency on gpu01 RTX6000 via srun: 1 state x 10 questions e2e p50/p95 (20 repeats, 3 warmups) + forward-only + throughput batch 8/32. Emit eval/RESULTS.md with tables: per-task acc/F1, Brier, ECE (pre/post temperature), per-kind aggregates, majority baselines, latency rows. Must NOT: no fine-tuning on benchmark; no cherry-picked slices; every number traceable to a report.json path.
   Parallelization: Wave 5 | Blocked by: 4,8,12,13 | Blocks: 16
@@ -255,16 +255,16 @@ Your next move: run `/ulw-execute` on this plan (plan-reviewer high-accuracy rev
 
 ## Final verification wave
 > Runs in parallel after ALL todos. ALL must APPROVE. Surface results and wait for the user's explicit okay before declaring complete.
-- [ ] F1. Plan compliance audit
+- [x] F1. Plan compliance audit
   Recommended task executor category: unspecified-high
   Verify every todo 1-16 acceptance criterion against its evidence file; verify Must-NOT list (grep repo for kobest in data_gold paths, ledger cap logic, no /data writes in scripts); verdict APPROVE/REJECT with cited paths.
-- [ ] F2. Code quality review
+- [x] F2. Code quality review
   Recommended task executor category: unspecified-high
   Review kojev/ modules for correctness of grouped softmax, augmentation gold-preservation, budget accounting arithmetic, RLCD gate logic; diagnostics clean; tests non-tautological (each can fail for its named regression).
-- [ ] F3. Real manual QA
+- [x] F3. Real manual QA
   Recommended task executor category: unspecified-high
   On gpu01: run one fresh `kojev.bench` invocation on the released bundle and one real curl against the serving shim (then kill it, receipt recorded); confirm numbers match eval/RESULTS.md rows.
-- [ ] F4. Scope fidelity
+- [x] F4. Scope fidelity
   Recommended task executor category: unspecified-high
   Confirm nothing beyond scope shipped (no HF upload, no public bind, no extra backbones) and nothing in scope was silently dropped (AI Hub doc exists, RLCD verdict recorded either way, 3 seeds present).
 

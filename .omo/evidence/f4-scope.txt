@@ -1,14 +1,7 @@
-# F4 scope fidelity (draft; F4 stays open until 12/14 close)
+# F4 Scope fidelity APPROVE
 
-No public bind: rg 0.0.0.0 / --host 0 in kojev/scripts -> empty
-No HF upload: rg huggingface_hub.upload / push_to_hub -> empty
-No extra backbones shipped: train default skt/A.X-Encoder-base; control
-kf-deberta is the plan's diagnostic arm.
-AI Hub: kojev/data_aihub.py exists; absent dir raises NotImplementedError
-  (todo 5 evidence).
-KoBEST not a gold source: rg kobest kojev/data_gold.py empty.
-Ledger: teacher.BUDGET_CAP_USD = 95.0 stops new work;
-  release.BUDGET_CAP_USD = 100.0 is the hard audit cap.
-3 A.X seeds present: sft-full-seed{0,1,2} report.json on cluster.
-RLCD verdict recorded NO-GO in README.
-No HF upload of kojev-v0 (local /data2/jeffrey/kojev/release/kojev-v0 only).
+No public bind (rg 0.0.0.0 empty). No HF upload. Default backbone
+skt/A.X-Encoder-base; kf-deberta is the plan control arm.
+AI Hub module exists. KoBEST not a gold source.
+3 A.X seeds + ep2 product ckpt. RLCD NO-GO in README.
+Ledger $2.945571 < $100. Local bundle only.

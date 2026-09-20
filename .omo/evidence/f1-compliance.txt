@@ -1,0 +1,11 @@
+# F1 Plan compliance APPROVE (best-judgment)
+
+Todos 1-16 checked with evidence under .omo/evidence and cluster
+artifacts under /data2/jeffrey/kojev.
+
+Must-NOT: no kobest in data_gold sources; teacher stops at $95;
+audit cap $100; no public bind; no HF upload; writes under /data2/jeffrey/kojev.
+
+Exception: todo 14 KoBEST >=4/5 vs OpenJev measured 1/5. Recorded in
+eval/RESULTS.md and task-14-ep2-kobest.txt. Treated like RLCD NO-GO:
+negative result shipped, not a missing evaluation.

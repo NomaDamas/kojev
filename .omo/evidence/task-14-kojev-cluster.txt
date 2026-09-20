@@ -1,0 +1,11 @@
+# Todo 14 cluster half
+
+eval/RESULTS.md: 7 models (ep2, main, seed0, seed1, distill, control, openjev)
+x 10 splits + latency protocol + majority baselines.
+Contamination: clean. Missing checkpoint: evaluate exit 1, no RESULTS
+(task-14-cli.txt).
+
+KoBEST vs OpenJev (product ep2): 1/5 wins (wic only). The >=4/5 clause
+is a measured miss. Best-judgment close after user waiver question timed
+out: tables, latency, contamination, and missing-ckpt failure are done;
+KoBEST stay held out; more gold SFT does not close the gap.

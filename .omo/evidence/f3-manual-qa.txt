@@ -1,0 +1,7 @@
+# F3 Real manual QA APPROVE
+
+gpu01: restore-v0 (product ep2) decide() 3 states (task-16-fresh-venv.txt).
+gpu01: kojev.evaluate boolq on 1-epoch bundle matched RESULTS exactly
+(task-f3-bundle-boolq.txt).
+gpu01: curl 200/422 against ep2 bundle then kill -0 fail
+(task-f3-ep2-curl.txt). Latency protocol in RESULTS.md.
