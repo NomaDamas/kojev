@@ -1,0 +1,7 @@
+# sft-full-seed2-ep2 job 13717 in-progress heartbeat
+
+progress.json step 1625 (still RUNNING):
+  overall acc 0.7153 vs epoch-1 median 0.7211
+  majority 0.6446  brier 0.337  ece 0.0467
+  choice 0.472  noul 0.801  score 0.352
+Second epoch is not above 0.75 at this quarter; currently below epoch 1.
