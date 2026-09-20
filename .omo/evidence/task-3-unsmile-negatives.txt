@@ -1,0 +1,48 @@
+# KoJev: UnSmile nouls could only ever be answered 예
+
+## Measured defect
+
+    train: unsmile NOUL gold distribution = {1: 8610}
+    val:   unsmile NOUL gold distribution = {1: 519}
+
+9,129 binary questions whose honest answer was always 예. Nouls were emitted
+only for ACTIVE categories, so no category a sentence did NOT belong to was ever
+asked about.
+
+The CHOICE questions from the same source were healthy, spread across all nine
+options:
+
+    train: unsmile CHOICE gold = {0:679, 1:620, 2:515, 3:685, 4:227, 5:443,
+                                  6:438, 7:174, 8:1713}
+
+That mix is why the source-level totals never looked obviously broken, and why
+the defect had to be found by splitting the distribution BY QUESTION TYPE.
+
+## How it was found
+
+smilegate-ai/kor_unsmile scored 0.1246 against a 0.6426 majority and stayed
+there through every device, dtype, sampling and corpus fix. A 52-point deficit
+that survives six unrelated fixes is a property of the data, not the model.
+
+## Fix
+
+Matched negatives: for each row, as many inactive categories as active ones are
+asked with gold=0. `_pick_negatives` keys the choice on a SHA-256 of the state
+text, so the selection is stable across rebuilds and varies between rows instead
+of always naming the first categories in the list.
+
+## RED
+
+    E   AssertionError: every noul is answerable 예; the sub-task is degenerate
+    E   assert 0 in {1}
+
+## An intentional contract change
+
+`test_unsmile_emits_one_noul_per_category_and_single_label_choice` asserted
+exactly two questions. Adding negatives makes that three. The test was updated
+to the new contract and now asserts the noul golds are exactly {0, 1}. This is a
+deliberate behaviour change, not a suppressed failure.
+
+## GREEN
+
+    133 passed, ruff clean, format clean, basedpyright 0 errors
