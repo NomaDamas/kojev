@@ -12,6 +12,8 @@ from pathlib import Path
 from statistics import median
 from typing import TYPE_CHECKING, Final, cast, override
 
+import torch
+
 from kojev.bench import DecisionModel, Metrics, calibration_metrics
 from kojev.schema import Example, Question, QuestionType, read_jsonl
 
@@ -468,6 +470,8 @@ else:
 
     def _load_decision_model(checkpoint: Path) -> DecisionModel:
         model, collator, _ = load_checkpoint(checkpoint)
+        if torch.cuda.is_available():
+            model = model.to(torch.device("cuda"))
         return wrap_kojev_model(model, collator)
 
 
