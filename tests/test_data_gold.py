@@ -62,19 +62,30 @@ def test_maps_sts_real_label_to_rounded_score_and_binary_gold() -> None:
 
 
 def test_korquad_negative_pair_flips_answerability_gold() -> None:
-    positive = build_korquad_pair(
+    """Substituting a DIFFERENT question makes the pair unanswerable.
+
+    This test previously asserted the inverse: that a differing
+    `negative_question` stayed answerable (gold=1) and an identical one became
+    unanswerable (gold=0). That is backwards, and it is why the defect survived
+    review. The built corpus settled it: under those semantics every KorQuAD
+    question in every split carried gold=1, 18,993 in total, because negatives
+    are always built from a DIFFERENT title's question.
+    """
+    answerable = build_korquad_pair(
         {"context": "서울은 수도이다.", "question": "수도는?", "id": "a"},
+        split="train",
+    )
+    unanswerable = build_korquad_pair(
+        {"context": "서울은 수도이다.", "question": "수도는?", "id": "b"},
         split="train",
         negative_question="부산은 어디인가?",
     )
-    negative = build_korquad_pair(
-        {"context": "부산은 항구다.", "question": "수도는?", "id": "b"},
-        split="train",
-        negative_question="수도는?",
-    )
 
-    assert positive.questions[0].gold == 1
-    assert negative.questions[0].gold == 0
+    assert answerable.questions[0].gold == 1
+    assert unanswerable.questions[0].gold == 0
+    # The unanswerable pair must actually ask the substituted question.
+    assert "부산은 어디인가?" in unanswerable.state
+    assert answerable.state != unanswerable.state
 
 
 def test_unsmile_emits_one_noul_per_category_and_single_label_choice() -> None:
@@ -265,3 +276,34 @@ def test_validation_rejects_example_with_no_questions() -> None:
                 "split": "train",
             }
         )
+
+
+def test_korquad_negative_asks_the_substituted_question_and_flips_gold() -> None:
+    """An unanswerable KorQuAD pair must ask the OTHER question and answer no.
+
+    Measured on the built corpus, every KorQuAD question in every split carried
+    gold=1: 15,995 train, 999 val, 1,999 test. The answerability task was
+    degenerate, and since the negative reused the row's own question the
+    negative example was a byte-identical duplicate of its positive.
+    """
+    row = {
+        "id": "q-1",
+        "title": "A",
+        "context": "고양이는 포유류이다.",
+        "question": "고양이는 무엇인가?",
+    }
+
+    positive = build_korquad_pair(row, split="train")
+    negative = build_korquad_pair(
+        row, split="train", negative_question="에펠탑은 어디에 있는가?"
+    )
+
+    assert positive.questions[0].gold == 1
+    assert "고양이는 무엇인가?" in positive.state
+
+    # The negative must ask the substituted question and be unanswerable.
+    assert negative.questions[0].gold == 0, "negative kept the answerable gold"
+    assert "에펠탑은 어디에 있는가?" in negative.state, (
+        "negative never asked the substituted question"
+    )
+    assert negative.state != positive.state, "negative duplicates its positive"
