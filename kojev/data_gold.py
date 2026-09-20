@@ -329,6 +329,20 @@ def build_korquad_pair(
     )
 
 
+def _pick_negatives(state: str, inactive: list[str], count: int) -> list[str]:
+    """Choose `count` inactive categories deterministically for this state.
+
+    Keyed on the state text so the selection is stable across rebuilds and
+    varies between rows, rather than always naming the first few categories.
+    """
+    if not inactive:
+        return []
+    digest = hashlib.sha256(state.encode("utf-8")).digest()
+    offset = int.from_bytes(digest[:4], "big") % len(inactive)
+    rotated = inactive[offset:] + inactive[:offset]
+    return rotated[: min(count, len(inactive))]
+
+
 def map_unsmile_row(row: Row, *, split: str) -> Example:
     """Map active UnSmile categories to nouls and a single-label choice."""
     state = _text(row, "문장")
@@ -350,6 +364,22 @@ def map_unsmile_row(row: Row, *, split: str) -> Example:
         )
         for category in active
     ]
+    # Emit matched negatives. Without them every noul is answerable 예 and the
+    # sub-task carries no signal: the built corpus held 8,610 train nouls and
+    # 519 val nouls, all gold=1. The choice question stayed healthy, which is
+    # why the source-level numbers alone did not reveal this.
+    inactive = [
+        category for category in _UNSMILE_CATEGORIES if category not in set(active)
+    ]
+    questions.extend(
+        _question(
+            QuestionType.NOUL,
+            f"이 문장은 {category}에 해당한다.",
+            ["아니오", "예"],
+            0,
+        )
+        for category in _pick_negatives(state, inactive, max(1, len(active)))
+    )
     hate_active = [category for category in active if category != "clean"]
     if not questions:
         questions.append(

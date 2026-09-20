@@ -99,13 +99,15 @@ def test_unsmile_emits_one_noul_per_category_and_single_label_choice() -> None:
         split="train",
     )
 
-    assert len(example.questions) == 2
-    assert [question.type for question in example.questions] == [
-        QuestionType.NOUL,
-        QuestionType.CHOICE,
-    ]
-    assert example.questions[0].gold == 1
-    assert example.questions[1].gold == 1
+    # One positive noul per active category, a matched negative noul so the
+    # sub-task is answerable both ways, then the single-label choice. The
+    # negative count deliberately changed this expectation from 2 to 3.
+    nouls = [q for q in example.questions if q.type is QuestionType.NOUL]
+    choices = [q for q in example.questions if q.type is QuestionType.CHOICE]
+    assert len(nouls) == 2
+    assert len(choices) == 1
+    assert sorted(q.gold for q in nouls if q.gold is not None) == [0, 1]
+    assert choices[0].gold == 1
 
 
 def test_validation_reports_malformed_line_number(tmp_path: Path) -> None:
@@ -307,3 +309,35 @@ def test_korquad_negative_asks_the_substituted_question_and_flips_gold() -> None
         "negative never asked the substituted question"
     )
     assert negative.state != positive.state, "negative duplicates its positive"
+
+
+def test_unsmile_emits_negative_nouls_for_inactive_categories() -> None:
+    """UnSmile nouls must be answerable both ways.
+
+    Measured on the built corpus, every UnSmile noul carried gold=1: 8,610 in
+    train and 519 in val. Nouls were emitted only for ACTIVE categories, so the
+    honest answer was always 예 and the sub-task taught nothing. The choice
+    questions were healthy, which is why the defect was not obvious from the
+    source-level numbers alone.
+    """
+    example = map_unsmile_row(
+        {
+            "문장": "깨끗한 글",
+            "여성/가족": 0,
+            "남성": 1,
+            "성소수자": 0,
+            "인종/국적": 0,
+            "연령": 0,
+            "지역": 0,
+            "종교": 0,
+            "기타 혐오": 0,
+            "악플/욕설": 0,
+            "clean": 0,
+        },
+        split="train",
+    )
+
+    nouls = [q for q in example.questions if q.type is QuestionType.NOUL]
+    golds = {q.gold for q in nouls}
+    assert 1 in golds, "no positive noul emitted"
+    assert 0 in golds, "every noul is answerable 예; the sub-task is degenerate"
