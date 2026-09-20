@@ -456,3 +456,47 @@ def test_checkpoint_round_trip_is_offline_and_preserves_outputs(
     assert (checkpoint / "head.safetensors").is_file()
     assert (checkpoint / "tokenizer_config.json").is_file()
     assert json.loads((checkpoint / "kojev_config.json").read_text())["seed"] == 7
+
+
+def test_forward_survives_softmax_promoting_dtype(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Grouped softmax must survive a softmax that promotes dtype.
+
+    Regression for gpu01 job 13630. Under CUDA autocast, `logits` are BFloat16
+    but `torch.softmax` sits on the fp32 autocast list and returns Float, so
+    writing the group probabilities back raised:
+
+        RuntimeError: Index put requires the source and destination dtypes
+        match, got BFloat16 for the destination and Float for the source
+
+    CPU autocast does NOT promote softmax, so the plain autocast path cannot
+    reproduce this. The CUDA policy is emulated directly instead, which keeps the
+    test faithful to the invariant and independent of the host's accelerator.
+    """
+    real_softmax = torch.softmax
+
+    def _promoting_softmax(value: Tensor, dim: int) -> Tensor:
+        return real_softmax(value, dim=dim).float()
+
+    monkeypatch.setattr(torch, "softmax", _promoting_softmax)
+
+    model, collator = _tiny_model()
+    batch = collator(_examples())
+
+    # Autocast also makes the head emit reduced precision, which is the other
+    # half of the mismatch: BFloat16 destination, Float source.
+    real_scorer_forward = model.scorer.forward
+
+    def _half_precision_forward(features: Tensor) -> Tensor:
+        return real_scorer_forward(features).bfloat16()
+
+    monkeypatch.setattr(model.scorer, "forward", _half_precision_forward)
+
+    output = model.forward(batch)
+
+    assert torch.isfinite(output.probabilities).all()
+    grouped = output.probabilities.float()
+    for group in output.groups:
+        total = float(grouped[torch.tensor(group)].sum())
+        assert total == pytest.approx(1.0, abs=1e-2)
