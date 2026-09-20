@@ -537,11 +537,14 @@ def _render_results(
     protocol: Sequence[tuple[str, ProtocolLatency]] = (),
 ) -> str:
     """Render split tables plus the optional gpu01 latency protocol table."""
+    header = (
+        "| model | split | states | acc | f1 | brier | ece | p50_ms | p95_ms | report |"
+    )
     lines = [
         "# KoJev evaluation results",
         "",
-        "| model | split | states | acc | brier | ece | p50_ms | p95_ms | report |",
-        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        header,
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for model_name, report_path, payload in rows:
         splits = payload.get("splits")
@@ -556,12 +559,13 @@ def _render_results(
                 p50 = str(latency.get("p50_ms", "n/a"))
                 p95 = str(latency.get("p95_ms", "n/a"))
             states = str(split_payload.get("states", "n/a"))
-            acc = brier = ece = "n/a"
+            acc = f1 = brier = ece = "n/a"
             tables = split_payload.get("tables")
             if isinstance(tables, dict):
                 overall = tables.get("overall")
                 if isinstance(overall, dict):
                     acc = str(overall.get("accuracy", "n/a"))
+                    f1 = str(overall.get("macro_f1", "n/a"))
                     brier = str(overall.get("brier", "n/a"))
                     ece = str(overall.get("ece_15", overall.get("ece", "n/a")))
             cells = (
@@ -569,6 +573,7 @@ def _render_results(
                 split_name,
                 states,
                 acc,
+                f1,
                 brier,
                 ece,
                 p50,
