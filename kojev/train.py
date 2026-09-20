@@ -21,8 +21,10 @@ from torch.nn import functional
 
 from kojev.augment import augment_example
 from kojev.encoder import (
+    QUESTIONS_EXCEED_MAX_LENGTH,
     CheckpointProvenance,
     EncoderOutput,
+    EncodingError,
     KoJevModel,
     SpanBatch,
     SpanCollator,
@@ -161,6 +163,8 @@ class _ReportContext:
     losses: list[float]
     watch: DivergenceWatch
     started: float
+    train_dropped: int
+    val_dropped: int
 
 
 def training_loss(output: EncoderOutput) -> Tensor:
@@ -176,6 +180,24 @@ def training_loss(output: EncoderOutput) -> Tensor:
         )
         return torch.sum(torch.stack(output.question_losses) * weights) / weights.sum()
     return output.loss
+
+
+def _keep_within_budget(
+    collate: Collate, examples: Sequence[Example]
+) -> tuple[list[Example], int]:
+    """Drop families the collator cannot pack, instead of crashing the run."""
+    kept: list[Example] = []
+    dropped = 0
+    for example in examples:
+        try:
+            _ = collate([example])
+        except EncodingError as error:
+            if error.reason == QUESTIONS_EXCEED_MAX_LENGTH:
+                dropped += 1
+                continue
+            raise
+        kept.append(example)
+    return kept, dropped
 
 
 def _is_distill_question(question: object) -> bool:
@@ -529,6 +551,8 @@ def _persist_report(context: _ReportContext) -> TrainReport:
                 for question in example.questions
                 if _is_distill_question(question)
             ),
+            "train_dropped": context.train_dropped,
+            "val_dropped": context.val_dropped,
         },
         "loss_curve": context.losses,
         "wall_time": time.perf_counter() - context.started,
@@ -625,6 +649,10 @@ def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
         config.model_name,
         config.distill_weight,
     )
+    train_examples, train_dropped = _keep_within_budget(runtime.collate, train_examples)
+    val_examples, val_dropped = _keep_within_budget(runtime.collate, val_examples)
+    if not train_examples or not val_examples:
+        raise EncodingError.questions_exceed_budget()
     steps = max(1, math.ceil(len(train_examples) / config.batch_size) * config.epochs)
     optimizer = _optimizer(runtime.model, config.backbone_lr, config.head_lr)
     device = select_device()
@@ -642,7 +670,15 @@ def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
     losses, _, watch = _train_epochs(loop)
     report = _persist_report(
         _ReportContext(
-            config, runtime, train_examples, val_examples, losses, watch, started
+            config,
+            runtime,
+            train_examples,
+            val_examples,
+            losses,
+            watch,
+            started,
+            train_dropped,
+            val_dropped,
         )
     )
     tracemalloc.stop()
