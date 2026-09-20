@@ -1,0 +1,15 @@
+# OpenJev English baseline (job 13715 COMPLETED)
+
+Hub id com-kotobalabs/open-jev-deberta-v3-large via typed_decisions.OpenJev.
+report: /data2/jeffrey/kojev/runs/eval-full/report-openjev.json
+
+gold-val acc 0.522 (skip 500) vs KoJev main 0.719
+ood 0.443 vs main 0.520
+
+KoBEST acc main vs openjev (need >=4/5 wins):
+  boolq     0.501 vs 0.712 LOSE
+  copa      0.471 vs 0.596 LOSE
+  wic       0.467 vs 0.494 LOSE
+  hellaswag 0.280 vs 0.398 LOSE
+  sentineg  0.490 vs 0.851 LOSE
+Wins: 0/5. Todo 14 numeric KoBEST gate is a MISS.

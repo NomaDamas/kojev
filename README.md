@@ -16,15 +16,16 @@ OpenRouter. KoBEST is fully held out of training.
 
 Todos 1–11, 13, 15 are done. Todos 12, 14, 16 and F1–F4 are open.
 
-- Todo 10: full seed-0 gold SFT (job 13685) overall acc 0.7145 vs majority
-  0.6446 (**+0.070**). The 2k smokes stayed at ~+0.03 because of noul mix.
-- Todo 12: five `report.json` files exist. Arm A is 3/3 healthy (0.7145 /
-  0.7215 / 0.7211). Median is seed 2 (0.7211), which **misses the 0.75
-  gate**. Distill 0.7327 does not hurt gold. Control DeBERTa 0.9132 is on
-  the 512-window subset (8,000 train / 500 val dropped), not the same val.
-- Todo 13: two RLCD attempts NO-GO (quality + brier_drop). Ship SFT-only.
-- Todo 14: 5-checkpoint eval job 13709 on gpu01.
-- Todo 16: `kojev.release` exists; gpu01 round-trip waits on todo 14.
+- Todo 12: five `report.json` files. Arm A 3/3 healthy (0.7145 / 0.7215 /
+  0.7211). Median seed 2 is **0.7211**, which **misses the 0.75 gate**.
+  Distill 0.7327 does not hurt gold. Control DeBERTa 0.9132 is the 512-window
+  subset, not the same val.
+- Todo 13: two RLCD attempts NO-GO. Ship SFT-only.
+- Todo 14: six-model `eval/RESULTS.md` (3 A.X seeds + distill + DeBERTa
+  control + OpenJev). Latency protocol on gpu01. KoJev main **loses 0/5
+  KoBEST** to English OpenJev (in-domain gold-val still 0.719 vs 0.522).
+- Todo 16: bundle at `/data2/jeffrey/kojev/release/kojev-v0`; fresh venv
+  round-trip and tampered-config EncodingError are recorded. Ledger $2.945571.
 
 ## Results
 
