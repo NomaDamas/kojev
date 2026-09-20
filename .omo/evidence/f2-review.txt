@@ -1,0 +1,22 @@
+# F2 code quality (draft; F2 stays open until 12/14 close)
+
+Grouped softmax: kojev/encoder.py KoJevModel.forward softmaxes per-question
+option groups (group_probabilities = softmax(group_logits, dim=0)), not a
+single vocab softmax. Tests/test_encoder.py pins tiny-random grouped
+normalization and 300-option rejection.
+
+Gold-preservation: tests/test_augment.py asserts the gold option STRING is
+unchanged after shuffle/paraphrase (not merely the gold index). 1000-example
+property test exists (todo 7 evidence).
+
+Budget arithmetic: teacher.BUDGET_CAP_USD=95.0 stops new OpenRouter calls;
+release.BUDGET_CAP_USD=100.0 is the audit cap. Ledger unique request ids
+are the resume key (todo 9/11 evidence). Local pytest tests/test_teacher.py
+covers cap restart.
+
+RLCD gate: kojev/rlcd.py gate_clause_failures implements quality, acc_drop,
+brier_drop, ood_drop. tests/test_rlcd.py covers all four clauses. Cluster
+NO-GO is recorded, not a silent skip.
+
+Diagnostics: last full pytest 172 passed + ruff + basedpyright 0 on the
+init-from merge. F2 is not APPROVE while 12/14 numeric gates are open.
