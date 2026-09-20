@@ -406,6 +406,27 @@ def test_wrap_open_jev_emits_option_ordered_probability_tuples() -> None:
     assert vectors[0][2] == pytest.approx(1 / 3)
 
 
+def test_evaluate_accepts_openjev_hub_id_when_model_is_injected(
+    tmp_path: Path,
+) -> None:
+    """The English baseline is a Hub id, not a local directory."""
+    train = tmp_path / "train.jsonl"
+    test = tmp_path / "test.jsonl"
+    write_jsonl(train, [_example("훈련 상태", 1, split="train")])
+    write_jsonl(test, [_example("평가 상태", 1)])
+    out = tmp_path / "report.json"
+    payload = evaluate(
+        EvaluationConfig(
+            checkpoint=tmp_path / "open-jev-deberta-v3-large",
+            train=train,
+            splits=(("gold_test", test),),
+            out=out,
+        ),
+        wrap_open_jev(_FakeOpenJev()),
+    )
+    assert "open-jev" in str(payload["checkpoint"])
+
+
 def test_load_open_jev_raises_typed_error_when_the_package_is_absent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
