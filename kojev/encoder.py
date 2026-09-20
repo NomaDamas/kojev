@@ -181,6 +181,20 @@ class SpanBatch:
     question_token_ids: tuple[int, ...]
     question_weights: tuple[float, ...]
 
+    def to(self, device: torch.device) -> SpanBatch:
+        """Move packed tensors onto the encoder device."""
+        return SpanBatch(
+            input_ids=self.input_ids.to(device),
+            attention_mask=self.attention_mask.to(device),
+            question_spans=self.question_spans,
+            option_spans=self.option_spans,
+            question_groups=self.question_groups,
+            question_types=self.question_types,
+            gold_indices=self.gold_indices,
+            question_token_ids=self.question_token_ids,
+            question_weights=self.question_weights,
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class EncoderOutput:
@@ -492,7 +506,8 @@ class KoJevModel(nn.Module):
         self, example: Example, collator: SpanCollator
     ) -> tuple[DecisionAnswer, ...]:
         """Return typed answers for choice, score, and noul questions."""
-        output = self.forward(collator([example]))
+        device = next(self.parameters()).device
+        output = self.forward(collator([example]).to(device))
         answers: list[DecisionAnswer] = []
         for question, group in zip(example.questions, output.groups, strict=True):
             probabilities = tuple(float(output.probabilities[index]) for index in group)

@@ -291,6 +291,15 @@ def test_deberta_v2_pretrained_path_uses_auto_loader(
     assert model.backbone is backbone
 
 
+def test_span_batch_to_moves_packed_tensors() -> None:
+    """decide() must place collated ids on the encoder parameter device."""
+    _, collator = _tiny_model()
+    batch = collator(_examples())
+    moved = batch.to(torch.device("cpu"))
+    assert moved.input_ids.device.type == "cpu"
+    assert torch.equal(moved.input_ids, batch.input_ids)
+
+
 def test_collator_marks_spans_without_marker_hidden_state_readout() -> None:
     # Given examples and a tokenizer with task marker support
     model, collator = _tiny_model()

@@ -1,0 +1,7 @@
+# Eval job 13706 cancelled: CPU-only decide()
+
+GPU 1 stayed at 4 MiB / 0% for 13 min while python used 697% CPU.
+load_checkpoint never moved the encoder; decide() forwarded CPU tensors.
+
+SpanBatch.to(device) + decide() uses parameter device.
+evaluate.py places the model on CUDA when available.
