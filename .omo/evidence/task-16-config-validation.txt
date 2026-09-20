@@ -1,0 +1,66 @@
+# KoJev todo 16: a tampered release bundle loaded silently
+
+## The defect
+
+Todo 16's named failure case is "tampering kojev_config.json temperature to a
+string makes loader raise a typed error". Tested against a real bundle built
+from a trained checkpoint, the loader ACCEPTED it:
+
+    NO ERROR RAISED - tampered config was accepted
+
+`temperature` was never read by the loader at all. The other fields were worse
+than unvalidated: they used isinstance guards with SILENT FALLBACKS.
+
+    max_length if isinstance(max_length, int) else 4096
+    float(distill_weight) if isinstance(distill_weight, (int, float)) else 1.0
+    head_hidden_size if isinstance(head_hidden_size, int) else 1024
+
+A tampered or truncated value was quietly replaced by a default, so the model
+loaded with settings nobody chose and nothing reported it. A wrong
+head_hidden_size would silently build a differently shaped head.
+
+## RED
+
+Before the fix the tampered bundle failed, but with an unrelated untyped error
+from tokenizer loading rather than a typed error naming the field:
+
+    ValueError: Couldn't instantiate the backend tokenizer from one of: ...
+
+That also showed the config was being validated AFTER the heavy model load.
+
+## Fix
+
+`_checked` validates each numeric field before the backbone is loaded:
+
+- an ABSENT key takes its default, so older checkpoints stay loadable
+- a PRESENT key with the wrong type raises EncodingError naming the field
+- bool is rejected explicitly, since bool subclasses int
+
+Validation runs BEFORE `_load_local`, so a tampered bundle is rejected without
+paying for a model load, mirroring the ordering fix already made in evaluate.py.
+
+## Real-surface proof
+
+    TAMPERED: RAISED EncodingError: kojev_config.json field 'temperature'
+              must be int or float, got str
+    CLEAN   : loaded OK
+
+## Non-tautology proof
+
+Restoring the silent fallback fails the new tests.
+
+## Bundle round-trip (local, with the trained checkpoint)
+
+    build   => {"built": ".../kojev-v0", "files": 6}
+    restore => {"restored": ".../kojev-v0-restored", "files": 6}
+    decide() on 3 fixture states:
+      fixture 1: noul=0.237386 probabilities=(0.762614, 0.237386) valid=True
+      fixture 2: noul=0.479708 probabilities=(0.520292, 0.479708) valid=True
+      fixture 3: noul=0.375569 probabilities=(0.624431, 0.375569) valid=True
+
+Three distinct outputs, so the restored bundle carries real head weights rather
+than a re-initialised head.
+
+## GREEN
+
+    139 passed, ruff clean, format clean, basedpyright 0 errors

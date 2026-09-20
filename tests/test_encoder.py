@@ -22,6 +22,7 @@ from transformers import (
 from kojev.encoder import (
     BackboneConfig,
     CheckpointProvenance,
+    EncodingError,
     KoJevModel,
     SpanCollator,
     Tokenizer,
@@ -542,3 +543,52 @@ def test_head_accepts_reduced_precision_backbone_output() -> None:
     output = model.forward(batch)
 
     assert torch.isfinite(output.logits.float()).all()
+
+
+@pytest.mark.parametrize(
+    ("field", "bad_value"),
+    [
+        ("temperature", "not-a-number"),
+        ("max_length", "4096"),
+        ("head_hidden_size", 12.5),
+        ("distill_weight", "half"),
+    ],
+)
+def test_tampered_checkpoint_config_raises_a_typed_error(
+    tmp_path: Path, field: str, bad_value: object
+) -> None:
+    """A corrupted kojev_config.json value must fail loudly, not be defaulted.
+
+    The loader used isinstance guards with silent fallbacks, e.g.
+    `max_length if isinstance(max_length, int) else 4096`, so a tampered value
+    was quietly replaced by a default and the corruption was masked. Tampering
+    `temperature` to a string was accepted outright because the field was never
+    read at all.
+
+    A key that is ABSENT may still take its default, which keeps older
+    checkpoints loadable; a key that is PRESENT with the wrong type is
+    corruption and must raise.
+
+    The config is validated BEFORE the backbone is loaded, so this test needs
+    only the config file: a tampered bundle must be rejected without paying for
+    a model load first.
+    """
+    directory = tmp_path / "checkpoint"
+    directory.mkdir()
+    payload: dict[str, object] = {
+        "distill_weight": 0.5,
+        "head_hidden_size": 1024,
+        "markers": ["[STATE]", "[Q]", "[OPT]"],
+        "max_length": 4096,
+        "model_name": "skt/A.X-Encoder-base",
+        "pooling": "span_mean",
+        "seed": 0,
+        "temperature": 1.15,
+    }
+    payload[field] = bad_value
+    _ = (directory / "kojev_config.json").write_text(
+        json.dumps(payload), encoding="utf-8"
+    )
+
+    with pytest.raises(EncodingError, match=field):
+        _ = load_checkpoint(directory)

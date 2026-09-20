@@ -498,6 +498,33 @@ class KoJevModel(nn.Module):
         return tuple(answers)
 
 
+def _checked(
+    metadata: dict[str, object],
+    key: str,
+    kinds: tuple[type, ...],
+    default: float,
+) -> float | int:
+    """Return a config value, raising when it is present with the wrong type.
+
+    An ABSENT key takes its default so older checkpoints stay loadable. A key
+    that is PRESENT with the wrong type is corruption and must fail loudly:
+    silently substituting a default hides a tampered or truncated bundle, and
+    the model then loads with settings nobody chose.
+    """
+    if key not in metadata:
+        return default
+    value = metadata[key]
+    # bool is a subclass of int and is never a valid numeric config value here.
+    if isinstance(value, bool) or not isinstance(value, kinds):
+        reason = (
+            f"{_KOJEV_CONFIG} field {key!r} must be "
+            f"{' or '.join(kind.__name__ for kind in kinds)}, got "
+            f"{type(value).__name__}"
+        )
+        raise EncodingError(reason)
+    return _cast("float | int", value)
+
+
 def load_checkpoint(
     directory: Path,
 ) -> tuple[KoJevModel, SpanCollator, dict[str, object]]:
@@ -518,26 +545,25 @@ def load_checkpoint(
     entries = _cast("dict[object, object]", raw)
     metadata: dict[str, object] = {str(key): value for key, value in entries.items()}
 
+    # Validate BEFORE loading the backbone: a tampered bundle must be rejected
+    # without paying for a model load, and the error must name the bad field.
+    max_length = int(_checked(metadata, "max_length", (int,), 4096))
+    distill_weight = float(_checked(metadata, "distill_weight", (int, float), 1.0))
+    head_hidden_size = int(_checked(metadata, "head_hidden_size", (int,), 1024))
+    _ = _checked(metadata, "temperature", (int, float), 1.0)
+
     backbone, tokenizer = _load_local(directory)
-    max_length = metadata.get("max_length")
-    distill_weight = metadata.get("distill_weight")
-    head_hidden_size = metadata.get("head_hidden_size")
     # The saved tokenizer already carries the markers, so registering them again
     # is a no-op and the marker ids stay inside the saved embedding table.
     collator = SpanCollator(
         tokenizer,
-        max_length=max_length if isinstance(max_length, int) else 4096,
-        distill_weight=(
-            float(distill_weight) if isinstance(distill_weight, (int, float)) else 1.0
-        ),
+        max_length=max_length,
+        distill_weight=distill_weight,
     )
     # No resize on load: the checkpoint was saved AFTER the markers were
     # registered and the table widened, so the saved config already records the
     # correct vocabulary size and AutoModel allocates it.
-    model = KoJevModel(
-        backbone,
-        head_hidden_size if isinstance(head_hidden_size, int) else 1024,
-    )
+    model = KoJevModel(backbone, head_hidden_size)
     _ = model.scorer.load_state_dict(load_file(str(directory / _HEAD_WEIGHTS)))
     _ = model.eval()
     return model, collator, metadata
