@@ -14,42 +14,48 @@ OpenRouter. KoBEST is fully held out of training.
 
 ## Status
 
-Todos 1–9, 11, 15 are done. Todos 10, 12, 13, 14, 16 and F1–F4 are open.
+Todos 1–11, 13, 15 are done. Todos 12, 14, 16 and F1–F4 are open.
 
-- Todo 10's smoke jobs complete, but `val_acc_all - majority_all` is ~+0.03
-  against a ≥0.05 gate. See [eval/RESULTS.md](eval/RESULTS.md).
-- Todo 12's five runs are queued on gpu01 (jobs 13685–13687, 13692, 13693)
-  behind `QOSMaxGRESPerUser`.
-- Todo 16 packaging machinery exists (`kojev.release`); the gpu01 round-trip
-  against the median-seed checkpoint is still waiting on todo 12.
+- Todo 10: full seed-0 gold SFT (job 13685) overall acc 0.7145 vs majority
+  0.6446 (**+0.070**). The 2k smokes stayed at ~+0.03 because of noul mix.
+- Todo 12: five `report.json` files exist. Arm A is 3/3 healthy (0.7145 /
+  0.7215 / 0.7211). Median is seed 2 (0.7211), which **misses the 0.75
+  gate**. Distill 0.7327 does not hurt gold. Control DeBERTa 0.9132 is on
+  the 512-window subset (8,000 train / 500 val dropped), not the same val.
+- Todo 13: two RLCD attempts NO-GO (quality + brier_drop). Ship SFT-only.
+- Todo 14: 5-checkpoint eval job 13709 on gpu01.
+- Todo 16: `kojev.release` exists; gpu01 round-trip waits on todo 14.
 
 ## Results
 
 Full tables live in [eval/RESULTS.md](eval/RESULTS.md). Headline from the
-longest completed gold-only run (`sft-20k-truewatch`, 20k states, 1 epoch,
-`diverged=false`):
+median A.X gold-only seed (`sft-full-seed2`, job 13687, 103,952 train
+states, 1 epoch, `diverged=false`):
 
 | slice | acc | majority | gap |
 |---|---:|---:|---:|
-| overall | 0.6738 | 0.6446 | +0.0291 |
-| choice | 0.3656 | 0.2417 | +0.1239 |
-| noul | 0.7771 | 0.7853 | −0.0083 |
-| score | 0.3520 | 0.3460 | +0.0060 |
+| overall | 0.7211 | 0.6446 | +0.0764 |
+| choice | 0.4601 | 0.2417 | +0.2184 |
+| noul | 0.8106 | 0.7853 | +0.0252 |
+| score | 0.3900 | 0.3460 | +0.0440 |
 
-Seed spreads, the five-run median, the kf-deberta control, the distill arm,
-held-out KoBEST/KLUE, OOD, and latency are not in yet. The median rule is
-implemented (`uv run python -m kojev.report --runs …`): diverged runs are
-flagged in the table and excluded from the median.
+A-seed overall: 0.7145 / 0.7215 / 0.7211 (all healthy). Distill arm 0.7327.
+Control `kf-deberta-base` 0.9132 on the 512-token subset. KoBEST/KLUE/OOD/
+latency tables land with todo 14. Median rule: `uv run python -m kojev.report
+--runs …` (diverged rows flagged, excluded from the median).
 
 ## RLCD verdict
 
-Not run on the cluster (blocked on the todo-12 median seed). The local
-objective is expected decision utility plus softECE and a KL anchor to the
-frozen SFT distribution — not REINFORCE-on-gold. KEEP requires all four
-val clauses: ECE +0.005 or selective-acc@0.6 +2pt, in-domain acc drop
-≤0.5pt, Brier degradation ≤0.005, OOD acc drop ≤1pt. A NO-GO after two
-hyperparameter attempts ships SFT-only and is recorded as a negative
-result, not a failure.
+**NO-GO.** Two cluster attempts from median seed 2, both `stopped_early`
+at 800 steps, both failed `quality` and `brier_drop`.
+
+| attempt | job | hparams | val acc | val brier |
+|---|---|---|---:|---:|
+| 1 | 13703 | β=0.1 λ=0.5 gold-only | 0.7211 → 0.7201 | 0.332 → 0.361 |
+| 2 | 13704 | β=0.3 λ=1.0 gold+distill | 0.7211 → 0.7189 | 0.332 → 0.347 |
+
+Ship SFT-only. Negative result, not a training crash. Objective is expected
+utility + softECE + KL to frozen SFT — not REINFORCE-on-gold.
 
 ## Budget audit
 
@@ -140,11 +146,10 @@ gitignored.
 
 - **OOD ceiling.** The typed-decisions recipe expects in-domain gains with a
   much weaker OOD transfer. Do not read val acc as a KoBEST number.
-- **Question-count imbalance.** Noul is ~75% of val. kmhas and kote are
-  87% / 96% negative, so a collapsed "no" head inflates overall acc while
-  NSMC and NLI stay at chance (see RESULTS). The 0.05 overall-gap smoke gate
-  has not been met for this reason, not because the trainer fails to write a
-  report.
+- **Question-count imbalance.** Noul is ~75% of val. Full 104k SFT still
+  leaves NSMC near chance on A.X (+0.004 to +0.032). Unsmile jumps to 0.91+
+  after the negative-noul fix. DeBERTa on the 512-window subset learns NSMC
+  (+0.337), so the data is labeled; A.X at 1 epoch is the weaker backbone.
 - **ModernBERT.** The original recipe's ModernBERT instability record
   (loss 1.5→6.1) is why this project uses `skt/A.X-Encoder-base` and a
   divergence watch (running-mean train loss up >25% over 200 steps, or NaN).
@@ -156,14 +161,15 @@ gitignored.
 - **Serving.** `POST /v1/systemone` on 127.0.0.1 only. No auth, no public
   bind, no text-generation endpoint. A tampered `kojev_config.json`
   `temperature` string raises `EncodingError` before the backbone loads.
-- **Checkpoints.** The serving QA used `sft-20k-truewatch`, a real trained
-  checkpoint, not the todo 12 median seed (which does not exist yet).
+- **Checkpoints.** Median product ckpt is
+  `/data2/jeffrey/kojev/runs/sft-full-seed2/checkpoint`. Serving QA in todo 15
+  used an earlier trained run; F3 re-curls the median bundle.
 
 ## Layout
 
 ```
 kojev/           library + CLIs (schema, gold, train, serve, release, report)
-scripts/slurm/   smoke.sbatch, train.sbatch
+scripts/slurm/   smoke.sbatch, train.sbatch, rlcd.sbatch, eval.sbatch
 tests/           pytest; no KoBEST in training fixtures
 eval/RESULTS.md  numbers, with pending tables called pending
 data/            gitignored; gold + distill JSONL, OpenRouter ledger
