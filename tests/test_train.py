@@ -357,3 +357,63 @@ def test_cli_exposes_learning_rate_flags(monkeypatch: pytest.MonkeyPatch) -> Non
 
     assert args.backbone_lr == pytest.approx(1e-5)
     assert args.head_lr == pytest.approx(5e-4)
+
+
+def _source_example(source: str) -> Example:
+    return Example(
+        state="배송이 빠르다",
+        questions=[
+            Question(
+                type=QuestionType.CHOICE,
+                instructions="평가는?",
+                options=["나쁨", "좋음"],
+                gold=1,
+            )
+        ],
+        source=source,
+        split="train",
+    )
+
+
+def test_limit_samples_across_sources_instead_of_taking_a_head_slice(
+    tmp_path: Path,
+) -> None:
+    """--limit must not silently restrict the run to the first few sources.
+
+    The gold corpus is written source by source, so slicing the head selects a
+    pathological subset. Measured on the real corpus, `--limit 2000` covered
+    only 7 of 12 sources, inflated lawcompany/KLAID from 7.7% to 33.2%, dropped
+    KorQuAD (the largest source) entirely, and trained on a distribution
+    different from the one it then evaluated on: wicho/kor_3i4k was absent from
+    the training slice while making up 11.8% of the evaluation slice.
+
+    That makes the smoke's accuracy gate unreachable for reasons unrelated to
+    the model, which is what four hyperparameter configurations plateauing at
+    the same ~0.031 margin was really reporting.
+    """
+    train_path = tmp_path / "train.jsonl"
+    val_path = tmp_path / "val.jsonl"
+    # Twelve sources, grouped, exactly as the builder writes them.
+    rows = [
+        _source_example(f"source-{index:02d}") for index in range(12) for _ in range(50)
+    ]
+    write_jsonl(train_path, rows)
+    write_jsonl(val_path, rows[:20])
+
+    report = run_training(
+        train_path=train_path,
+        val_path=val_path,
+        out_dir=tmp_path / "run",
+        epochs=1,
+        seed=0,
+        limit=120,
+        model=nn.Linear(1, 2),
+        collate_fn=lambda examples: (torch.ones(len(examples), 1),),
+        forward_fn=_linear_forward,
+        model_name="synthetic/backbone",
+        distill_weight=0.5,
+    )
+
+    # A head slice of 120 rows would cover 3 of 12 sources (50+50+20).
+    selected = report["data_counts"]["train_sources"]
+    assert selected >= 10, f"limit covered only {selected} of 12 sources"
