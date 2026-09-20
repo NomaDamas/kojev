@@ -13,14 +13,20 @@ from collections import defaultdict, deque
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Final, NotRequired, TypedDict, Unpack, override
+from typing import Final, NotRequired, TypedDict, Unpack, cast, override
 
 import torch
 from torch import Tensor, nn
 from torch.nn import functional
 
 from kojev.augment import augment_example
-from kojev.encoder import EncoderOutput, KoJevModel, SpanBatch, SpanCollator
+from kojev.encoder import (
+    CheckpointProvenance,
+    EncoderOutput,
+    KoJevModel,
+    SpanBatch,
+    SpanCollator,
+)
 from kojev.schema import Example, QuestionType, read_jsonl
 
 _DEFAULT_AUGMENTATION: Final = 0.7
@@ -43,6 +49,7 @@ class TrainReport(TypedDict):
     metrics: dict[str, dict[str, float | int]]
     temperature: float
     diverged: bool
+    checkpoint: NotRequired[str]
 
 
 @dataclass(slots=True)
@@ -86,6 +93,8 @@ class TrainConfig:
     backbone_lr: float = 2e-5
     head_lr: float = 1e-3
     bf16: bool = False
+    model_name: str = "skt/A.X-Encoder-base"
+    distill_weight: float = 0.5
 
 
 class RunTrainingKwargs(TypedDict):
@@ -105,6 +114,9 @@ class RunTrainingKwargs(TypedDict):
     backbone_lr: NotRequired[float]
     head_lr: NotRequired[float]
     bf16: NotRequired[bool]
+    model_name: NotRequired[str]
+    distill_path: NotRequired[Path | None]
+    distill_weight: NotRequired[float]
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,7 +158,24 @@ def training_loss(output: EncoderOutput) -> Tensor:
     if output.loss is None:
         msg = "training examples must contain gold answers"
         raise ValueError(msg)
+    if output.question_losses:
+        if all(weight == 1.0 for weight in output.question_weights):
+            return torch.stack(output.question_losses).mean()
+        weights = torch.tensor(
+            output.question_weights, device=output.question_losses[0].device
+        )
+        return torch.sum(torch.stack(output.question_losses) * weights) / weights.sum()
     return output.loss
+
+
+def _is_distill_question(question: object) -> bool:
+    """Return whether a question carries teacher-label provenance."""
+    meta = getattr(question, "meta", None)
+    if not isinstance(meta, dict):
+        return False
+    metadata = cast("dict[str, object]", meta)
+    label_source = metadata.get("label_source")
+    return isinstance(label_source, str) and label_source.startswith("teacher:")
 
 
 def fit_temperature(logits: Tensor, labels: Tensor) -> float:
@@ -280,11 +309,17 @@ def _encoder_forward(model: nn.Module, batch: Batch) -> EncoderOutput:
 
 
 def _resolve_runtime(
-    model: nn.Module | None, collate: Collate | None, forward: Forward | None
+    model: nn.Module | None,
+    collate: Collate | None,
+    forward: Forward | None,
+    model_name: str,
+    distill_weight: float,
 ) -> _Runtime:
     """Resolve the default pretrained model or preserve injected test adapters."""
     if model is None or collate is None or forward is None:
-        loaded_model, loaded_collator = KoJevModel.from_pretrained()
+        loaded_model, loaded_collator = KoJevModel.from_pretrained(
+            model_name, distill_weight=distill_weight
+        )
         return _Runtime(loaded_model, loaded_collator, _encoder_forward)
     return _Runtime(model, collate, forward)
 
@@ -379,10 +414,24 @@ def _persist_report(context: _ReportContext) -> TrainReport:
             "backbone_lr": config.backbone_lr,
             "head_lr": config.head_lr,
             "bf16": config.bf16,
+            "model": config.model_name,
+            "distill_weight": config.distill_weight,
         },
         "data_counts": {
             "train": len(context.train_examples),
             "val": len(context.val_examples),
+            "train_questions_distill": sum(
+                1
+                for example in context.train_examples
+                for question in example.questions
+                if _is_distill_question(question)
+            ),
+            "val_questions_distill": sum(
+                1
+                for example in context.val_examples
+                for question in example.questions
+                if _is_distill_question(question)
+            ),
         },
         "loss_curve": context.losses,
         "wall_time": time.perf_counter() - context.started,
@@ -392,10 +441,48 @@ def _persist_report(context: _ReportContext) -> TrainReport:
         "diverged": context.watch.diverged,
     }
     config.out_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_dir = config.out_dir / "checkpoint"
+    saved = _save_checkpoint_if_supported(
+        runtime, checkpoint_dir, temperature=temperature, config=config
+    )
+    if saved:
+        report["checkpoint"] = str(checkpoint_dir)
     _ = (config.out_dir / "report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     return report
+
+
+def _save_checkpoint_if_supported(
+    runtime: _Runtime,
+    directory: Path,
+    *,
+    temperature: float,
+    config: TrainConfig,
+) -> bool:
+    """Persist a loadable checkpoint when the runtime is a real KoJev model.
+
+    Downstream tasks (RLCD initialisation, evaluation, serving, and the release
+    bundle) all need weights on disk, not just report.json. Injected test
+    adapters and the offline tiny mode are not savable, so they are skipped
+    rather than forced through a Hugging Face serialisation path.
+    """
+    model = runtime.model
+    collator = runtime.collate
+    if not isinstance(model, KoJevModel) or not isinstance(collator, SpanCollator):
+        return False
+    model.save_checkpoint(
+        directory,
+        collator,
+        CheckpointProvenance(
+            temperature=temperature,
+            model_name=config.model_name,
+            seed=config.seed,
+            train_path=str(config.train_path),
+            val_path=str(config.val_path),
+        ),
+    )
+    return True
 
 
 def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
@@ -416,15 +503,24 @@ def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
         backbone_lr=kwargs.get("backbone_lr", 2e-5),
         head_lr=kwargs.get("head_lr", 1e-3),
         bf16=kwargs.get("bf16", False),
+        model_name=kwargs.get("model_name", "skt/A.X-Encoder-base"),
+        distill_weight=kwargs.get("distill_weight", 0.5),
     )
     _ = torch.manual_seed(config.seed)  # pyright: ignore[reportUnknownMemberType]
     train_examples = read_jsonl(config.train_path)
     val_examples = read_jsonl(config.val_path)
+    distill_path = kwargs.get("distill_path")
+    if distill_path is not None:
+        train_examples.extend(read_jsonl(distill_path))
     if config.limit is not None:
         train_examples = train_examples[: config.limit]
         val_examples = val_examples[: config.limit]
     runtime = _resolve_runtime(
-        kwargs.get("model"), kwargs.get("collate_fn"), kwargs.get("forward_fn")
+        kwargs.get("model"),
+        kwargs.get("collate_fn"),
+        kwargs.get("forward_fn"),
+        config.model_name,
+        config.distill_weight,
     )
     steps = max(1, math.ceil(len(train_examples) / config.batch_size) * config.epochs)
     optimizer = _optimizer(runtime.model, config.backbone_lr, config.head_lr)
@@ -509,6 +605,9 @@ class CliArgs:
     augmentation_probability: float
     bf16: bool
     tiny: bool
+    model: str
+    distill: Path | None
+    distill_weight: float
 
 
 def _parse_args() -> CliArgs:
@@ -524,6 +623,9 @@ def _parse_args() -> CliArgs:
     _ = parser.add_argument("--augmentation-probability", type=float, default=0.7)
     _ = parser.add_argument("--bf16", action="store_true")
     _ = parser.add_argument("--tiny", action="store_true")
+    _ = parser.add_argument("--model", default="skt/A.X-Encoder-base")
+    _ = parser.add_argument("--distill", type=Path)
+    _ = parser.add_argument("--distill-weight", type=float, default=0.5)
     namespace = parser.parse_args(sys.argv[1:])
     return CliArgs(
         train=Path(namespace.train),  # pyright: ignore[reportAny]
@@ -536,6 +638,9 @@ def _parse_args() -> CliArgs:
         augmentation_probability=namespace.augmentation_probability,  # pyright: ignore[reportAny]
         bf16=namespace.bf16,  # pyright: ignore[reportAny]
         tiny=namespace.tiny,  # pyright: ignore[reportAny]
+        model=namespace.model,  # pyright: ignore[reportAny]
+        distill=namespace.distill,  # pyright: ignore[reportAny]
+        distill_weight=namespace.distill_weight,  # pyright: ignore[reportAny]
     )
 
 
@@ -547,7 +652,9 @@ def main() -> None:
     forward: Forward | None = None
     if args.tiny:
         model = KoJevModel(_TinyBackbone())
-        collator = SpanCollator(_TinyTokenizer(), max_length=128)
+        collator = SpanCollator(
+            _TinyTokenizer(), max_length=128, distill_weight=args.distill_weight
+        )
         forward = _encoder_forward
     report = run_training(
         train_path=args.train,
@@ -562,6 +669,9 @@ def main() -> None:
         batch_size=args.batch_size,
         augmentation_probability=args.augmentation_probability,
         bf16=args.bf16,
+        model_name=args.model,
+        distill_path=args.distill,
+        distill_weight=args.distill_weight,
     )
     _ = report
     print(json.dumps({"report": str(args.out / "report.json")}, ensure_ascii=False))  # noqa: T201

@@ -2,22 +2,39 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Protocol, assert_never, override
+from typing import cast as _cast
 
 import torch
+from safetensors.torch import load_file, save_file
 from torch import Tensor, nn
 from torch.nn import functional
-from transformers import ModernBertConfig, ModernBertModel, PreTrainedTokenizerFast
+from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 from kojev.schema import Example, QuestionType, confidence
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from pathlib import Path
 
 
 _MARKERS: Final = ("[STATE]", "[Q]", "[OPT]")
 _DEFAULT_BACKBONE: Final = "skt/A.X-Encoder-base"
+_HEAD_WEIGHTS: Final = "head.safetensors"
+_KOJEV_CONFIG: Final = "kojev_config.json"
+
+
+@dataclass(frozen=True, slots=True)
+class CheckpointProvenance:
+    """Calibration and provenance recorded alongside saved weights."""
+
+    temperature: float
+    model_name: str
+    seed: int
+    train_path: str
+    val_path: str
 
 
 class Tokenizer(Protocol):
@@ -91,10 +108,43 @@ if TYPE_CHECKING:
     ) -> tuple[ResizableBackbone, SizedTokenizer]: ...
 else:
 
-    def _load_pretrained(model_name: str) -> tuple[ResizableBackbone, SizedTokenizer]:
-        tokenizer = PreTrainedTokenizerFast.from_pretrained(model_name)
-        config = ModernBertConfig.from_pretrained(model_name)
-        backbone = ModernBertModel.from_pretrained(model_name, config=config)
+    def _load_pretrained(
+        model_name: str,
+    ) -> tuple[ResizableBackbone, SizedTokenizer]:
+        tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+        config = AutoConfig.from_pretrained(model_name)
+        backbone = AutoModel.from_pretrained(model_name, config=config)
+        return backbone, tokenizer
+
+
+if TYPE_CHECKING:
+
+    def _save_backbone(_backbone: object, _directory: Path) -> None: ...
+
+    def _save_tokenizer(_tokenizer: object, _directory: Path) -> None: ...
+
+    def _load_local(
+        _directory: Path,
+    ) -> tuple[ResizableBackbone, SizedTokenizer]: ...
+else:
+
+    def _save_backbone(backbone: object, directory: Path) -> None:
+        backbone.save_pretrained(str(directory))
+
+    def _save_tokenizer(tokenizer: object, directory: Path) -> None:
+        tokenizer.save_pretrained(str(directory))
+
+    def _load_local(directory: Path) -> tuple[ResizableBackbone, SizedTokenizer]:
+        # local_files_only keeps a restored checkpoint independent of the Hub:
+        # the tokenizer, its registered markers, and the config all come from
+        # the saved directory.
+        tokenizer = AutoTokenizer.from_pretrained(
+            str(directory), use_fast=True, local_files_only=True
+        )
+        config = AutoConfig.from_pretrained(str(directory), local_files_only=True)
+        backbone = AutoModel.from_pretrained(
+            str(directory), config=config, local_files_only=True
+        )
         return backbone, tokenizer
 
 
@@ -122,6 +172,7 @@ class SpanBatch:
     question_types: tuple[QuestionType, ...]
     gold_indices: tuple[int | None, ...]
     question_token_ids: tuple[int, ...]
+    question_weights: tuple[float, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,6 +183,8 @@ class EncoderOutput:
     probabilities: Tensor
     groups: tuple[tuple[int, ...], ...]
     loss: Tensor | None
+    question_losses: tuple[Tensor, ...] = ()
+    question_weights: tuple[float, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,11 +206,18 @@ class SpanCollator:
     max_length: int
     marker_ids: tuple[int, int, int]
     pad_token_id: int
+    distill_weight: float
 
-    def __init__(self, tokenizer: Tokenizer, max_length: int = 4096) -> None:
+    def __init__(
+        self,
+        tokenizer: Tokenizer,
+        max_length: int = 4096,
+        distill_weight: float = 1.0,
+    ) -> None:
         """Register markers and configure the sequence budget."""
         self.tokenizer = tokenizer
         self.max_length = max_length
+        self.distill_weight = distill_weight
         _ = tokenizer.add_special_tokens({"additional_special_tokens": list(_MARKERS)})
         marker_ids = [
             tokenizer.encode(token, add_special_tokens=False)[0] for token in _MARKERS
@@ -175,6 +235,7 @@ class SpanCollator:
         kinds: list[QuestionType] = []
         golds: list[int | None] = []
         question_token_ids: list[int] = []
+        question_weights: list[float] = []
         for sequence_index, example in enumerate(examples):
             suffix = [self.marker_ids[0]]
             local_questions: list[tuple[int, int]] = []
@@ -196,6 +257,13 @@ class SpanCollator:
                 groups.append(tuple(option_indices))
                 kinds.append(question.type)
                 golds.append(question.gold)
+                label_source = question.meta.get("label_source")
+                question_weights.append(
+                    self.distill_weight
+                    if isinstance(label_source, str)
+                    and label_source.startswith("teacher:")
+                    else 1.0
+                )
             state_budget = self.max_length - len(suffix)
             if state_budget < 0:
                 reason = "questions and options exceed max_length"
@@ -232,6 +300,7 @@ class SpanCollator:
             tuple(kinds),
             tuple(golds),
             tuple(question_token_ids),
+            tuple(question_weights),
         )
 
     def _text_ids(self, text: str, span_name: str) -> list[int]:
@@ -249,6 +318,7 @@ class SpanScorer(nn.Module):
     hidden_layer: nn.Linear
     output_layer: nn.Linear
     activation: nn.GELU
+    hidden_width: int
 
     def __init__(self, input_size: int, hidden_size: int) -> None:
         """Create the scalar scoring MLP."""
@@ -257,6 +327,8 @@ class SpanScorer(nn.Module):
         self.hidden_layer = nn.Linear(hidden_size, hidden_size)
         self.output_layer = nn.Linear(hidden_size, 1)
         self.activation = nn.GELU()
+        # Recorded so a checkpoint can rebuild an identically shaped head.
+        self.hidden_width = hidden_size
 
     @override
     def forward(self, features: Tensor) -> Tensor:
@@ -284,6 +356,7 @@ class KoJevModel(nn.Module):
         cls,
         model_name: str = _DEFAULT_BACKBONE,
         head_hidden_size: int = 1024,
+        distill_weight: float = 1.0,
     ) -> tuple[KoJevModel, SpanCollator]:
         """Load A.X-Encoder, register markers, and resize token embeddings."""
         backbone, tokenizer = _load_pretrained(model_name)
@@ -291,9 +364,43 @@ class KoJevModel(nn.Module):
         # tokenizer. The embedding table must be sized AFTER that, otherwise the
         # markers receive ids past the end of the table and every batch raises
         # IndexError inside tok_embeddings (gpu01 job 13625).
-        collator = SpanCollator(tokenizer)
+        collator = SpanCollator(tokenizer, distill_weight=distill_weight)
         _ = backbone.resize_token_embeddings(len(tokenizer))
         return cls(backbone, head_hidden_size), collator
+
+    def save_checkpoint(
+        self,
+        directory: Path,
+        collator: SpanCollator,
+        provenance: CheckpointProvenance,
+    ) -> None:
+        """Write a self-contained checkpoint that reloads without the Hub.
+
+        The layout matches the release bundle the plan specifies: the backbone in
+        Hugging Face format, the tokenizer (so the registered span markers
+        survive), the head as ``head.safetensors``, and ``kojev_config.json``
+        carrying pooling, calibration, and provenance.
+        """
+        directory.mkdir(parents=True, exist_ok=True)
+        _save_backbone(self.backbone, directory)
+        _save_tokenizer(collator.tokenizer, directory)
+        save_file(self.scorer.state_dict(), str(directory / _HEAD_WEIGHTS))
+        metadata: dict[str, object] = {
+            "pooling": "span_mean",
+            "markers": list(_MARKERS),
+            "max_length": collator.max_length,
+            "distill_weight": collator.distill_weight,
+            "head_hidden_size": self.scorer.hidden_width,
+            "temperature": provenance.temperature,
+            "model_name": provenance.model_name,
+            "seed": provenance.seed,
+            "train_path": provenance.train_path,
+            "val_path": provenance.val_path,
+        }
+        _ = (directory / _KOJEV_CONFIG).write_text(
+            json.dumps(metadata, ensure_ascii=False, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
 
     @override
     def forward(self, batch: SpanBatch) -> EncoderOutput:
@@ -315,7 +422,13 @@ class KoJevModel(nn.Module):
         logits = self.scorer.forward(torch.stack(features)).squeeze(-1)
         probabilities = torch.zeros_like(logits)
         losses: list[Tensor] = []
-        for group, gold in zip(batch.question_groups, batch.gold_indices, strict=True):
+        weights: list[float] = []
+        for group, gold, weight in zip(
+            batch.question_groups,
+            batch.gold_indices,
+            batch.question_weights,
+            strict=True,
+        ):
             indices = torch.tensor(group, device=logits.device)
             group_logits = logits[indices]
             group_probabilities = torch.softmax(group_logits, dim=0)
@@ -329,11 +442,23 @@ class KoJevModel(nn.Module):
                     functional.cross_entropy(group_logits.unsqueeze(0), target)
                     + torch.square(group_probabilities - one_hot).sum()
                 )
+                weights.append(weight)
         loss = torch.stack(losses).mean() if losses else None
-        return EncoderOutput(logits, probabilities, batch.question_groups, loss)
+        if losses and any(weight != 1.0 for weight in weights):
+            weight_tensor = torch.tensor(weights, device=logits.device)
+            loss = torch.sum(torch.stack(losses) * weight_tensor) / weight_tensor.sum()
+        return EncoderOutput(
+            logits,
+            probabilities,
+            batch.question_groups,
+            loss,
+            tuple(losses),
+            tuple(weights),
+        )
 
     @staticmethod
     def _mean_span(hidden: Tensor, span: tuple[int, int, int]) -> Tensor:
+        """Mean-pool one contiguous span of a packed sequence."""
         sequence_index, start, end = span
         return hidden[sequence_index, start:end].mean(dim=0)
 
@@ -364,3 +489,48 @@ class KoJevModel(nn.Module):
                 case unreachable:
                     assert_never(unreachable)
         return tuple(answers)
+
+
+def load_checkpoint(
+    directory: Path,
+) -> tuple[KoJevModel, SpanCollator, dict[str, object]]:
+    """Restore a checkpoint written by :meth:`KoJevModel.save_checkpoint`.
+
+    The returned model reproduces the saved model's outputs: the head weights
+    are loaded from ``head.safetensors`` rather than left randomly initialised,
+    which is the failure this function's test pins down.
+    """
+    metadata_path = directory / _KOJEV_CONFIG
+    if not metadata_path.is_file():
+        reason = f"checkpoint is missing {_KOJEV_CONFIG}: {directory}"
+        raise EncodingError(reason)
+    raw = _cast("object", json.loads(metadata_path.read_text(encoding="utf-8")))
+    if not isinstance(raw, dict):
+        reason = f"{_KOJEV_CONFIG} must contain an object: {directory}"
+        raise EncodingError(reason)
+    entries = _cast("dict[object, object]", raw)
+    metadata: dict[str, object] = {str(key): value for key, value in entries.items()}
+
+    backbone, tokenizer = _load_local(directory)
+    max_length = metadata.get("max_length")
+    distill_weight = metadata.get("distill_weight")
+    head_hidden_size = metadata.get("head_hidden_size")
+    # The saved tokenizer already carries the markers, so registering them again
+    # is a no-op and the marker ids stay inside the saved embedding table.
+    collator = SpanCollator(
+        tokenizer,
+        max_length=max_length if isinstance(max_length, int) else 4096,
+        distill_weight=(
+            float(distill_weight) if isinstance(distill_weight, (int, float)) else 1.0
+        ),
+    )
+    # No resize on load: the checkpoint was saved AFTER the markers were
+    # registered and the table widened, so the saved config already records the
+    # correct vocabulary size and AutoModel allocates it.
+    model = KoJevModel(
+        backbone,
+        head_hidden_size if isinstance(head_hidden_size, int) else 1024,
+    )
+    _ = model.scorer.load_state_dict(load_file(str(directory / _HEAD_WEIGHTS)))
+    _ = model.eval()
+    return model, collator, metadata

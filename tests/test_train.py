@@ -56,6 +56,41 @@ def test_training_loss_matches_grouped_cross_entropy_plus_brier() -> None:
     assert loss.item() == pytest.approx(expected.item())
 
 
+def test_distill_question_weighting_matches_hand_computed_combination() -> None:
+    """Teacher questions count at 0.5 while gold questions count at 1.0."""
+    gold_loss = torch.tensor(2.0)
+    distill_loss = torch.tensor(6.0)
+    output = EncoderOutput(
+        logits=torch.zeros(4),
+        probabilities=torch.full((4,), 0.5),
+        groups=((0, 1), (2, 3)),
+        loss=(gold_loss + distill_loss) / 2,
+        question_losses=(gold_loss, distill_loss),
+        question_weights=(1.0, 0.5),
+    )
+
+    loss = training_loss(output)
+    expected = (2.0 * 1.0 + 6.0 * 0.5) / (1.0 + 0.5)
+
+    assert loss.item() == pytest.approx(expected)
+
+
+def test_gold_only_training_loss_is_unchanged() -> None:
+    """All-gold loss keeps the historical arithmetic exactly."""
+    first = torch.tensor(2.0)
+    second = torch.tensor(6.0)
+    output = EncoderOutput(
+        logits=torch.zeros(4),
+        probabilities=torch.full((4,), 0.5),
+        groups=((0, 1), (2, 3)),
+        loss=(first + second) / 2,
+        question_losses=(first, second),
+        question_weights=(1.0, 1.0),
+    )
+
+    assert training_loss(output).item() == pytest.approx(4.0)
+
+
 def test_divergence_watch_triggers_on_rise_and_nan() -> None:
     # Given a 200-step baseline followed by a >25% rise
     watch = DivergenceWatch(window=200, rise_fraction=0.25)
@@ -112,6 +147,8 @@ def test_report_contains_required_keys(tmp_path: Path) -> None:
         model=model,
         collate_fn=lambda examples: (torch.ones(len(examples), 1),),
         forward_fn=_linear_forward,
+        model_name="synthetic/backbone",
+        distill_weight=0.5,
     )
 
     # Then the persisted report has the complete required top-level contract
@@ -129,6 +166,9 @@ def test_report_contains_required_keys(tmp_path: Path) -> None:
         "diverged",
     } <= payload.keys()
     assert report["diverged"] is False
+    assert report["args"]["model"] == "synthetic/backbone"
+    assert report["args"]["distill_weight"] == 0.5
+    assert report["data_counts"]["train_questions_distill"] == 0
 
 
 def _linear_forward(model: nn.Module, batch: Batch) -> EncoderOutput:
