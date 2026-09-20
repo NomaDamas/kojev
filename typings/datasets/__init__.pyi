@@ -2,13 +2,7 @@ from collections.abc import Iterator, Mapping
 from typing import Protocol
 
 type RowValue = (
-    str
-    | int
-    | float
-    | bool
-    | list[str]
-    | list[int]
-    | Mapping[str, str | int | float]
+    str | int | float | bool | list[str] | list[int] | Mapping[str, str | int | float]
 )
 
 class Dataset(Protocol):
