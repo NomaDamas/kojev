@@ -435,6 +435,13 @@ def wrap_open_jev(model: object) -> DecisionModel:
             rows = cast("list[dict[str, object]]", raw)
             vectors: list[tuple[float, ...]] = []
             for question, row in zip(questions, rows, strict=True):
+                noul = row.get("noul")
+                if question.type is QuestionType.NOUL and isinstance(
+                    noul, (int, float)
+                ):
+                    positive = float(noul)
+                    vectors.append((1.0 - positive, positive))
+                    continue
                 probabilities = row.get("probabilities")
                 if isinstance(probabilities, dict):
                     vectors.append(
