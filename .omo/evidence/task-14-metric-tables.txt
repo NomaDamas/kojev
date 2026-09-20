@@ -1,0 +1,16 @@
+# KoJev todo 14: acc/F1/Brier/ECE grids (local half)
+
+The first grid was accuracy-only. The plan names per-task acc, F1, Brier,
+and ECE tables. render_metric_tables() now emits four 5x8 grids.
+
+## RED
+
+    NameError: render_metric_tables is not defined
+
+## Mutation
+
+Dropping F1/Brier/ECE sections fails assert "## Macro-F1" in document.
+
+## GREEN
+
+    163 passed, ruff/pyright clean

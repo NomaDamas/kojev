@@ -295,8 +295,9 @@ def metric_report(
 
 def render_task_grid(
     models: Sequence[tuple[str, Mapping[str, MetricPayload]]],
+    metric: str = "accuracy",
 ) -> str:
-    """Render a wide accuracy table: one row per model, eight task columns."""
+    """Render a wide table: one row per model, eight task columns of one metric."""
     header = "| model | " + " | ".join(TASK_COLUMNS) + " |"
     rule = "| --- | " + " | ".join(["---:"] * len(TASK_COLUMNS)) + " |"
     lines = [header, rule]
@@ -308,9 +309,32 @@ def render_task_grid(
                 raise BenchmarkError(
                     f"grid is missing task {task!r} for model {name!r}"
                 )
-            cells.append(f"{payload['accuracy']:.3f}")
+            value = payload.get(metric)
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise BenchmarkError(
+                    f"grid is missing {metric!r} for {name!r} task {task!r}"
+                )
+            cells.append(f"{float(value):.3f}")
         lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
+
+
+def render_metric_tables(
+    models: Sequence[tuple[str, Mapping[str, MetricPayload]]],
+) -> str:
+    """Render acc, macro-F1, Brier, and ECE-15 grids the RESULTS.md contract names."""
+    sections = ["# KoJev benchmark", ""]
+    for key, title in (
+        ("accuracy", "Accuracy"),
+        ("macro_f1", "Macro-F1"),
+        ("brier", "Brier"),
+        ("ece_15", "ECE-15"),
+    ):
+        sections.append(f"## {title}")
+        sections.append("")
+        sections.append(render_task_grid(models, metric=key).rstrip())
+        sections.append("")
+    return "\n".join(sections) + "\n"
 
 
 def assert_no_kobest_contamination(
@@ -373,7 +397,7 @@ def _render_named_grids(grids: list[str], results_path: Path | None) -> str:
             raise BenchmarkError(reason=f"grid report missing tasks object: {path}")
         tasks = cast("dict[str, MetricPayload]", raw_tasks)
         models.append((name, tasks))
-    table = render_task_grid(models)
+    table = render_metric_tables(models)
     if results_path is not None:
         results_path.parent.mkdir(parents=True, exist_ok=True)
         _ = results_path.write_text(table, encoding="utf-8")
