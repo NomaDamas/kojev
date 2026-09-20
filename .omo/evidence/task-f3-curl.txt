@@ -1,0 +1,15 @@
+# F3 curl against released kojev-v0 on gpu01
+
+KOJEV_CKPT=/data2/jeffrey/kojev/restore-v0
+uvicorn kojev.serve:app --host 127.0.0.1 --port 8930  pid 1276439
+
+Happy POST tests/fixtures/req.json -> HTTP 200
+  answers.choice.choice=1 p=[0.024, 0.976]
+  answers.score.score=0.941
+  answers.noul.noul=0.268
+  usage.input_tokens=13
+
+Malformed missing type -> HTTP 422
+  detail.error_type=validation_error
+
+kill 1276439; kill -0 fails (KILL0_FAIL_OK)
