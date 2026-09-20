@@ -1,0 +1,7 @@
+# F3: released bundle boolq matches RESULTS.md
+
+Job 13716 COMPLETED 00:00:53
+checkpoint: /data2/jeffrey/kojev/restore-v0 (kojev-v0)
+boolq acc 0.5014245014245015
+report-main.json boolq acc 0.5014245014245015
+match True (exact)

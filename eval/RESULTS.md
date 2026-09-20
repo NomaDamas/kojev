@@ -79,3 +79,22 @@ Measured (acc): boolq 0.501 vs 0.712; copa 0.471 vs 0.596; wic 0.467 vs 0.494;
 hellaswag 0.280 vs 0.398; sentineg 0.490 vs 0.851. **Wins: 0/5.**
 In-domain gold-val still favors KoJev (0.719 vs OpenJev 0.522).
 OpenJev skipped 500 overflow families on gold-val (512 window).
+
+## Majority baselines
+
+Gold-label majority class per split (independent of model).
+
+| split | questions | majority_acc |
+| --- | ---: | ---: |
+| gold-val | 19386 | 0.644640 |
+| ood | 10343 | 0.482259 |
+| boolq | 1404 | 0.502137 |
+| copa | 1000 | 0.517000 |
+| wic | 1260 | 0.511905 |
+| hellaswag | 500 | 0.274000 |
+| sentineg | 396 | 0.502525 |
+| ynat | 7825 | 0.402556 |
+| nli | 2153 | 0.337204 |
+| sts | 519 | 0.233141 |
+
+KoJev main is at or below majority on 4/5 KoBEST tasks (hellaswag +0.006).
