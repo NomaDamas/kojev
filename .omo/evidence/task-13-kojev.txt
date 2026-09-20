@@ -1,85 +1,16 @@
-Task 13 RLCD local CPU evidence
+# Todo 13 RLCD GO/NO-GO
 
-Scope
-- Implemented only the local CPU-testable RLCD objective, running-mean baseline, and held-out GO/NO-GO gate.
-- Slurm GO/NO-GO training report is a separate follow-up increment because gpu01 is still being prepared and todo 12 checkpoints are unavailable. No cluster run was attempted.
-- Worktree: /Volumes/SSD1/1/KoJev-todo13
-- Branch: feat/todo-13-rlcd
+pytest tests/test_rlcd.py: 18 passed (differentiable L_util + four-clause gate).
 
-TDD RED proof (before production code)
-Command:
-  cd /Volumes/SSD1/1/KoJev-todo13 && uv run pytest tests/test_rlcd.py -q
-Observed result:
-  ImportError while importing test module 'tests/test_rlcd.py'
-  ModuleNotFoundError: No module named 'kojev.rlcd'
-  1 error during collection, RED_EXIT=2
-This was the expected missing-production-module failure; no production RLCD module existed at that point.
+Attempt 1 job 13703 COMPLETED 00:07:33 NO-GO steps=800
+  failed: quality, brier_drop
+  beta=0.1 lambda_cal=0.5 gold-only
 
-Implementation artifacts
-- kojev/rlcd.py: RLCDConfig, GateDecision, RunningMeanBaseline, RLCDInputs, rlcd_loss, rlcd_gate.
-- tests/test_rlcd.py: deterministic CPU tests for gradient flow, baseline variance reduction, gate boundaries/degenerate values, and edge distributions.
+Attempt 2 job 13704 COMPLETED 00:10:04 NO-GO steps=800
+  failed: quality, brier_drop
+  beta=0.3 lambda_cal=1.0 gold+distill
+  val acc 0.7211 -> 0.7189 (drop 0.22pt, within 0.5pt)
+  val brier 0.332 -> 0.347 (worse)
+  ece 0.032 -> 0.072 (worse)
 
-Verification artifacts
-- task-13-focused.stdout: focused pytest output.
-- task-13-full.stdout: full pytest output.
-- task-13-ruff.stdout: Ruff lint output.
-- task-13-format.stdout: Ruff format-check output.
-- task-13-typecheck.stdout: basedpyright output.
-- task-13-driver.stdout: real tiny CPU driver output.
-
-Real tiny CPU driver invocation
-  cd /Volumes/SSD1/1/KoJev-todo13 && uv run python - <<'PY' ...
-Actual stdout:
-  loss_trajectory=[-0.13419, -0.017381, -0.016362, -0.016514]
-  gradient_norm=0.108805
-  gate_decision=GO
-
-Required gates and observed results
-- uv run pytest tests/test_rlcd.py -q -> 5 passed in 0.38s.
-- uv run pytest -q -> 75 passed in 2.16s.
-- uv run ruff check kojev tests -> All checks passed!
-- uv run ruff format --check kojev tests -> 25 files already formatted.
-- uv run basedpyright kojev tests -> 0 errors, 0 warnings, 0 notes.
-- Pure LOC for changed Python files: 152 total; below the 250 LOC defect threshold.
-
-Gradient-flow proof
-The differentiability test builds a tiny nn.Linear model, forms positive probabilities from model-derived logits, calls rlcd_loss, and runs torch.autograd.backward. It asserts model.weight.grad is not None, finite, and not all zero. The real driver additionally printed gradient_norm=0.108805.
-
-Manual QA matrix
-
-surfaceEvidence
-| scenario id | criterion reference | surface | exact invocation | verdict | artifactRefs |
-|---|---|---|---|---|---|
-| QA-01 | differentiability / gradient flow | CPU Python API | `uv run pytest tests/test_rlcd.py -q` | PASS | A1, A2 |
-| QA-02 | baseline variance reduction | CPU Python API | `uv run pytest tests/test_rlcd.py -q` | PASS | A1 |
-| QA-03 | GO/NO-GO threshold behavior | CPU Python API | `uv run pytest tests/test_rlcd.py -q` | PASS | A1 |
-| QA-04 | finite edge-input loss | CPU Python API | `uv run pytest tests/test_rlcd.py -q` | PASS | A1 |
-| QA-05 | integrated tiny CPU training steps and gate | CPU Python driver | `uv run python - <<'PY' ...` (captured in driver artifact) | PASS | A6 |
-| QA-06 | regression safety | repository pytest suite | `uv run pytest -q` | PASS | A3 |
-| QA-07 | static quality gates | repository Ruff/format/basedpyright | `uv run ruff check kojev tests`; `uv run ruff format --check kojev tests`; `uv run basedpyright kojev tests` | PASS | A4, A5, A7 |
-
-adversarialCases
-| scenario id | criterion reference | adversarial class | expected behavior | verdict | artifactRefs |
-|---|---|---|---|---|---|
-| ADV-01 | gate safety | NaN / infinite held-out delta | NO-GO, never GO on degenerate metric | PASS | A1 |
-| ADV-02 | numerical stability | uniform and near-deterministic probabilities | finite loss | PASS | A1 |
-| ADV-03 | estimator variance | alternating fixed reward stream | running baseline residual variance lower than raw reward variance | PASS | A1 |
-| ADV-04 | gradient integrity | model-generated positive distribution | finite, non-zero model gradients after backward | PASS | A1, A6 |
-| ADV-05 | unavailable deployment environment | Slurm/gpu01 training report | must not be inferred or claimed from CPU evidence | PASS (not run by scope) | A8 |
-
-artifactRefs
-| id | kind | description | path |
-|---|---|---|---|
-| A1 | test-output | Focused RLCD test output: 5 passed | `/Volumes/SSD1/1/KoJev-todo13/.omo/evidence/task-13-focused.stdout` |
-| A2 | source | RLCD production implementation | `/Volumes/SSD1/1/KoJev-todo13/kojev/rlcd.py` |
-| A3 | test-output | Full repository output: 75 passed | `/Volumes/SSD1/1/KoJev-todo13/.omo/evidence/task-13-full.stdout` |
-| A4 | lint-output | Ruff lint output | `/Volumes/SSD1/1/KoJev-todo13/.omo/evidence/task-13-ruff.stdout` |
-| A5 | format-output | Ruff format check output | `/Volumes/SSD1/1/KoJev-todo13/.omo/evidence/task-13-format.stdout` |
-| A6 | runtime-output | Real tiny CPU driver stdout with loss trajectory, gradient norm, and GO decision | `/Volumes/SSD1/1/KoJev-todo13/.omo/evidence/task-13-driver.stdout` |
-| A7 | typecheck-output | basedpyright output: 0 errors, 0 warnings, 0 notes | `/Volumes/SSD1/1/KoJev-todo13/.omo/evidence/task-13-typecheck.stdout` |
-| A8 | scope-record | This evidence file's explicit record that Slurm GO/NO-GO is a separate follow-up and was not run | `/Volumes/SSD1/1/KoJev-todo13/.omo/evidence/task-13-kojev.txt` |
-
-Cleanup status before commit
-- No temporary source/test directories were created.
-- `/tmp/todo13-red.txt` was used only as a transient tee target and is outside the worktree; no repository temp directory remains.
-- Git diff check passed before commit.
+Ship SFT-only (median seed 2). Negative result is a valid plan outcome.
