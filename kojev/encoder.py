@@ -25,6 +25,7 @@ _DEFAULT_BACKBONE: Final = "skt/A.X-Encoder-base"
 _HEAD_WEIGHTS: Final = "head.safetensors"
 _KOJEV_CONFIG: Final = "kojev_config.json"
 _PLAN_MAX_LENGTH: Final = 4096
+QUESTIONS_EXCEED_MAX_LENGTH: Final = "questions and options exceed max_length"
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,6 +161,11 @@ class EncodingError(ValueError):
         """Return the structured failure reason."""
         return self.reason
 
+    @classmethod
+    def questions_exceed_budget(cls) -> EncodingError:
+        """Questions and options overflow the collator window even with no state."""
+        return cls(reason=QUESTIONS_EXCEED_MAX_LENGTH)
+
 
 @dataclass(frozen=True, slots=True)
 class SpanBatch:
@@ -275,8 +281,7 @@ class SpanCollator:
                 )
             state_budget = self.max_length - len(suffix)
             if state_budget < 0:
-                reason = "questions and options exceed max_length"
-                raise EncodingError(reason)
+                raise EncodingError.questions_exceed_budget()
             state_ids = self.tokenizer.encode(example.state, add_special_tokens=False)
             state_ids = state_ids[-state_budget:] if state_budget else []
             offset = len(state_ids)

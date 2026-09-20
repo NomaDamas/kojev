@@ -1,0 +1,7 @@
+# Control DeBERTa job 13701 FAILED 00:01:12 EncodingError
+
+Native 512 window: some gold families have questions+options longer than
+512 even with state truncated to empty. Collator raised and killed the job.
+
+Training now drops those families (train_dropped/val_dropped in report)
+instead of crashing. Serving still raises EncodingError.

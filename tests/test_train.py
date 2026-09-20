@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from pathlib import Path
 
 import random
@@ -16,7 +17,7 @@ from pydantic import TypeAdapter
 from torch import nn
 
 import kojev.train as train_module
-from kojev.encoder import EncoderOutput
+from kojev.encoder import EncoderOutput, EncodingError
 from kojev.schema import Example, Question, QuestionType, write_jsonl
 from kojev.train import (
     Batch,
@@ -189,6 +190,38 @@ def test_report_contains_required_keys(tmp_path: Path) -> None:
     assert report["args"]["model"] == "synthetic/backbone"
     assert report["args"]["distill_weight"] == 0.5
     assert report["data_counts"]["train_questions_distill"] == 0
+
+
+def test_training_drops_examples_that_exceed_the_collator_budget(
+    tmp_path: Path,
+) -> None:
+    """kf-deberta-base 512-window jobs must skip overlong families, not crash."""
+    train_path = tmp_path / "train.jsonl"
+    val_path = tmp_path / "val.jsonl"
+    overflow = _example()
+    overflow = overflow.model_copy(update={"state": "OVERFLOW"})
+    write_jsonl(train_path, [_example(), overflow, _example()])
+    write_jsonl(val_path, [_example("val")])
+
+    def collate(examples: Sequence[Example]) -> tuple[torch.Tensor, ...]:
+        for example in examples:
+            if example.state == "OVERFLOW":
+                raise EncodingError.questions_exceed_budget()
+        return (torch.ones(len(examples), 1),)
+
+    report = run_training(
+        train_path=train_path,
+        val_path=val_path,
+        out_dir=tmp_path / "run",
+        epochs=1,
+        seed=0,
+        model=nn.Linear(1, 2),
+        collate_fn=collate,
+        forward_fn=_linear_forward,
+    )
+    assert report["data_counts"]["train"] == 2
+    assert report["data_counts"]["train_dropped"] == 1
+    assert report["data_counts"]["val_dropped"] == 0
 
 
 def test_quarter_epoch_eval_writes_progress_json(tmp_path: Path) -> None:
