@@ -344,6 +344,8 @@ def test_cli_emits_a_results_table_for_each_named_checkpoint(
     assert "| model |" in rendered
     assert "main" in rendered
     assert "gold_test" in rendered
+    gold_row = next(line for line in rendered.splitlines() if "gold_test" in line)
+    assert "n/a" not in gold_row
 
 
 class _FakeKojev:
