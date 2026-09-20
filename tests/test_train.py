@@ -530,3 +530,22 @@ def test_divergence_watch_still_triggers_on_a_sustained_rise() -> None:
         _ = watch.observe(6.1)
 
     assert watch.diverged is True, "a sustained rise was not caught"
+
+
+def test_init_from_missing_checkpoint_raises_before_training(
+    tmp_path: Path,
+) -> None:
+    """Continue-train must fail on a missing bundle, not start from scratch."""
+    train = tmp_path / "train.jsonl"
+    val = tmp_path / "val.jsonl"
+    write_jsonl(train, [_example("train")])
+    write_jsonl(val, [_example("test")])
+    with pytest.raises(EncodingError, match="kojev_config"):
+        _ = run_training(
+            train_path=train,
+            val_path=val,
+            out_dir=tmp_path / "out",
+            init_from=tmp_path / "missing-ckpt",
+            epochs=1,
+            seed=0,
+        )

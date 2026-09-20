@@ -28,6 +28,7 @@ from kojev.encoder import (
     KoJevModel,
     SpanBatch,
     SpanCollator,
+    load_checkpoint,
 )
 from kojev.schema import Example, QuestionType, read_jsonl
 
@@ -128,6 +129,7 @@ class RunTrainingKwargs(TypedDict):
     model_name: NotRequired[str]
     distill_path: NotRequired[Path | None]
     distill_weight: NotRequired[float]
+    init_from: NotRequired[Path | None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -642,13 +644,18 @@ def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
         # evaluation slice on different distributions.
         train_examples = _sample(train_examples, config.limit, config.seed)
         val_examples = _sample(val_examples, config.limit, config.seed)
-    runtime = _resolve_runtime(
-        kwargs.get("model"),
-        kwargs.get("collate_fn"),
-        kwargs.get("forward_fn"),
-        config.model_name,
-        config.distill_weight,
-    )
+    init_from = kwargs.get("init_from")
+    if init_from is not None:
+        loaded_model, loaded_collator, _metadata = load_checkpoint(init_from)
+        runtime = _Runtime(loaded_model, loaded_collator, _encoder_forward)
+    else:
+        runtime = _resolve_runtime(
+            kwargs.get("model"),
+            kwargs.get("collate_fn"),
+            kwargs.get("forward_fn"),
+            config.model_name,
+            config.distill_weight,
+        )
     train_examples, train_dropped = _keep_within_budget(runtime.collate, train_examples)
     val_examples, val_dropped = _keep_within_budget(runtime.collate, val_examples)
     if not train_examples or not val_examples:
@@ -753,6 +760,7 @@ class CliArgs:
     distill_weight: float
     backbone_lr: float
     head_lr: float
+    init_from: Path | None
 
 
 def _parse_args() -> CliArgs:
@@ -775,6 +783,7 @@ def _parse_args() -> CliArgs:
     # so both rates must be reachable here, not only recorded in report.json.
     _ = parser.add_argument("--backbone-lr", type=float, default=2e-5)
     _ = parser.add_argument("--head-lr", type=float, default=1e-3)
+    _ = parser.add_argument("--init-from", type=Path)
     namespace = parser.parse_args(sys.argv[1:])
     return CliArgs(
         train=Path(namespace.train),  # pyright: ignore[reportAny]
@@ -792,6 +801,7 @@ def _parse_args() -> CliArgs:
         distill_weight=namespace.distill_weight,  # pyright: ignore[reportAny]
         backbone_lr=namespace.backbone_lr,  # pyright: ignore[reportAny]
         head_lr=namespace.head_lr,  # pyright: ignore[reportAny]
+        init_from=namespace.init_from,  # pyright: ignore[reportAny]
     )
 
 
@@ -825,6 +835,7 @@ def main() -> None:
         distill_weight=args.distill_weight,
         backbone_lr=args.backbone_lr,
         head_lr=args.head_lr,
+        init_from=args.init_from,
     )
     _ = report
     print(json.dumps({"report": str(args.out / "report.json")}, ensure_ascii=False))  # noqa: T201
