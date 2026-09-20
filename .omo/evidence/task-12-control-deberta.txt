@@ -1,0 +1,17 @@
+# Full SFT control DeBERTa (job 13702)
+
+COMPLETED 00:36:39 ExitCode 0:0
+run /data2/jeffrey/kojev/runs/sft-full-control-deberta
+model kakaobank/kf-deberta-base  max_length=512
+diverged=false  temperature=1.35
+train=95952 dropped=8000  val=5999 dropped=500  (KLAID absent from val sources)
+overall acc=0.9132  majority=0.6664  gap=+0.2468
+choice +0.566  noul +0.146  score +0.350
+nsmc +0.337  KorQuAD +0.496  unsmile +1.000
+
+Not comparable to A.X 0.721 on the full 6499-state val: this is the
+512-fitting subset. Diagnostic holds: data is learnable; A.X did not
+collapse (3/3 healthy) but is the weaker backbone at 1 epoch.
+
+Five report.json files now exist. Todo 12 0.75 median gate is NOT met
+(A median 0.7211). Distill 0.7327 is +1.2pt vs median (does not hurt).
