@@ -1,0 +1,57 @@
+# KoJev: the KorQuAD answerability task was degenerate
+
+## Measured defect
+
+Every KorQuAD question in the built corpus carried gold=1:
+
+    train KorQuAD questions= 15995 gold distribution={1: 15995}
+    val   KorQuAD questions=   999 gold distribution={1: 999}
+    test  KorQuAD questions=  1999 gold distribution={1: 1999}
+
+18,993 questions, 15.4% of the corpus, all answered "yes". A constant label
+carries no discriminative signal at all.
+
+## Root cause
+
+    question = _text(row, "question")
+    gold = int(negative_question is None or question != negative_question)
+    state = f"지문: {_text(row, 'context')}\n질문: {question}"
+
+Two faults that between them cancelled the negative branch entirely:
+
+1. `state` always used the ROW's own question, so the substituted
+   `negative_question` was never actually asked. Each negative was therefore a
+   byte-identical duplicate of its positive.
+2. The gold condition was inverted. For a real negative the substituted
+   question differs, so `question != negative_question` is True and gold became
+   1 instead of 0.
+
+## Why it survived review
+
+An existing test, `test_korquad_negative_pair_flips_answerability_gold`,
+asserted the inverted semantics with a name that sounds correct: it required a
+DIFFERING substituted question to stay answerable, and an IDENTICAL one to
+become unanswerable. Substituting a different question into a passage makes it
+unanswerable, not answerable.
+
+That test was corrected rather than removed, and the corpus measurement is the
+evidence: under the old semantics negatives are always drawn from a different
+title, which is precisely why 100% of the corpus came out gold=1.
+
+## Fix
+
+    asked = question if negative_question is None else negative_question
+    gold  = int(negative_question is None or question == negative_question)
+    state = f"지문: {context}\n질문: {asked}"
+
+## RED
+
+    E   AssertionError: negative kept the answerable gold
+    E   assert 1 == 0
+
+## GREEN
+
+    132 passed, ruff clean, format clean, basedpyright 0 errors
+
+The corpus must be rebuilt: the existing data/gold carries the degenerate task
+and roughly half of its KorQuAD rows are duplicates.

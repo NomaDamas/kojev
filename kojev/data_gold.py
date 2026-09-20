@@ -306,8 +306,13 @@ def build_korquad_pair(
 ) -> Example:
     """Build a KorQuAD answerability noul, flipping gold for a negative question."""
     question = _text(row, "question")
-    gold = int(negative_question is None or question != negative_question)
-    state = f"지문: {_text(row, 'context')}\n질문: {question}"
+    # The asked question is the substituted one for a negative pair; reusing the
+    # row's own question made every negative a duplicate of its positive.
+    asked = question if negative_question is None else negative_question
+    # Answerable only when no substitution happened, or the substitute happens
+    # to coincide with this row's own question.
+    gold = int(negative_question is None or question == negative_question)
+    state = f"지문: {_text(row, 'context')}\n질문: {asked}"
     return _example(
         state,
         [
