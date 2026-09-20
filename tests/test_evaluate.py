@@ -406,6 +406,19 @@ def test_wrap_open_jev_emits_option_ordered_probability_tuples() -> None:
     assert vectors[0][2] == pytest.approx(1 / 3)
 
 
+def test_wrap_open_jev_reconstructs_noul_probabilities_from_scalar() -> None:
+    class _NoulOnly:
+        def decide(self, state: str, questions: object) -> list[dict[str, object]]:
+            del state, questions
+            return [{"noul": 0.8}]
+
+    wrapped = wrap_open_jev(_NoulOnly())
+    vectors = wrapped.decide("맑다", (_noul("긍정이다.", 1),))
+    assert len(vectors) == 1
+    assert vectors[0][0] == pytest.approx(0.2)
+    assert vectors[0][1] == pytest.approx(0.8)
+
+
 def test_wrap_open_jev_maps_max_len_overflow_to_encoding_error() -> None:
     class _OverflowOpenJev:
         def decide(self, state: str, questions: object) -> list[dict[str, object]]:
