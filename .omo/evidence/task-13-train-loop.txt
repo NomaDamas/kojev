@@ -1,0 +1,35 @@
+# KoJev todo 13: 0.5-epoch utility loop + early stop (local half)
+
+The Slurm run still waits on the todo-12 median-seed checkpoint. This
+increment adds the training loop the plan names: max 0.5 epoch, eval every
+200 steps, early stop on val Brier rising two consecutive evals, initialized
+from an SFT checkpoint, gold+distill mix, KEEP verdict written to report.json.
+
+## RED
+
+    ImportError: cannot import name 'half_epoch_steps' from 'kojev.rlcd'
+
+## Behaviour pinned
+
+- half_epoch_steps(8)==4, (1)==1, (0)==0
+- two consecutive Brier rises stop at step 3
+- a drop resets the counter (stop at step 5 on 0.30,0.31,0.29,0.30,0.31)
+- train CLI on a missing checkpoint exits nonzero and writes no report.json
+- gate CLI is now `python -m kojev.rlcd gate --metrics ...`
+
+## Mutation
+
+Zeroing the rise increment (`rises += 0`) makes the consecutive-rise test
+exhaust its brier iterator (StopIteration) instead of stopping at step 3.
+
+## GREEN
+
+    tests/test_rlcd.py  17 passed
+    pytest -q           152 passed
+    ruff / basedpyright clean
+
+## Cluster
+
+scripts/slurm/rlcd.sbatch is the same shared-venv dispatcher as train.sbatch.
+Not submitted: no median-seed checkpoint yet. Jobs 13685-87/13692/13693 still
+PENDING QOSMaxGRESPerUser.

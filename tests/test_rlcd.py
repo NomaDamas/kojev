@@ -15,9 +15,11 @@ from kojev.rlcd import (
     GateTable,
     RLCDConfig,
     RLCDInputs,
+    half_epoch_steps,
     main,
     rlcd_gate,
     rlcd_loss,
+    run_rlcd_loop,
 )
 
 if TYPE_CHECKING:
@@ -171,7 +173,7 @@ def _metrics_file(path: Path, table: GateTable) -> Path:
 def test_cli_writes_go_verdict_from_a_four_clause_table(tmp_path: Path) -> None:
     metrics = _metrics_file(tmp_path / "metrics.json", _go_table())
     out_dir = tmp_path / "run"
-    exit_code = main(["--metrics", str(metrics), "--out", str(out_dir)])
+    exit_code = main(["gate", "--metrics", str(metrics), "--out", str(out_dir)])
     assert exit_code == 0
     report = _read_report(out_dir / "report.json")
     assert report["verdict"] == GateDecision.GO.value
@@ -182,7 +184,7 @@ def test_cli_reports_no_go_on_acc_drop_and_names_the_clause(tmp_path: Path) -> N
     table = _go_table(ece_candidate=0.020, in_domain_acc_candidate=0.660)
     metrics = _metrics_file(tmp_path / "metrics.json", table)
     out_dir = tmp_path / "run"
-    exit_code = main(["--metrics", str(metrics), "--out", str(out_dir)])
+    exit_code = main(["gate", "--metrics", str(metrics), "--out", str(out_dir)])
     assert exit_code == 0
     report = _read_report(out_dir / "report.json")
     assert report["verdict"] == GateDecision.NO_GO.value
@@ -194,7 +196,71 @@ def test_cli_rejects_a_missing_metrics_file_without_writing_a_report(
 ) -> None:
     out_dir = tmp_path / "run"
     exit_code = main(
-        ["--metrics", str(tmp_path / "absent.json"), "--out", str(out_dir)]
+        ["gate", "--metrics", str(tmp_path / "absent.json"), "--out", str(out_dir)]
+    )
+    assert exit_code != 0
+    assert not (out_dir / "report.json").exists()
+
+
+def test_loop_stops_after_two_consecutive_brier_rises() -> None:
+    """Early stop is two rises in a row, not two rises anywhere in the run."""
+    briers = iter((0.30, 0.31, 0.32, 0.40, 0.50))
+    steps: list[int] = []
+
+    def train_step(step: int) -> None:
+        steps.append(step)
+
+    result = run_rlcd_loop(
+        n_steps=10,
+        eval_every=1,
+        early_stop_rises=2,
+        train_step=train_step,
+        measure_val_brier=lambda: next(briers),
+    )
+    assert result["stopped_early"] is True
+    assert result["steps"] == 3
+    assert result["brier_history"] == [0.30, 0.31, 0.32]
+
+
+def test_loop_resets_the_rise_counter_after_a_brier_drop() -> None:
+    briers = iter((0.30, 0.31, 0.29, 0.30, 0.31))
+    result = run_rlcd_loop(
+        n_steps=10,
+        eval_every=1,
+        early_stop_rises=2,
+        train_step=lambda _step: None,
+        measure_val_brier=lambda: next(briers),
+    )
+    assert result["stopped_early"] is True
+    assert result["steps"] == 5
+    assert result["brier_history"] == [0.30, 0.31, 0.29, 0.30, 0.31]
+
+
+def test_half_epoch_is_at_least_one_step_and_not_a_full_pass() -> None:
+    """0.5 epoch over 8 batches is 4 steps; an empty loader is zero."""
+    assert half_epoch_steps(n_batches=8) == 4
+    assert half_epoch_steps(n_batches=1) == 1
+    assert half_epoch_steps(n_batches=0) == 0
+
+
+def test_train_cli_rejects_a_missing_checkpoint_without_writing_a_report(
+    tmp_path: Path,
+) -> None:
+    out_dir = tmp_path / "run"
+    exit_code = main(
+        [
+            "train",
+            "--checkpoint",
+            str(tmp_path / "absent-ckpt"),
+            "--train",
+            str(tmp_path / "train.jsonl"),
+            "--val",
+            str(tmp_path / "val.jsonl"),
+            "--ood",
+            str(tmp_path / "ood.jsonl"),
+            "--out",
+            str(out_dir),
+        ]
     )
     assert exit_code != 0
     assert not (out_dir / "report.json").exists()

@@ -14,19 +14,29 @@ OOD acc drop <=1pt.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import math
 import sys
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Final, cast
+from typing import TYPE_CHECKING, Final, cast
 
 import torch
-from torch import Tensor
+from torch import Tensor, nn
+
+from kojev.encoder import EncoderOutput, SpanBatch, SpanCollator, load_checkpoint
+from kojev.schema import read_jsonl
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from kojev.schema import Example
 
 _DEFAULT_PROBABILITY_FLOOR: Final = 1e-8
 _SOFT_BIN_TEMPERATURE: Final = 0.05
+_SELECTIVE_CONFIDENCE: Final = 0.6
 
 
 class GateDecision(StrEnum):
@@ -214,21 +224,271 @@ class GateInputError(RuntimeError):
         return cls(f"held-out metrics file is unusable: {path}: {detail}")
 
 
-class _GateArgs(argparse.Namespace):
-    """Typed mutable namespace populated by argparse."""
+def half_epoch_steps(n_batches: int) -> int:
+    """Return the step budget for a 0.5-epoch pass.
 
-    metrics: Path = Path("runs/rlcd/metrics.json")
-    out: Path = Path("runs/rlcd")
+    An empty loader is zero steps. A single-batch loader still gets one step so
+    a tiny fixture can actually run the objective once.
+    """
+    if n_batches <= 0:
+        return 0
+    return max(1, math.ceil(n_batches * 0.5))
 
 
-def _parse_args(argv: list[str] | None) -> _GateArgs:
-    parser = argparse.ArgumentParser(
-        prog="kojev.rlcd",
-        description="Score an RLCD stage against the four-clause GO/NO-GO gate.",
+def run_rlcd_loop(
+    *,
+    n_steps: int,
+    eval_every: int,
+    early_stop_rises: int,
+    train_step: Callable[[int], None],
+    measure_val_brier: Callable[[], float],
+) -> dict[str, object]:
+    """Run train_step at most n_steps times; stop after two consecutive Brier rises."""
+    last: float | None = None
+    rises = 0
+    history: list[float] = []
+    stopped_early = False
+    steps_run = 0
+    for step in range(1, n_steps + 1):
+        train_step(step)
+        steps_run = step
+        if eval_every <= 0 or step % eval_every != 0:
+            continue
+        brier = measure_val_brier()
+        history.append(brier)
+        if last is not None and brier > last:
+            rises += 1
+        else:
+            rises = 0
+        last = brier
+        if rises >= early_stop_rises:
+            stopped_early = True
+            break
+    return {
+        "steps": steps_run,
+        "stopped_early": stopped_early,
+        "brier_history": history,
+    }
+
+
+def _move_batch(batch: SpanBatch, device: torch.device) -> SpanBatch:
+    if device.type == "cpu":
+        return batch
+    return SpanBatch(
+        input_ids=batch.input_ids.to(device),
+        attention_mask=batch.attention_mask.to(device),
+        question_spans=batch.question_spans,
+        option_spans=batch.option_spans,
+        question_groups=batch.question_groups,
+        question_types=batch.question_types,
+        gold_indices=batch.gold_indices,
+        question_token_ids=batch.question_token_ids,
+        question_weights=batch.question_weights,
     )
-    _ = parser.add_argument("--metrics", type=Path, required=True)
-    _ = parser.add_argument("--out", type=Path, required=True)
-    return parser.parse_args(argv, namespace=_GateArgs())
+
+
+def _model_device(model: nn.Module) -> torch.device:
+    for parameter in model.parameters():
+        return parameter.device
+    return torch.device("cpu")
+
+
+def _labeled_distributions(
+    model: nn.Module,
+    collator: SpanCollator,
+    examples: Sequence[Example],
+    batch_size: int,
+) -> tuple[list[Tensor], list[int]]:
+    device = _model_device(model)
+    _ = model.eval()
+    probabilities: list[Tensor] = []
+    golds: list[int] = []
+    with torch.no_grad():
+        for start in range(0, len(examples), batch_size):
+            chunk = examples[start : start + batch_size]
+            batch = _move_batch(collator(chunk), device)
+            output = cast("EncoderOutput", model.forward(batch))
+            for group, gold in zip(output.groups, batch.gold_indices, strict=True):
+                if gold is None:
+                    continue
+                indices = list(group)
+                probabilities.append(output.probabilities[indices].detach().cpu())
+                golds.append(gold)
+    return probabilities, golds
+
+
+def _distribution_metrics(
+    probabilities: Sequence[Tensor], gold_indices: Sequence[int]
+) -> dict[str, float]:
+    if not probabilities:
+        return {
+            "accuracy": 0.0,
+            "brier": 0.0,
+            "ece": 0.0,
+            "selective_acc": 0.0,
+            "count": 0.0,
+        }
+    hits: list[float] = []
+    confidences: list[float] = []
+    briers: list[Tensor] = []
+    for dist, gold in zip(probabilities, gold_indices, strict=True):
+        predicted = int(dist.argmax().item())
+        hits.append(1.0 if predicted == gold else 0.0)
+        confidences.append(float(dist.max().item()))
+        target = torch.zeros_like(dist)
+        target[gold] = 1.0
+        briers.append(torch.square(dist - target).sum())
+    conf = torch.tensor(confidences)
+    correct = torch.tensor(hits)
+    ece = 0.0
+    bins = 15
+    for index in range(bins):
+        lower = index / bins
+        upper = (index + 1) / bins
+        mask = (conf >= lower) & (conf <= upper if index == bins - 1 else conf < upper)
+        if mask.any():
+            ece += float(mask.float().mean().item()) * abs(
+                float(correct[mask].mean().item()) - float(conf[mask].mean().item())
+            )
+    selective_mask = conf >= _SELECTIVE_CONFIDENCE
+    selective = (
+        float(correct[selective_mask].mean().item()) if selective_mask.any() else 0.0
+    )
+    return {
+        "accuracy": float(correct.mean().item()),
+        "brier": float(torch.stack(briers).mean().item()),
+        "ece": ece,
+        "selective_acc": selective,
+        "count": float(len(hits)),
+    }
+
+
+def _split_metrics(
+    model: nn.Module,
+    collator: SpanCollator,
+    examples: Sequence[Example],
+    batch_size: int,
+) -> dict[str, float]:
+    probabilities, golds = _labeled_distributions(model, collator, examples, batch_size)
+    return _distribution_metrics(probabilities, golds)
+
+
+@dataclass(frozen=True, slots=True)
+class RLCDRun:
+    """Data and schedule for one 0.5-epoch utility fine-tune."""
+
+    train_examples: Sequence[Example]
+    val_examples: Sequence[Example]
+    ood_examples: Sequence[Example]
+    out_dir: Path
+    lr: float = 1e-5
+    batch_size: int = 4
+    eval_every: int = 200
+    max_steps: int | None = None
+    objective: RLCDConfig = _DEFAULT_CONFIG
+
+
+def run_rlcd_training(
+    model: nn.Module, collator: SpanCollator, run: RLCDRun
+) -> dict[str, object]:
+    """Fine-tune from an SFT checkpoint for at most half an epoch.
+
+    Writes ``report.json`` with the four-clause KEEP verdict against the frozen
+    SFT snapshot taken at the start of the run.
+    """
+    frozen = copy.deepcopy(model)
+    _ = frozen.eval()
+    for parameter in frozen.parameters():
+        parameter.requires_grad = False
+    baseline_val = _split_metrics(frozen, collator, run.val_examples, run.batch_size)
+    baseline_ood = _split_metrics(frozen, collator, run.ood_examples, run.batch_size)
+    n_batches = (
+        math.ceil(len(run.train_examples) / run.batch_size) if run.train_examples else 0
+    )
+    n_steps = (
+        run.max_steps if run.max_steps is not None else half_epoch_steps(n_batches)
+    )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=run.lr)
+
+    def train_batch(chunk: Sequence[Example]) -> None:
+        device = _model_device(model)
+        _ = model.train()
+        _ = frozen.eval()
+        batch = _move_batch(collator(list(chunk)), device)
+        output = cast("EncoderOutput", model.forward(batch))
+        with torch.no_grad():
+            frozen_output = cast("EncoderOutput", frozen.forward(batch))
+        policy: list[Tensor] = []
+        anchors: list[Tensor] = []
+        golds: list[int] = []
+        for group, gold in zip(output.groups, batch.gold_indices, strict=True):
+            if gold is None:
+                continue
+            indices = list(group)
+            policy.append(output.probabilities[indices])
+            anchors.append(frozen_output.probabilities[indices].detach())
+            golds.append(gold)
+        if not policy:
+            return
+        loss = rlcd_loss(
+            RLCDInputs(tuple(policy), tuple(golds), tuple(anchors)), run.objective
+        )
+        optimizer.zero_grad()
+        loss.backward()  # pyright: ignore[reportUnknownMemberType, reportUnusedCallResult]
+        optimizer.step()  # pyright: ignore[reportUnknownMemberType, reportUnusedCallResult]
+
+    def train_step(step: int) -> None:
+        start = ((step - 1) * run.batch_size) % max(len(run.train_examples), 1)
+        chunk = run.train_examples[start : start + run.batch_size]
+        if not chunk:
+            return
+        train_batch(chunk)
+
+    def measure() -> float:
+        return _split_metrics(model, collator, run.val_examples, run.batch_size)[
+            "brier"
+        ]
+
+    loop = run_rlcd_loop(
+        n_steps=n_steps,
+        eval_every=run.eval_every,
+        early_stop_rises=2,
+        train_step=train_step,
+        measure_val_brier=measure,
+    )
+    candidate_val = _split_metrics(model, collator, run.val_examples, run.batch_size)
+    candidate_ood = _split_metrics(model, collator, run.ood_examples, run.batch_size)
+    table = GateTable(
+        ece_baseline=baseline_val["ece"],
+        ece_candidate=candidate_val["ece"],
+        selective_acc_baseline=baseline_val["selective_acc"],
+        selective_acc_candidate=candidate_val["selective_acc"],
+        in_domain_acc_baseline=baseline_val["accuracy"],
+        in_domain_acc_candidate=candidate_val["accuracy"],
+        brier_baseline=baseline_val["brier"],
+        brier_candidate=candidate_val["brier"],
+        ood_acc_baseline=baseline_ood["accuracy"],
+        ood_acc_candidate=candidate_ood["accuracy"],
+    )
+    verdict = rlcd_gate(table)
+    report: dict[str, object] = {
+        "verdict": verdict.value,
+        "failed_clauses": list(gate_clause_failures(table)),
+        "stopped_early": loop["stopped_early"],
+        "steps": loop["steps"],
+        "brier_history": loop["brier_history"],
+        "baseline_val": baseline_val,
+        "candidate_val": candidate_val,
+        "baseline_ood": baseline_ood,
+        "candidate_ood": candidate_ood,
+        **_deltas(table),
+    }
+    run.out_dir.mkdir(parents=True, exist_ok=True)
+    _ = (run.out_dir / "report.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    return report
 
 
 _SIDE_KEYS: Final = (
@@ -295,35 +555,114 @@ def _deltas(table: GateTable) -> dict[str, float]:
     }
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Write a GO/NO-GO report for one RLCD stage, or fail without writing one.
+def _parse_args(argv: list[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="kojev.rlcd",
+        description="RLCD expected-utility stage and four-clause GO/NO-GO gate.",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+    gate = sub.add_parser("gate", help="score a metrics table against KEEP")
+    _ = gate.add_argument("--metrics", type=Path, required=True)
+    _ = gate.add_argument("--out", type=Path, required=True)
+    train = sub.add_parser(
+        "train", help="0.5-epoch utility fine-tune from an SFT checkpoint"
+    )
+    _ = train.add_argument("--checkpoint", type=Path, required=True)
+    _ = train.add_argument("--train", type=Path, required=True)
+    _ = train.add_argument("--val", type=Path, required=True)
+    _ = train.add_argument("--ood", type=Path, required=True)
+    _ = train.add_argument("--distill", type=Path)
+    _ = train.add_argument("--out", type=Path, required=True)
+    _ = train.add_argument("--batch-size", type=int, default=4)
+    _ = train.add_argument("--eval-every", type=int, default=200)
+    _ = train.add_argument("--lr", type=float, default=1e-5)
+    return parser.parse_args(argv)
 
-    The verdict comes from :func:`rlcd_gate` on the same :class:`GateTable` the
-    unit tests pin, so the CLI cannot drift from the four KEEP clauses. Inputs
-    are validated before the output directory is created.
-    """
-    args = _parse_args(argv)
+
+def _run_gate(metrics: Path, out: Path) -> int:
     try:
-        table = _read_gate_table(args.metrics)
+        table = _read_gate_table(metrics)
     except GateInputError as error:
         print(str(error), file=sys.stderr)  # noqa: T201
         return 1
-
     verdict = rlcd_gate(table)
     failed = gate_clause_failures(table)
     report: dict[str, object] = {
         "verdict": verdict.value,
         "failed_clauses": list(failed),
-        "metrics_path": str(args.metrics),
+        "metrics_path": str(metrics),
         **_deltas(table),
     }
-    args.out.mkdir(parents=True, exist_ok=True)
-    _ = (args.out / "report.json").write_text(
+    out.mkdir(parents=True, exist_ok=True)
+    _ = (out / "report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True),
         encoding="utf-8",
     )
     print(json.dumps({"verdict": verdict.value, "failed_clauses": list(failed)}))  # noqa: T201
     return 0
+
+
+def _run_train(values: dict[str, object]) -> int:
+    checkpoint = values.get("checkpoint")
+    train_path = values.get("train")
+    val_path = values.get("val")
+    ood_path = values.get("ood")
+    out = values.get("out")
+    distill = values.get("distill")
+    batch_size = values.get("batch_size")
+    eval_every = values.get("eval_every")
+    lr = values.get("lr")
+    if not (
+        isinstance(checkpoint, Path)
+        and isinstance(train_path, Path)
+        and isinstance(val_path, Path)
+        and isinstance(ood_path, Path)
+        and isinstance(out, Path)
+        and isinstance(batch_size, int)
+        and isinstance(eval_every, int)
+        and isinstance(lr, float)
+    ):
+        return 1
+    if not checkpoint.exists():
+        print(f"checkpoint does not exist: {checkpoint}", file=sys.stderr)  # noqa: T201
+        return 1
+    model, collator, _metadata = load_checkpoint(checkpoint)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    train_examples = read_jsonl(train_path)
+    if isinstance(distill, Path):
+        train_examples.extend(read_jsonl(distill))
+    report = run_rlcd_training(
+        model,
+        collator,
+        RLCDRun(
+            train_examples=train_examples,
+            val_examples=read_jsonl(val_path),
+            ood_examples=read_jsonl(ood_path),
+            out_dir=out,
+            lr=lr,
+            batch_size=batch_size,
+            eval_every=eval_every,
+        ),
+    )
+    print(json.dumps({"verdict": report["verdict"], "steps": report["steps"]}))  # noqa: T201
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Dispatch gate scoring or the 0.5-epoch utility fine-tune."""
+    args = _parse_args(argv)
+    values = cast("dict[str, object]", vars(args))
+    command = values.get("command")
+    if command == "gate":
+        metrics = values.get("metrics")
+        out = values.get("out")
+        if not isinstance(metrics, Path) or not isinstance(out, Path):
+            return 1
+        return _run_gate(metrics, out)
+    if command == "train":
+        return _run_train(values)
+    return 1
 
 
 if __name__ == "__main__":  # pragma: no cover - CLI entry point
