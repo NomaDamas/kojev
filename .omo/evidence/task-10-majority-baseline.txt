@@ -1,0 +1,38 @@
+# KoJev: the report had no majority baseline
+
+Job 13634 COMPLETED and produced a well-formed report, yet todo 10's acceptance
+gate could not be evaluated from it:
+
+    val_acc_all - majority_all >= 0.05
+
+The metric groups were overall, three kind: groups and eight source: groups, and
+NONE carried a majority entry:
+
+    assert 'majority' in {'count': 2, 'accuracy': 1.0, 'brier': ..., 'ece': 0.0}
+
+`majority_baseline` already existed in kojev/data_ood.py but was never wired
+into the trainer, so the gap survived review: the concept was present in the
+codebase, just not where the gate reads from.
+
+## Fix
+
+Every metric group now publishes `majority`, defined exactly as data_ood.py
+defines it: the share of the most frequent gold label.
+
+    majority = float(labels.bincount().max().item()) / count if count else 0.0
+
+An accuracy without its baseline cannot be judged, so the baseline belongs
+beside every accuracy the report emits, not only the overall one.
+
+## Why the value is pinned, not merely present
+
+Asserting that a `majority` key exists would pass for ANY number. The value is
+pinned against a hand-computed case, three zeros and one one giving 3/4:
+
+    assert values["majority"] == pytest.approx(0.75)
+
+Mutation to a constant 0.5 fails:
+
+    E  assert 0.5 == 0.75 +/- 7.5e-07
+
+Gates: 129 passed, ruff clean, format clean, basedpyright 0 errors.
