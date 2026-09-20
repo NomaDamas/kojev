@@ -1,0 +1,8 @@
+# progress.json heartbeat for full SFT
+
+Seed 0 (13685) writes nothing until report.json after the full epoch.
+Quarter-epoch eval now dumps out_dir/progress.json {step, loss, metrics}.
+
+RED: FileNotFoundError on progress.json
+MUTATION: removing _write_progress restores FileNotFoundError
+GREEN: 164 passed
