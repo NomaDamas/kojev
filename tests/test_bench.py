@@ -12,14 +12,17 @@ from kojev import bench
 from kojev.bench import (
     KLUE_TASKS,
     KOBEST_CONFIGS,
+    TASK_COLUMNS,
     BenchmarkError,
     BenchmarkItem,
+    MetricPayload,
     RandomDecisionModel,
     assert_no_kobest_contamination,
     calibration_metrics,
     map_klue_row,
     map_kobest_row,
     metric_report,
+    render_task_grid,
 )
 from kojev.schema import JsonValue, Question, QuestionType
 
@@ -225,3 +228,77 @@ def test_random_model_repeats_exactly_for_same_input() -> None:
     first = model.decide(example.state, (question,))
     second = model.decide(example.state, (question,))
     assert first == second
+
+
+def _task_payload(accuracy: float) -> MetricPayload:
+    return {
+        "count": 10,
+        "accuracy": accuracy,
+        "macro_f1": accuracy,
+        "brier": 0.25,
+        "ece_15": 0.1,
+    }
+
+
+def _full_tasks(offset: float) -> dict[str, MetricPayload]:
+    names = ("boolq", "copa", "wic", "hellaswag", "sentineg", "ynat", "nli", "sts")
+    return {
+        name: _task_payload(offset + index * 0.01) for index, name in enumerate(names)
+    }
+
+
+def test_task_grid_has_eight_task_columns_and_five_model_rows() -> None:
+    """Acceptance: RESULTS.md has >=5 model rows x >=8 task columns."""
+    models = (
+        ("main", _full_tasks(0.50)),
+        ("rlcd", _full_tasks(0.51)),
+        ("control", _full_tasks(0.40)),
+        ("distill", _full_tasks(0.49)),
+        ("english", _full_tasks(0.20)),
+    )
+    table = render_task_grid(models)
+    header = table.splitlines()[0]
+    assert header.count("|") == 10
+    for task in TASK_COLUMNS:
+        assert f"| {task} |" in header
+    rows = [
+        line
+        for line in table.splitlines()
+        if line.startswith("| ") and "model" not in line and "---" not in line
+    ]
+    assert len(rows) == 5
+    assert "0.500" in table
+    assert "0.200" in table
+
+
+def test_task_grid_rejects_a_model_missing_a_task() -> None:
+    tasks = _full_tasks(0.5)
+    del tasks["copa"]
+    with pytest.raises(BenchmarkError, match="copa"):
+        _ = render_task_grid((("main", tasks),))
+
+
+def test_grid_cli_writes_results_from_named_json_reports(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    paths: list[str] = []
+    for name, offset in (
+        ("main", 0.50),
+        ("rlcd", 0.51),
+        ("control", 0.40),
+        ("distill", 0.49),
+        ("english", 0.20),
+    ):
+        path = reports / f"{name}.json"
+        _ = path.write_text(
+            json.dumps({"tasks": _full_tasks(offset)}), encoding="utf-8"
+        )
+        paths.extend(["--grid", f"{name}={path}"])
+    results = tmp_path / "RESULTS.md"
+    monkeypatch.setattr(sys, "argv", ["kojev.bench", *paths, "--results", str(results)])
+    bench.main()
+    table = results.read_text(encoding="utf-8")
+    assert table.splitlines()[0].count("|") == 10
+    assert len([line for line in table.splitlines() if line.startswith("| main")]) == 1

@@ -1,0 +1,27 @@
+# KoJev todo 14: 5x8 KoBEST/KLUE accuracy grid (local half)
+
+Acceptance wants eval/RESULTS.md with >=5 model rows x >=8 task columns.
+evaluate.py only rendered model/split/latency. bench.py now has
+render_task_grid() over the five KoBEST configs plus three KLUE tasks.
+
+## RED
+
+    ImportError: cannot import name 'render_task_grid'
+
+## Pins
+
+- header has 10 pipes (model + 8 tasks)
+- five named models appear as rows
+- missing "copa" raises BenchmarkError
+- CLI: python -m kojev.bench --grid name=report.json ... --results RESULTS.md
+
+## Mutation
+
+TASK_COLUMNS = KOBEST_CONFIGS only -> header.count("|") is 7, not 10.
+
+## GREEN
+
+    162 passed, ruff/pyright clean
+
+The numbers in a real RESULTS.md still wait on the five SFT checkpoints
+plus a KoBEST run of each. This increment is the table contract.
