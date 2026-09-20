@@ -1,0 +1,23 @@
+Suppression audit for commit 3c4ba43b36964acd54ed75e1d3963c3326453e00
+
+Requested complexity suppressions in kojev/train.py:
+- C901: absent
+- PLR0913: absent
+- PLR0915: absent
+
+Configuration weakening:
+- `git diff 168e7576000b32a7b2aabd016711a6bd5a5a40c2..3c4ba43b36964acd54ed75e1d3963c3326453e00 -- pyproject.toml` produced no diff.
+- No ruff or pyright standalone config was added or changed.
+
+Suppressions remaining in kojev/train.py:
+- Lines 313, 322: `# noqa: S311` (allowed deterministic non-cryptographic RNG use)
+- Line 567: `# noqa: T201` (allowed CLI stdout)
+- Lines 333, 420: targeted Torch-boundary pyright ignores
+- Lines 529-538: ten `# pyright: ignore[reportAny]` comments on `argparse.Namespace` fields. These are argparse-boundary ignores, not Torch-boundary ignores.
+
+Other repository suppressions:
+- `kojev/augment.py:5` has pre-existing `# noqa: TC003` from origin/main.
+- `tests/test_data_gold.py` has pre-existing targeted private/test boundary pyright ignores from origin/main.
+
+Verdict for criterion 3 as written:
+FAIL. Complexity suppressions are gone and config was not weakened, but the statement that remaining suppressions are only S311, T201, and targeted Torch-boundary pyright ignores is false because `kojev/train.py:529-538` retains ten argparse `reportAny` ignores. These ignores were already present in ac89e868, but they remain in the commit under verification and do not meet the explicit allowed categories.

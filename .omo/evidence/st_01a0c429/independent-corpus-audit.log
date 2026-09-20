@@ -1,0 +1,22 @@
+gold_counts train=103999 val=6499 test=12998 ood_states=6258 ood_questions=10256
+gold_test_families= ['KorQuAD/squad_kor_v1', 'e9t/nsmc', 'jeanlee/kmhas_korean_hate_speech', 'kakaobrain/kor_nli:multi_nli', 'kakaobrain/kor_nli:snli', 'klue/klue:nli', 'klue/klue:sts', 'klue/klue:ynat', 'lawcompany/KLAID', 'searle-j/kote', 'smilegate-ai/kor_unsmile', 'wicho/kor_3i4k']
+ood_families= ['KorQuAD/squad_kor_v1', 'e9t/nsmc', 'klue/klue:nli', 'klue/klue:sts', 'klue/klue:ynat', 'smilegate-ai/kor_unsmile']
+state_intersections train= 14 val= 0 test= 5252
+instruction_overlap= []
+blank_states= 0
+teacher_label_fields= []
+synthetic_sources= []
+rule_checks= {'korquad_flip': 1999, 'nsmc_flip': 995, 'nsmc_reverse': 995, 'sts_reverse': 1000} all= False
+majority 경제 관련 기사다. 1000 0 0.868 summary_ok= True
+majority 기사의 큰 주제를 고르시오. 1000 0 0.31 summary_ok= True
+majority 두 문장의 의미 유사도를 반대 방향 척도로 고르시오. 1000 1 0.326 summary_ok= True
+majority 리뷰의 만족도를 고르시오. 999 1 0.5155155155155156 summary_ok= True
+majority 리뷰의 만족도를 반대 방향 척도로 고르시오. 999 0 0.5155155155155156 summary_ok= True
+majority 이 리뷰는 긍정적이지 않다. 999 0 0.5155155155155156 summary_ok= True
+majority 이 지문은 질문과 무관하다. 1999 0 1.0 summary_ok= True
+majority 전제와 가설은 모순되지 않는다. 1000 1 0.669 summary_ok= True
+majority 전제와 가설은 모순된다. 1000 0 0.669 summary_ok= True
+majority 혐오 여부를 고르시오. 260 0 1.0 summary_ok= True
+majority_all_ok= True
+schema_validation=PASS 6258
+adversarial_injection=PASS InstructionOverlapError OOD instructions overlap GOLD train: ['침범 질문']

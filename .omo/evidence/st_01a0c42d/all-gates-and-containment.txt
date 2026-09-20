@@ -1,0 +1,18 @@
+COMMIT_AND_ANCESTRY
+3c4ba43b36964acd54ed75e1d3963c3326453e00
+ancestor_exit=0
+PATCH_CONTAINMENT
+.omo/evidence/task-10-kojev.txt
+kojev/train.py
+tests/test_train.py
+TEST_COMPARE
+cc5cd23ba239e1291d3b062c0fb5a16a409329c742dbd67e717f3544ef912096  -
+cc5cd23ba239e1291d3b062c0fb5a16a409329c742dbd67e717f3544ef912096  -
+GATES
+.....                                                                    [100%]
+5 passed in 1.64s
+..................................................................       [100%]
+66 passed in 2.08s
+All checks passed!
+21 files already formatted
+0 errors, 0 warnings, 0 notes

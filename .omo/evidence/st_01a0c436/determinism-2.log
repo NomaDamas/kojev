@@ -1,0 +1,5 @@
+$
+/Volumes/SSD1/1/KoJev/.venv/bin/python -m pytest tests/test_rlcd.py -q 
+.....                                                                    [100%]
+5 passed in 0.42s
+EXIT=0

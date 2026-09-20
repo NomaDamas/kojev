@@ -1,0 +1,15 @@
+SURFACE: gold corpus build
+INVOCATION: uv run python -m kojev.data_gold --out /tmp/kojev-qa-task8-gold
+Using the latest cached version of the dataset since e9t/nsmc couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/e9t___nsmc/default/0.0.0/153263700c285ac0997b3e2a2d80b826aaf672d6 (last modified on Sun Sep 20 01:23:12 2026).
+Using the latest cached version of the dataset since e9t/nsmc couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/e9t___nsmc/default/0.0.0/153263700c285ac0997b3e2a2d80b826aaf672d6 (last modified on Sun Sep 20 01:23:12 2026).
+Using the latest cached version of the dataset since jeanlee/kmhas_korean_hate_speech couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/jeanlee___kmhas_korean_hate_speech/default/0.0.0/5df3b7429d68f0ffc89dfbd0159cc72f29fad63c (last modified on Sun Sep 20 01:23:20 2026).
+Using the latest cached version of the dataset since searle-j/kote couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'dichotomized' at /Volumes/SSD1/huggingface/datasets/searle-j___kote/dichotomized/0.0.0/66f0eefe4b675a5d5411c7aa08e2c97fc9a9b17f (last modified on Sun Sep 20 01:30:05 2026).
+Using the latest cached version of the dataset since searle-j/kote couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'dichotomized' at /Volumes/SSD1/huggingface/datasets/searle-j___kote/dichotomized/0.0.0/66f0eefe4b675a5d5411c7aa08e2c97fc9a9b17f (last modified on Sun Sep 20 01:30:05 2026).
+Using the latest cached version of the dataset since lawcompany/KLAID couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'default' at /Volumes/SSD1/huggingface/datasets/lawcompany___klaid/default/0.0.0/4461690da8a3fb20194488f9712b1b2503571426 (last modified on Sun Sep 20 01:29:21 2026).
+EXIT=0

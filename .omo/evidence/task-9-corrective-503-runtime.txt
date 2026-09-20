@@ -1,0 +1,9 @@
+Surface: Python async TeacherClient with all-503 httpx.MockTransport
+Invocation: uv run python <inline all-503 scenario; no provider network>
+exception_type=TeacherRequestError
+catchable=True
+is_runtime_error=True
+status_code=503
+message=OpenRouter request exhausted retries: HTTP 503
+attempts=4
+bare_type_error=False

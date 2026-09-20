@@ -1,0 +1,3 @@
+clone=/tmp/kojev-st_01a0c43b.tmwO8a
+head=ea23798c69d2c25e849ba701ce4626381250a4aa
+branch=status:

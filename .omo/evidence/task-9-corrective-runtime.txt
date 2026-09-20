@@ -1,0 +1,21 @@
+Surface: Python async TeacherClient with provider-shaped MockTransport and temporary ledgers
+Invocation: uv run python <inline nested/pricing/ledger/budget/parser scenario; no provider network>
+model=qwen/qwen3-vl-8b-instruct
+top_logprobs=5
+request_id=req-qa
+usage={'prompt_tokens': 100, 'completion_tokens': 20, 'total_tokens': 120}
+nested_top5_typed=B
+cost=2.08e-05
+expected_cost=2.08e-05
+ledger_lines_after_first=1
+ledger_request_id=req-qa
+ledger_lines_after_second=2
+ledger_preserved_first=True
+second_request_id=req-qa
+budget_result=BudgetReached
+budget_marker=True
+budget_provider_calls=0
+parser={1: 2, 2: 1}
+bounds=32,64,4
+prices=0.117,0.455
+gold_family_model=False

@@ -1,0 +1,54 @@
+F....                                                                    [100%]
+=================================== FAILURES ===================================
+____________ test_loss_is_differentiable_for_grouped_distributions _____________
+
+    def test_loss_is_differentiable_for_grouped_distributions() -> None:
+        """Given model logits, the RLCD loss backpropagates finite gradients."""
+        model: nn.Linear = nn.Linear(3, 4, bias=False)
+        features = torch.tensor([[1.0, -0.5, 0.25], [0.5, 0.75, -1.0]])
+        logits: torch.Tensor = features @ model.weight.transpose(0, 1)
+        positive: torch.Tensor = torch.softmax(logits, dim=1)
+        negative: torch.Tensor = torch.softmax(logits * 0.5, dim=1)
+    
+        loss = rlcd_loss(
+            RLCDInputs(
+                positive,
+                negative,
+                groups=((0, 1), (2, 3)),
+                gold_indices=(0, 1),
+            ),
+            RunningMeanBaseline(),
+        )
+>       torch.autograd.backward((loss,))
+
+tests/test_rlcd.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/torch/autograd/__init__.py:395: in backward
+    _engine_run_backward(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+t_outputs = (tensor(-0.3421),), args = ((None,), False, False, ())
+kwargs = {'allow_unreachable': True, 'accumulate_grad': True}
+
+    def _engine_run_backward(
+        t_outputs: Sequence[torch.Tensor | GradientEdge],
+        *args: Any,
+        **kwargs: Any,
+    ) -> tuple[torch.Tensor, ...]:
+        attach_logging_hooks = log.getEffectiveLevel() <= logging.DEBUG
+        if attach_logging_hooks:
+            unregister_hooks = _register_logging_hooks_on_whole_graph(t_outputs)
+    
+        # Need to save the context so compiler config will be visible in device threads
+        torch._C._stash_obj_in_tls("context", contextvars.copy_context())
+    
+        try:
+>           return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+                t_outputs, *args, **kwargs
+            )  # Calls into the C++ engine to run the backward pass
+E           RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn
+
+/Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/torch/autograd/graph.py:1072: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/test_rlcd.py::test_loss_is_differentiable_for_grouped_distributions
+1 failed, 4 passed in 0.40s

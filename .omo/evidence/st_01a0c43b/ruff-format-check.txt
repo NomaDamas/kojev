@@ -1,0 +1,8 @@
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+   Building kojev @ file:///private/tmp/kojev-st_01a0c43b.tmwO8a
+      Built kojev @ file:///private/tmp/kojev-st_01a0c43b.tmwO8a
+Installed 71 packages in 511ms
+5 files already formatted
+
+exit_code=0

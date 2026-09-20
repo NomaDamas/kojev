@@ -1,0 +1,9 @@
+happy_status_line= HTTP/1.1 200 OK
+answer_keys= ['choice', 'noul', 'score']
+choice probability_sum= 0.9999999701976776 confidence_type= float typed_fields= ['choice']
+score probability_sum= 0.9999999403953552 confidence_type= float typed_fields= ['score']
+noul probability_sum= 0.9999999701976776 confidence_type= float typed_fields= ['noul']
+300_status_line= HTTP/1.1 422 Unprocessable Entity
+300_detail_keys= ['error_type', 'message'] error_type= schema_error message_nonempty= True
+missing_status_line= HTTP/1.1 422 Unprocessable Entity
+missing_detail_keys= ['error_type', 'message'] error_type= validation_error message_nonempty= True

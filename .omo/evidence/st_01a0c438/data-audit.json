@@ -1,0 +1,118 @@
+{
+  "output_lines": 33340,
+  "questions": 100020,
+  "ledger_lines": 37557,
+  "usage_lines": 37557,
+  "marker_lines": 0,
+  "unique_ledger_ids": 37557,
+  "duplicate_ledger_ids": 0,
+  "unique_output_ids": 33340,
+  "duplicate_output_ids": 0,
+  "total_cost_usd": 2.9455706409999483,
+  "claimed_cost_delta": -5.1958437552457326e-14,
+  "output_ids_missing_from_ledger": 0,
+  "ledger_ids_without_output": 4217,
+  "bad_json": 0,
+  "bad_label": 0,
+  "bad_state": 0,
+  "bad_question": 0,
+  "schema_bad": 0,
+  "source_counts": {
+    "KorQuAD/squad_kor_v1:goldless": 33340
+  },
+  "answer_counts": [
+    {
+      "3": 12025,
+      "2": 3561,
+      "0": 2560,
+      "1": 6931,
+      "7": 1224,
+      "4": 1256,
+      "5": 4990,
+      "6": 793
+    },
+    {
+      "0": 25452,
+      "1": 7888
+    },
+    {
+      "1": 31982,
+      "2": 687,
+      "0": 671
+    }
+  ],
+  "token_distinct": 598,
+  "cost_distinct": 598,
+  "models": {
+    "qwen/qwen3-vl-8b-instruct": 37557
+  },
+  "logprobs": 37557,
+  "min_cost": 5.0752000000000005e-05,
+  "max_cost": 0.00027448200000000005,
+  "sample_schema_bad": [],
+  "sample_bad_label": [],
+  "sample_token_counts": [
+    [
+      [
+        547,
+        18,
+        565
+      ],
+      303
+    ],
+    [
+      [
+        509,
+        18,
+        527
+      ],
+      297
+    ],
+    [
+      [
+        520,
+        18,
+        538
+      ],
+      296
+    ],
+    [
+      [
+        495,
+        18,
+        513
+      ],
+      285
+    ],
+    [
+      [
+        500,
+        18,
+        518
+      ],
+      277
+    ]
+  ],
+  "sample_cost_counts": [
+    [
+      7.218900000000001e-05,
+      303
+    ],
+    [
+      6.7743e-05,
+      297
+    ],
+    [
+      6.903e-05,
+      296
+    ],
+    [
+      6.6105e-05,
+      285
+    ],
+    [
+      6.669e-05,
+      277
+    ]
+  ]
+}

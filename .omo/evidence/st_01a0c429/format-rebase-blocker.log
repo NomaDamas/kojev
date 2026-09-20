@@ -1,0 +1,37 @@
+SURFACE: required repository format verification
+INVOCATION: uv run ruff format --check kojev tests
+unformatted: File would be reformatted
+   --> kojev/teacher.py:197:40
+    |
+196 |             if self._consecutive_errors >= CONCURRENCY_BACKOFF_ERRORS:
+    -                 next_concurrency = max(
+    -                     INITIAL_CONCURRENCY, self._concurrency // 2
+    -                 )
+197 +                 next_concurrency = max(INITIAL_CONCURRENCY, self._concurrency // 2)
+198 |                 object.__setattr__(self, "_concurrency", next_concurrency)
+--------------------------------------------------------------------------------
+274 |                 _ = handle.write(
+    -                     json.dumps({"kind": "marker", "marker": "BUDGET_REACHED"})
+    -                     + "\n"
+275 +                     json.dumps({"kind": "marker", "marker": "BUDGET_REACHED"}) + "\n"
+276 |                 )
+    |
+
+unformatted: File would be reformatted
+  --> kojev/teacher_types.py:10:6
+   |
+9  | _ANSWER_LINE: Final = re.compile(
+   -     (r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
+   -      r"(?:option\s*)?([0-9]+)\b"),
+10 +     (
+11 +         r"^\s*(?:a|q|question)?\s*([1-9]\d*)\s*(?::|=|-)\s*"
+12 +         r"(?:option\s*)?([0-9]+)\b"
+13 +     ),
+14 |     re.IGNORECASE,
+   |
+
+2 files would be reformatted, 17 files already formatted
+format_exit=1
+CONTROL INVOCATION: git show origin/main:kojev/teacher.py and teacher_types.py, then ruff format --check
+2 files already formatted
+origin_main_control_exit=0

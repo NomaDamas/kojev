@@ -1,0 +1,18 @@
+Surface: local Python async TeacherClient with httpx.MockTransport and TemporaryDirectory.
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && uv run python <provider-shaped runtime script>
+nested_answers= {1: 0, 2: 1}
+nested_top_token= B
+model= qwen/qwen3-vl-8b-instruct
+top_logprobs= 5
+request_id= req-local-1 req-local-1
+usage= 100 20 120
+exact_cost= 2.08e-05 2.08e-05
+ledger_lines= 1
+retry_attempts= 3
+retry_answers= {1: 0, 2: 1}
+cap_result= BudgetReached
+cap_calls= 0
+cap_marker= {'kind': 'marker', 'marker': 'BUDGET_REACHED'}
+parser= {1: 2, 2: 1}
+bounds= 32 64 4
+temporary ledger used a TemporaryDirectory and was removed on context exit.

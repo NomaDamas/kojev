@@ -1,0 +1,5 @@
+$ /Volumes/SSD1/1/KoJev/.venv/bin/python -m pytest tests/test_label.py -q
+......                                                                   [100%]
+6 passed in 0.63s
+
+exit_code=0

@@ -1,0 +1,5 @@
+contamination=PASS AssertionError contamination: KoBEST id 'kobest-42' at line 1
+malformed=PASS BenchmarkError malformed manifest line 1: 1 validation error for dict[str,nullable[union[str,int,float,bool,list[...],dict[str,...]]]]
+prompt_injection_data_only=PASS True
+repeatability=PASS True
+unsupported_task=PASS unsupported KoBEST config: not-a-task

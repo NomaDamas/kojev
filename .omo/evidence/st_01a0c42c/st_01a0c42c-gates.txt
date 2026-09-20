@@ -1,0 +1,18 @@
+Clean archive of ac89e868 at /tmp/kojev-task10-verify.IEup6e:
+=== uv run pytest tests/test_train.py -q ===
+..... [100%]
+5 passed in 12.51s
+EXIT 0
+=== uv run pytest -q ===
+.............................................................. [100%]
+62 passed in 12.99s
+EXIT 0
+=== uv run ruff check kojev tests ===
+All checks passed!
+EXIT 0
+=== uv run ruff format --check kojev tests ===
+19 files already formatted
+EXIT 0
+=== uv run basedpyright kojev tests ===
+0 errors, 0 warnings, 0 notes
+EXIT 0

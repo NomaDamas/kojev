@@ -1,0 +1,786 @@
+$
+/Volumes/SSD1/1/KoJev/.venv/bin/python -m basedpyright kojev tests 
+/private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:8:8 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:9:6 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:9:19 - error: Type of "Tensor" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:9:27 - error: Type of "nn" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:10:6 - error: Import "torch.nn" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:10:22 - error: Type of "functional" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:11:6 - error: Import "transformers" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:11:26 - error: Type of "ModernBertConfig" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:11:44 - error: Type of "ModernBertModel" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:11:61 - error: Type of "PreTrainedTokenizerFast" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:58:27 - error: Type of parameter "input_ids" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:58:46 - error: Type of parameter "attention_mask" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:194:9 - error: Type of "input_ids" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:194:21 - error: Type of "full" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:195:63 - error: Type of "long" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:197:9 - error: Type of "attention_mask" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:197:26 - error: Type of "zeros_like" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:199:49 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:202:13 - error: Argument type is unknown
+    Argument corresponds to parameter "input_ids" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:203:13 - error: Argument type is unknown
+    Argument corresponds to parameter "attention_mask" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:220:18 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:220:18 - error: Base class type is unknown, obscuring type of derived class (reportUntypedBaseClass)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:223:18 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:224:19 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:225:19 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:226:17 - error: Type of "GELU" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:230:9 - error: Type of "__init__" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:231:28 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:232:29 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:233:29 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:234:27 - error: Type of "GELU" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:237:9 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:237:9 - error: Method "forward" is marked as override, but no base method of same name is present (reportGeneralTypeIssues)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:237:23 - error: Type of parameter "features" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:239:9 - error: Type of "hidden" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:239:18 - error: Type of "activation" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:239:18 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:239:42 - error: Type of "input_layer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:239:42 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:240:9 - error: Type of "hidden" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:240:18 - error: Type of "activation" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:240:18 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:240:42 - error: Type of "hidden_layer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:240:42 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:241:16 - error: Type of "output_layer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:241:16 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:241:16 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:244:18 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:244:18 - error: Base class type is unknown, obscuring type of derived class (reportUntypedBaseClass)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:252:9 - error: Type of "__init__" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:268:9 - error: Method "forward" is marked as override, but no base method of same name is present (reportGeneralTypeIssues)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:271:23 - error: Type of "input_ids" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:271:23 - error: Argument type is unknown
+    Argument corresponds to parameter "input_ids" in function "__call__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:272:28 - error: Type of "attention_mask" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:272:28 - error: Argument type is unknown
+    Argument corresponds to parameter "attention_mask" in function "__call__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:274:9 - error: Type of "hidden" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:274:26 - error: Type of "last_hidden_state" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:275:9 - error: Type of "features" is partially unknown
+    Type of "features" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:279:13 - error: Type of "question_mean" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:279:29 - error: Type of "_mean_span" is partially unknown
+    Type of "_mean_span" is "(hidden: Unknown, span: tuple[int, int, int]) -> Unknown" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:279:45 - error: Argument type is unknown
+    Argument corresponds to parameter "hidden" in function "_mean_span" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:280:13 - error: Type of "option_mean" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:280:27 - error: Type of "_mean_span" is partially unknown
+    Type of "_mean_span" is "(hidden: Unknown, span: tuple[int, int, int]) -> Unknown" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:280:43 - error: Argument type is unknown
+    Argument corresponds to parameter "hidden" in function "_mean_span" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:281:13 - error: Type of "append" is partially unknown
+    Type of "append" is "(object: Unknown, /) -> None" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:282:17 - error: Type of "cat" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:282:17 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "append" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:284:9 - error: Type of "logits" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:284:18 - error: Type of "scorer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:284:18 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:284:18 - error: Type of "squeeze" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:284:38 - error: Type of "stack" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:285:9 - error: Type of "probabilities" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:285:25 - error: Type of "zeros_like" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:286:9 - error: Type of "losses" is partially unknown
+    Type of "losses" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:288:13 - error: Type of "indices" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:288:23 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:288:50 - error: Type of "device" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:289:13 - error: Type of "group_logits" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:290:13 - error: Type of "group_probabilities" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:290:35 - error: Type of "softmax" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:293:17 - error: Type of "target" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:293:26 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:293:54 - error: Type of "device" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:294:17 - error: Type of "one_hot" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:295:21 - error: Type of "one_hot" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:295:21 - error: Type of "squeeze" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:295:21 - error: Type of "to" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:295:74 - error: Type of "dtype" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:297:17 - error: Type of "append" is partially unknown
+    Type of "append" is "(object: Unknown, /) -> None" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:298:21 - error: Type of "cross_entropy" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:298:21 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "append" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:298:46 - error: Type of "unsqueeze" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:299:23 - error: Type of "square" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:299:23 - error: Type of "sum" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:301:9 - error: Type of "loss" is partially unknown
+    Type of "loss" is "Unknown | None" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:301:16 - error: Type of "stack" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:301:16 - error: Type of "mean" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:302:30 - error: Argument type is unknown
+    Argument corresponds to parameter "logits" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:302:38 - error: Argument type is unknown
+    Argument corresponds to parameter "probabilities" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:305:9 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:305:20 - error: Type of parameter "hidden" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:307:16 - error: Type of "mean" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:307:16 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:309:6 - error: Type of "no_grad" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:309:6 - error: Untyped function decorator obscures type of function; ignoring decorator (reportUntypedFunctionDecorator)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:317:41 - error: Type of "probabilities" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/encoder.py:317:41 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+/private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:10:8 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:11:6 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:11:19 - error: Type of "Tensor" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:64:5 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:64:23 - error: Type of parameter "probabilities" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:65:8 - error: Type of "ndim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:66:16 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:67:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:70:5 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:82:5 - error: Type of "policy_log_probabilities" is partially unknown
+    Type of "policy_log_probabilities" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:83:5 - error: Type of "rewards" is partially unknown
+    Type of "rewards" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:88:9 - error: Type of "positive_gold" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:88:25 - error: Type of "clamp_min" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:89:13 - error: Type of "positive_probabilities" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:89:13 - error: Argument type is unknown
+    Argument corresponds to parameter "probabilities" in function "_gold_probability" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:91:9 - error: Type of "negative_gold" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:91:25 - error: Type of "clamp_min" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:92:13 - error: Type of "negative_probabilities" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:92:13 - error: Argument type is unknown
+    Argument corresponds to parameter "probabilities" in function "_gold_probability" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:94:9 - error: Type of "positive_log_probability" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:94:36 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:95:9 - error: Type of "append" is partially unknown
+    Type of "append" is "(object: Unknown, /) -> None" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:95:41 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "append" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:96:9 - error: Type of "append" is partially unknown
+    Type of "append" is "(object: Unknown, /) -> None" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:96:24 - error: Type of "detach" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:96:24 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "append" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:96:52 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:98:5 - error: Type of "reward_tensor" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:98:21 - error: Type of "stack" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:100:5 - error: Type of "advantages" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:101:9 - error: Type of "reward" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:102:35 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:103:5 - error: Type of "policy_tensor" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:103:21 - error: Type of "stack" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:104:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/rlcd.py:104:13 - error: Type of "mean" is unknown (reportUnknownMemberType)
+/private/tmp/kojev-todo13-0rEDtW/kojev/serve.py
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:10:6 - error: Import "fastapi" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:10:21 - error: Type of "FastAPI" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:10:30 - error: Type of "Request" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:11:6 - error: Import "fastapi.exceptions" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:11:32 - error: Type of "RequestValidationError" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:12:6 - error: Import "fastapi.responses" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:12:31 - error: Type of "JSONResponse" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:15:6 - error: Import "transformers" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:15:26 - error: Type of "ModernBertConfig" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:15:44 - error: Type of "ModernBertModel" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:98:22 - error: Type of "eval" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:103:5 - error: Type of "config" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:116:24 - error: Argument type is unknown
+    Argument corresponds to parameter "backbone" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:133:1 - error: Type of "app" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:136:2 - error: Type of "exception_handler" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:136:2 - error: Untyped function decorator obscures type of function; ignoring decorator (reportUntypedFunctionDecorator)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:137:11 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:138:5 - error: Type of parameter "_request" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:138:24 - error: Type of parameter "exc" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:141:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:143:78 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:147:2 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:147:2 - error: Untyped function decorator obscures type of function; ignoring decorator (reportUntypedFunctionDecorator)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:148:5 - error: Return type, "Unknown | dict[str, object]", is partially unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:161:16 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:171:5 - error: Type of "answers" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:171:15 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:171:15 - error: Type of "decide" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:173:15 - error: Type of "answer" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:173:48 - error: Argument type is unknown
+    Argument corresponds to parameter "iter2" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:175:35 - error: Type of "probabilities" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:175:35 - error: Argument type is unknown
+    Argument corresponds to parameter "iterable" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:176:27 - error: Type of "confidence" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:178:15 - error: Type of "type" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:180:36 - error: Type of "choice" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:182:35 - error: Type of "score" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:184:34 - error: Type of "noul" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:185:18 - error: Type of "unreachable" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:186:30 - error: Argument type is unknown
+    Argument corresponds to parameter "arg" in function "assert_never" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:200:12 - error: Import "uvicorn" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/serve.py:202:5 - error: Type of "run" is unknown (reportUnknownMemberType)
+/private/tmp/kojev-todo13-0rEDtW/kojev/train.py
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:18:8 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:19:6 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:19:19 - error: Type of "Tensor" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:19:27 - error: Type of "nn" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:20:6 - error: Import "torch.nn" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:20:22 - error: Type of "functional" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:31:1 - error: Type of "Collate" is partially unknown
+    Type of "Collate" is "type[(Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:32:1 - error: Type of "Forward" is partially unknown
+    Type of "Forward" is "type[(Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:32:21 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:100:24 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:114:12 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:125:16 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:125:16 - error: Type of "Optimizer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:126:16 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:126:16 - error: Type of "lr_scheduler" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:126:16 - error: Type of "LambdaLR" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:144:5 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:146:8 - error: Type of "loss" is partially unknown
+    Type of "loss" is "Unknown | None" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:149:12 - error: Type of "loss" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:149:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:152:21 - error: Type of parameter "logits" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:152:37 - error: Type of parameter "labels" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:158:9 - error: Type of "loss" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:158:16 - error: Type of "cross_entropy" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:158:41 - error: Type of "float" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:159:28 - error: Type of "detach" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:159:28 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:159:28 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:166:5 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:166:17 - error: Type of parameter "rows" is partially unknown
+    Parameter type is "Sequence[Unknown]" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:167:5 - error: Type of "width" is partially unknown
+    Type of "width" is "Unknown | int" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:167:17 - error: Argument type is partially unknown
+    Argument corresponds to parameter "iterable" in function "max"
+    Argument type is "Generator[Unknown, None, None]" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:167:18 - error: Type of "numel" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:167:34 - error: Type of "row" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:168:5 - error: Type of "padded" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:168:14 - error: Type of "full" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:168:30 - error: Argument type is partially unknown
+    Argument corresponds to parameter "obj" in function "len"
+    Argument type is "Sequence[Unknown]" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:169:16 - error: Type of "row" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:169:33 - error: Argument type is partially unknown
+    Argument corresponds to parameter "iterable" in function "__new__"
+    Argument type is "Sequence[Unknown]" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:170:25 - error: Type of "numel" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:170:40 - error: Type of "detach" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:170:40 - error: Type of "float" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:171:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:175:5 - error: Type of parameter "logits" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:175:21 - error: Type of parameter "labels" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:177:5 - error: Type of "probabilities" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:177:21 - error: Type of "softmax" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:178:5 - error: Type of "predictions" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:178:19 - error: Type of "argmax" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:179:17 - error: Type of "numel" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:179:17 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:180:22 - error: Type of "float" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:180:22 - error: Type of "mean" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:180:22 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:180:22 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:181:5 - error: Type of "targets" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:181:15 - error: Type of "one_hot" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:181:15 - error: Type of "to" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:181:42 - error: Type of "shape" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:181:69 - error: Type of "dtype" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:182:19 - error: Type of "square" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:182:19 - error: Type of "sum" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:182:19 - error: Type of "mean" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:182:19 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:182:19 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:183:5 - error: Type of "confidence" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:183:18 - error: Type of "max" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:183:18 - error: Type of "values" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:184:5 - error: Type of "correct" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:184:15 - error: Type of "float" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:189:9 - error: Type of "mask" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:192:12 - error: Type of "any" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:193:26 - error: Type of "float" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:193:26 - error: Type of "mean" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:193:26 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:193:26 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:194:23 - error: Type of "mean" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:194:23 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:194:23 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:195:25 - error: Type of "mean" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:195:25 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:195:25 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:200:5 - error: Return type, "tuple[list[Unknown], list[int], list[QuestionType], list[str]]", is partially unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:201:5 - error: Type of parameter "model" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:201:12 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:203:5 - error: Type of parameter "collate" is partially unknown
+    Parameter type is "(Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:204:5 - error: Type of parameter "forward" is partially unknown
+    Parameter type is "(Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:206:5 - error: Type of "rows" is partially unknown
+    Type of "rows" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:210:5 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:210:9 - error: Type of "eval" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:211:10 - error: Type of "no_grad" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:214:30 - error: Argument type is unknown
+    Argument corresponds to parameter "__p0" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:221:25 - error: Type of "append" is partially unknown
+    Type of "append" is "(object: Unknown, /) -> None" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:221:37 - error: Type of "logits" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:221:37 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "append" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:225:12 - error: Return type, "tuple[list[Unknown], list[int], list[QuestionType], list[str]]", is partially unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:228:5 - error: Return type, "tuple[dict[str, dict[str, float | int]], Unknown, Unknown]", is partially unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:229:5 - error: Type of parameter "model" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:229:12 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:231:5 - error: Type of parameter "collate" is partially unknown
+    Parameter type is "(Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:232:5 - error: Type of parameter "forward" is partially unknown
+    Parameter type is "(Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:235:5 - error: Type of "rows" is partially unknown
+    Type of "rows" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:235:45 - error: Argument type is unknown
+    Argument corresponds to parameter "model" in function "_collect" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:236:5 - error: Type of "padded" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:237:5 - error: Type of "targets" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:237:15 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:237:42 - error: Type of "long" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:238:36 - error: Argument type is unknown
+    Argument corresponds to parameter "logits" in function "_metrics" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:238:44 - error: Argument type is unknown
+    Argument corresponds to parameter "labels" in function "_metrics" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:244:34 - error: Argument type is unknown
+    Argument corresponds to parameter "logits" in function "_metrics" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:244:51 - error: Argument type is unknown
+    Argument corresponds to parameter "labels" in function "_metrics" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:245:12 - error: Return type, "tuple[dict[str, dict[str, float | int]], Unknown, Unknown]", is partially unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:248:5 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:249:5 - error: Type of parameter "model" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:249:12 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:250:6 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:250:6 - error: Type of "AdamW" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:252:9 - error: Type of "backbone_parameters" is partially unknown
+    Type of "backbone_parameters" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:254:17 - error: Type of "name" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:254:23 - error: Type of "parameter" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:254:36 - error: Type of "named_parameters" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:255:16 - error: Type of "startswith" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:257:9 - error: Type of "head_parameters" is partially unknown
+    Type of "head_parameters" is "list[Unknown]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:259:17 - error: Type of "name" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:259:23 - error: Type of "parameter" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:259:36 - error: Type of "named_parameters" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:260:20 - error: Type of "startswith" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:262:16 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:262:16 - error: Type of "AdamW" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:262:16 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:268:12 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:268:12 - error: Type of "AdamW" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:268:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:268:30 - error: Type of "parameters" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:271:22 - error: Type of parameter "model" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:271:29 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:271:40 - error: Type of parameter "batch" is partially unknown
+    Parameter type is "SpanBatch | tuple[Unknown, ...]" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:283:5 - error: Type of parameter "model" is partially unknown
+    Parameter type is "Unknown | None" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:283:12 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:283:30 - error: Type of parameter "collate" is partially unknown
+    Parameter type is "((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:283:55 - error: Type of parameter "forward" is partially unknown
+    Parameter type is "((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:289:21 - error: Argument type is unknown
+    Argument corresponds to parameter "model" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:292:5 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:293:5 - error: Type of parameter "optimizer" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:293:16 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:293:16 - error: Type of "Optimizer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:294:6 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:294:6 - error: Type of "lr_scheduler" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:294:6 - error: Type of "LambdaLR" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:304:12 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:304:12 - error: Type of "lr_scheduler" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:304:12 - error: Type of "LambdaLR" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:304:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:323:9 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:323:13 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:323:13 - error: Type of "train" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:329:13 - error: Type of "batch" is partially unknown
+    Type of "batch" is "SpanBatch | tuple[Unknown, ...]" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:329:21 - error: Type of "collate" is partially unknown
+    Type of "collate" is "(Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:330:13 - error: Type of "optimizer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:330:13 - error: Type of "zero_grad" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:331:18 - error: Type of "autocast" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:331:46 - error: Type of "bfloat16" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:332:17 - error: Type of "loss" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:332:38 - error: Type of "forward" is partially unknown
+    Type of "forward" is "(Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:332:54 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:332:54 - error: Argument type is unknown
+    Argument corresponds to parameter "__p0" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:333:73 - error: Unnecessary "# pyright: ignore" rule: "reportUnusedCallResult" (reportUnnecessaryTypeIgnoreComment)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:334:13 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:334:17 - error: Type of "nn" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:334:17 - error: Type of "utils" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:334:17 - error: Type of "clip_grad_norm_" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:334:48 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:334:48 - error: Type of "parameters" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:335:13 - error: Type of "optimizer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:335:13 - error: Type of "step" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:336:13 - error: Type of "scheduler" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:336:13 - error: Type of "step" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:338:32 - error: Type of "detach" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:338:32 - error: Type of "float" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:338:32 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:338:32 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:341:26 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:341:29 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:342:21 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:342:21 - error: Argument type is unknown
+    Argument corresponds to parameter "model" in function "_evaluate" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:344:21 - error: Type of "collate" is partially unknown
+    Type of "collate" is "(Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:345:21 - error: Type of "forward" is partially unknown
+    Type of "forward" is "(Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:348:17 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:348:21 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:348:21 - error: Type of "train" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:360:14 - error: Type of "logits" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:360:22 - error: Type of "labels" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:361:9 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:361:9 - error: Argument type is unknown
+    Argument corresponds to parameter "model" in function "_evaluate" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:361:46 - error: Type of "collate" is partially unknown
+    Type of "collate" is "(Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:361:63 - error: Type of "forward" is partially unknown
+    Type of "forward" is "(Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:363:35 - error: Argument type is unknown
+    Argument corresponds to parameter "logits" in function "fit_temperature" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:363:43 - error: Argument type is unknown
+    Argument corresponds to parameter "labels" in function "fit_temperature" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:364:14 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:364:17 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:365:9 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:365:9 - error: Argument type is unknown
+    Argument corresponds to parameter "model" in function "_evaluate" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:367:9 - error: Type of "collate" is partially unknown
+    Type of "collate" is "(Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:368:9 - error: Type of "forward" is partially unknown
+    Type of "forward" is "(Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:409:16 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:410:14 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:411:15 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:412:20 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:413:34 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:416:21 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:417:17 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:418:14 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:420:5 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:427:9 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:427:30 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:427:56 - error: Type of "get" is partially unknown
+    Type of "get" is "Overload[(k: Literal['train_path']) -> Path, (k: Literal['train_path'], default: Any) -> Path, (k: Literal['val_path']) -> Path, (k: Literal['val_path'], default: Any) -> Path, (k: Literal['out_dir']) -> Path, (k: Literal['out_dir'], default: Any) -> Path, (k: Literal['epochs']) -> (int | None), (k: Literal['epochs'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['seed']) -> (int | None), (k: Literal['seed'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['limit']) -> (int | None), (k: Literal['limit'], default: int | __TDefault@RunTrainingKwargs | None) -> (int | __TDefault@RunTrainingKwargs | None), (k: Literal['model']) -> (Unknown | None), (k: Literal['model'], default: Unknown | __TDefault@RunTrainingKwargs | None) -> (Unknown | __TDefault@RunTrainingKwargs | None), (k: Literal['collate_fn']) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | None), (k: Literal['collate_fn'], default: ((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None) -> (((Sequence[Example]) -> (SpanBatch | tuple[Unknown, ...])) | __TDefault@RunTrainingKwargs | None), (k: Literal['forward_fn']) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | None), (k: Literal['forward_fn'], default: ((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None) -> (((Unknown, SpanBatch | tuple[Unknown, ...]) -> EncoderOutput) | __TDefault@RunTrainingKwargs | None), (k: Literal['batch_size']) -> (int | None), (k: Literal['batch_size'], default: int | __TDefault@RunTrainingKwargs) -> (int | __TDefault@RunTrainingKwargs), (k: Literal['augmentation_probability']) -> (float | None), (k: Literal['augmentation_probability'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['backbone_lr']) -> (float | None), (k: Literal['backbone_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['head_lr']) -> (float | None), (k: Literal['head_lr'], default: float | __TDefault@RunTrainingKwargs) -> (float | __TDefault@RunTrainingKwargs), (k: Literal['bf16']) -> (bool | None), (k: Literal['bf16'], default: bool | __TDefault@RunTrainingKwargs) -> (bool | __TDefault@RunTrainingKwargs), (k: str) -> (Any | None), (k: str, default: Any | __TDefault@RunTrainingKwargs) -> (Any | __TDefault@RunTrainingKwargs)]" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:430:5 - error: Type of "optimizer" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:430:28 - error: Type of "model" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:430:28 - error: Argument type is unknown
+    Argument corresponds to parameter "model" in function "_optimizer" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:434:9 - error: Argument type is unknown
+    Argument corresponds to parameter "optimizer" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:435:9 - error: Argument type is unknown
+    Argument corresponds to parameter "scheduler" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:435:25 - error: Argument type is unknown
+    Argument corresponds to parameter "optimizer" in function "_make_scheduler" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:459:21 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:459:21 - error: Base class type is unknown, obscuring type of derived class (reportUntypedBaseClass)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:463:16 - error: Type of "Embedding" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:466:9 - error: Type of "__init__" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:468:26 - error: Type of "Embedding" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:471:9 - error: Method "forward" is marked as override, but no base method of same name is present (reportGeneralTypeIssues)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:471:23 - error: Type of parameter "input_ids" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:471:42 - error: Type of parameter "attention_mask" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:473:9 - error: Type of "hidden" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:473:26 - error: Type of "embedding" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:473:26 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:474:28 - error: Argument type is unknown
+    Argument corresponds to parameter "last_hidden_state" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:545:12 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/kojev/train.py:551:9 - error: Type of "forward" is partially unknown
+    Type of "forward" is "(model: Unknown, batch: SpanBatch | tuple[Unknown, ...]) -> EncoderOutput" (reportUnknownVariableType)
+/private/tmp/kojev-todo13-0rEDtW/tests/test_bench.py
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_bench.py:111:32 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_bench.py:112:32 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_bench.py:113:29 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+/private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:9:8 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:10:6 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:10:19 - error: Type of "Tensor" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:10:27 - error: Type of "nn" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:11:6 - error: Import "transformers" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:11:26 - error: Type of "ModernBertConfig" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:11:44 - error: Type of "ModernBertModel" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:18:21 - error: Type of parameter "_loss" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:18:36 - error: Type of parameter "_optimizer" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:18:48 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:18:48 - error: Type of "Optimizer" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:61:20 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:61:20 - error: Base class type is unknown, obscuring type of derived class (reportUntypedBaseClass)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:65:16 - error: Type of "Embedding" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:68:9 - error: Type of "__init__" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:70:26 - error: Type of "Embedding" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:73:9 - error: Method "forward" is marked as override, but no base method of same name is present (reportGeneralTypeIssues)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:75:9 - error: Type of parameter "input_ids" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:76:9 - error: Type of parameter "attention_mask" is partially unknown
+    Parameter type is "Unknown | None" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:79:27 - error: Type of "embedding" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:79:27 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:79:27 - error: Argument type is unknown
+    Argument corresponds to parameter "last_hidden_state" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:135:12 - error: Type of "input_ids" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:135:12 - error: Type of "ndim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:136:12 - error: Type of "logits" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:136:12 - error: Type of "shape" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:150:5 - error: Type of "grouped" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:150:15 - error: Type of "probabilities" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:153:12 - error: Type of "sum" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:153:12 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:153:41 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:154:12 - error: Type of "sum" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:154:12 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:154:41 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:155:12 - error: Type of "sum" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:155:12 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:155:41 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:162:5 - error: Type of "config" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:175:24 - error: Argument type is unknown
+    Argument corresponds to parameter "backbone" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:178:5 - error: Type of "optimizer" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:178:17 - error: Type of "optim" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:178:17 - error: Type of "AdamW" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:178:35 - error: Type of "parameters" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:183:9 - error: Type of "zero_grad" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:185:16 - error: Type of "loss" is partially unknown
+    Type of "loss" is "Unknown | None" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:186:21 - error: Type of "loss" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:186:21 - error: Argument type is unknown
+    Argument corresponds to parameter "_loss" in function "_train_step" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:186:34 - error: Argument type is unknown
+    Argument corresponds to parameter "_optimizer" in function "_train_step" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:187:23 - error: Type of "loss" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:187:23 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:187:23 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "append" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:198:5 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:198:9 - error: Type of "eval" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_encoder.py:221:45 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+/private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:8:8 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:9:6 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:9:19 - error: Type of "nn" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:17:5 - error: Type of "rlcd_loss" is partially unknown
+    Type of "rlcd_loss" is "(inputs: RLCDInputs, baseline: RunningMeanBaseline, config: RLCDConfig = _DEFAULT_CONFIG) -> Unknown" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:23:5 - error: Type of "model" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:23:12 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:23:24 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:24:5 - error: Type of "features" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:24:16 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:25:5 - error: Type of "logits" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:25:13 - error: Type of "Tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:25:39 - error: Type of "weight" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:25:39 - error: Type of "transpose" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:26:5 - error: Type of "positive" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:26:15 - error: Type of "Tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:26:30 - error: Type of "softmax" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:27:5 - error: Type of "negative" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:27:15 - error: Type of "Tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:27:30 - error: Type of "softmax" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:29:5 - error: Type of "loss" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:31:13 - error: Argument type is unknown
+    Argument corresponds to parameter "positive_probabilities" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:32:13 - error: Argument type is unknown
+    Argument corresponds to parameter "negative_probabilities" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:38:5 - error: Type of "autograd" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:38:5 - error: Type of "backward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:40:32 - error: Type of "detach" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:40:32 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:41:12 - error: Type of "weight" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:41:12 - error: Type of "grad" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:42:12 - error: Type of "isfinite" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:42:12 - error: Type of "all" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:42:27 - error: Type of "weight" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:42:27 - error: Type of "grad" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:43:16 - error: Type of "all" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:43:26 - error: Type of "weight" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:43:26 - error: Type of "grad" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:52:12 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:52:12 - error: Type of "var" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:52:57 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:52:57 - error: Type of "var" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:70:5 - error: Argument type is partially unknown
+    Argument corresponds to parameter "argvalues" in function "__call__"
+    Argument type is "list[tuple[Unknown, Unknown]]" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:71:10 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:71:38 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:72:10 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:72:46 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:76:5 - error: Type of parameter "positive" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:76:15 - error: Type of "Tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:76:29 - error: Type of parameter "negative" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:76:39 - error: Type of "Tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:79:5 - error: Type of "loss" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:80:20 - error: Argument type is unknown
+    Argument corresponds to parameter "positive_probabilities" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:80:30 - error: Argument type is unknown
+    Argument corresponds to parameter "negative_probabilities" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_rlcd.py:84:32 - error: Argument type is unknown
+    Argument corresponds to parameter "x" in function "__new__" (reportUnknownArgumentType)
+/private/tmp/kojev-todo13-0rEDtW/tests/test_schema.py
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_schema.py:152:43 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_schema.py:156:38 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+/private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:12:25 - error: Type of "app" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:15:10 - error: Import "fastapi.testclient" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:15:36 - error: Type of "TestClient" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:52:5 - error: Return type is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:54:12 - error: Return type is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:66:5 - error: Type of parameter "client" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:90:5 - error: Type of "response" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:90:16 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:93:12 - error: Type of "status_code" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:94:45 - error: Type of "content" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:94:45 - error: Argument type is unknown
+    Argument corresponds to parameter "json_data" in function "model_validate_json" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:97:45 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:105:56 - error: Type of parameter "client" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:118:5 - error: Type of "response" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:118:16 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:121:12 - error: Type of "status_code" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:122:43 - error: Type of "content" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:122:43 - error: Argument type is unknown
+    Argument corresponds to parameter "data" in function "validate_json" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:127:44 - error: Type of parameter "client" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:134:5 - error: Type of "response" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:134:16 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:137:12 - error: Type of "status_code" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:138:43 - error: Type of "content" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:138:43 - error: Argument type is unknown
+    Argument corresponds to parameter "data" in function "validate_json" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:144:5 - error: Type of parameter "client" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:158:5 - error: Type of "response" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:158:16 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:161:43 - error: Type of "content" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_serve.py:161:43 - error: Argument type is unknown
+    Argument corresponds to parameter "data" in function "validate_json" (reportUnknownArgumentType)
+/private/tmp/kojev-todo13-0rEDtW/tests/test_teacher.py
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_teacher.py:84:31 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_teacher.py:89:38 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+/private/tmp/kojev-todo13-0rEDtW/tests/test_train.py
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:11:8 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:13:6 - error: Import "torch" could not be resolved (reportMissingImports)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:13:19 - error: Type of "nn" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:21:5 - error: Type of "fit_temperature" is partially unknown
+    Type of "fit_temperature" is "(logits: Unknown, labels: Unknown) -> float" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:23:5 - error: Type of "training_loss" is partially unknown
+    Type of "training_loss" is "(output: EncoderOutput) -> Unknown" (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:45:5 - error: Type of "logits" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:45:14 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:46:5 - error: Type of "probabilities" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:46:21 - error: Type of "softmax" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:47:5 - error: Type of "expected" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:47:17 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:47:47 - error: Type of "sum" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:48:26 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:50:28 - error: Argument type is unknown
+    Argument corresponds to parameter "logits" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:50:36 - error: Argument type is unknown
+    Argument corresponds to parameter "probabilities" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:50:62 - error: Argument type is unknown
+    Argument corresponds to parameter "loss" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:53:5 - error: Type of "loss" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:56:12 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:56:27 - error: Type of "approx" is partially unknown
+    Type of "approx" is "(expected: Unknown, rel: Unknown | None = None, abs: Unknown | None = None, nan_ok: bool = False) -> ApproxBase" (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:56:41 - error: Type of "item" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:56:41 - error: Argument type is unknown
+    Argument corresponds to parameter "expected" in function "approx" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:86:5 - error: Type of "logits" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:86:14 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:87:5 - error: Type of "labels" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:87:14 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:90:35 - error: Argument type is unknown
+    Argument corresponds to parameter "logits" in function "fit_temperature" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:90:43 - error: Argument type is unknown
+    Argument corresponds to parameter "labels" in function "fit_temperature" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:102:5 - error: Type of "model" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:102:13 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:112:15 - error: Argument type is unknown
+    Argument corresponds to parameter "model" in function "run_training" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:113:37 - error: Return type of lambda, "tuple[Unknown]", is partially unknown (reportUnknownLambdaType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:113:38 - error: Type of "ones" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:134:21 - error: Type of parameter "model" is unknown (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:134:28 - error: Type of "Module" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:134:39 - error: Type of parameter "batch" is partially unknown
+    Parameter type is "SpanBatch | tuple[Unknown, ...]" (reportUnknownParameterType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:135:30 - error: Type of "Linear" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:141:5 - error: Type of "linear" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:141:13 - error: Type of "Tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:141:28 - error: Type of "forward" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:142:5 - error: Type of "logits" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:142:13 - error: Type of "Tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:142:28 - error: Type of "flatten" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:143:5 - error: Type of "probabilities" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:143:21 - error: Type of "softmax" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:143:21 - error: Type of "flatten" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:143:35 - error: Type of "reshape" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:144:5 - error: Type of "one_hot" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:144:15 - error: Type of "tensor" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:145:5 - error: Type of "loss" is unknown (reportUnknownVariableType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:146:10 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:146:40 - error: Type of "square" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:146:40 - error: Type of "sum" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:148:61 - error: Type of "numel" is unknown (reportUnknownMemberType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:148:61 - error: Argument type is unknown
+    Argument corresponds to parameter "stop" in function "__new__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:149:26 - error: Argument type is unknown
+    Argument corresponds to parameter "logits" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:149:34 - error: Argument type is unknown
+    Argument corresponds to parameter "probabilities" in function "__init__" (reportUnknownArgumentType)
+  /private/tmp/kojev-todo13-0rEDtW/tests/test_train.py:149:57 - error: Argument type is unknown
+    Argument corresponds to parameter "loss" in function "__init__" (reportUnknownArgumentType)
+620 errors, 0 warnings, 0 notes
+EXIT=1

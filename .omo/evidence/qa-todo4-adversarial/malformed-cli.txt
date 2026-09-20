@@ -1,0 +1,18 @@
+CASE=--model unsupported --limit 8
+EXIT=1
+    main()
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 346, in main
+    raise BenchmarkError(reason="only --model random is implemented")
+BenchmarkError: only --model random is implemented
+CASE=--limit nope
+EXIT=1
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 347, in main
+    limit = int(values["limit"])
+            ^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'nope'
+CASE=--limit
+EXIT=1
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 340, in main
+    values["limit"] = next(arguments)
+                      ^^^^^^^^^^^^^^^
+StopIteration

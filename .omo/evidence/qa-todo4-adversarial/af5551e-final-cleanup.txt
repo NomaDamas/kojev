@@ -1,0 +1,8 @@
+INVOCATION=git status --short --branch
+## feat/todo-4-kobest-klue-bench...origin/feat/todo-4-kobest-klue-bench
+INVOCATION=git rev-parse HEAD
+af5551e9e3076b0b254e96765c4b3252a5808a0a
+INVOCATION=git ls-remote origin refs/heads/feat/todo-4-kobest-klue-bench
+af5551e9e3076b0b254e96765c4b3252a5808a0a	refs/heads/feat/todo-4-kobest-klue-bench
+INVOCATION=find generated files/processes
+57145 /bin/bash -c repo=/Volumes/SSD1/1/KoJev-todo4; ev=/Volumes/SSD1/1/KoJev/.omo/evidence/qa-todo4-adversarial; cd "$repo"; { echo 'INVOCATION=git status --short --branch'; git status --short --branch; echo 'INVOCATION=git rev-parse HEAD'; git rev-parse HEAD; echo 'INVOCATION=git ls-remote origin refs/heads/feat/todo-4-kobest-klue-bench'; git ls-remote origin refs/heads/feat/todo-4-kobest-klue-bench; echo 'INVOCATION=find generated files/processes'; find . -maxdepth 1 -name 'benchmark-report.json' -print; pgrep -fal 'kojev\.bench|python.*tests/test_bench.py|ruff check kojev tests|basedpyright kojev tests' || true; } > "$ev/af5551e-final-cleanup.txt"; test -s "$ev/af5551e-final-cleanup.txt" && wc -c "$ev/af5551e-final-cleanup.txt"

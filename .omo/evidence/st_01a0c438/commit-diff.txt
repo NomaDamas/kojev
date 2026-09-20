@@ -1,0 +1,4 @@
+A	.omo/evidence/task-11-kojev-manual-qa.md
+M	.omo/evidence/task-11-kojev.txt
+M	kojev/label.py
+M	tests/test_label.py

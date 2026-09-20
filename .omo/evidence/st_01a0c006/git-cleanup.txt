@@ -1,0 +1,14 @@
+## status
+## feat/aihub...origin/feat/aihub
+## HEAD
+d8e1a9171cb555bfa3dd33ea83861a50b949dcf4
+## origin/feat/aihub
+d8e1a9171cb555bfa3dd33ea83861a50b949dcf4
+## base ancestry
+exit=0
+## commit containment
+* feat/aihub
+  remotes/origin/feat/aihub
+## untracked evidence outside worktree
+/Volumes/SSD1/1/KoJev-aihub/.omo/evidence/task-1-kojev.txt
+/Volumes/SSD1/1/KoJev-aihub/.omo/evidence/task-5-kojev.txt

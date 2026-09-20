@@ -1,0 +1,32 @@
+SURFACE=CLI --training-manifest malformed rejection
+INVOCATION=uv run python -m kojev.bench --model random --limit 8 --training-manifest /Volumes/SSD1/1/KoJev/.omo/evidence/qa-todo4-adversarial/malformed-af5551e.jsonl --output /Volumes/SSD1/1/KoJev/.omo/evidence/qa-todo4-adversarial/malformed-should-not-exist.json
+Traceback (most recent call last):
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 301, in assert_no_kobest_contamination
+    row: Row = _ROW_ADAPTER.validate_json(line)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Volumes/SSD1/1/KoJev-todo4/.venv/lib/python3.12/site-packages/pydantic/type_adapter.py", line 492, in validate_json
+    return self.validator.validate_json(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for dict[str,nullable[union[str,int,float,bool,list[...],dict[str,...]]]]
+  Invalid JSON: key must be a string at line 1 column 2 [type=json_invalid, input_value='{not-json}\n', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 473, in <module>
+    main()
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 359, in main
+    load_benchmark_items(limit, training_manifest), RandomDecisionModel()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 325, in load_benchmark_items
+    assert_no_kobest_contamination(
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 303, in assert_no_kobest_contamination
+    raise BenchmarkError(
+BenchmarkError: malformed manifest line 1: 1 validation error for dict[str,nullable[union[str,int,float,bool,list[...],dict[str,...]]]]
+  Invalid JSON: key must be a string at line 1 column 2 [type=json_invalid, input_value='{not-json}\n', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid
+EXIT=1
+REPORT_ABSENT=0

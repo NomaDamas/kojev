@@ -1,0 +1,16 @@
+Surface: repository refs/status/patch containment
+Invocation: git rev-parse HEAD; git ls-remote origin refs/heads/feat/task-9-openrouter-teacher; git status --porcelain=v1 --branch; git merge-base --is-ancestor f4a26a1c0ea08799576b763e842555dccd98cce4 HEAD; git diff --check and --name-status parent..HEAD
+9b679603762d52a96c63841a79e24f8e48b9663d
+9b679603762d52a96c63841a79e24f8e48b9663d	refs/heads/feat/task-9-openrouter-teacher
+## feat/task-9-openrouter-teacher
+ancestor_exit=0
+M	.omo/evidence/task-9-kojev.txt
+M	.omo/evidence/task-9-manual-qa.md
+A	.omo/evidence/task-9-qa-final-loc2.txt
+A	.omo/evidence/task-9-qa-green-final-basedpyright3.txt
+A	.omo/evidence/task-9-qa-green-final-full-pytest.txt
+A	.omo/evidence/task-9-qa-green-final-ruff2.txt
+A	.omo/evidence/task-9-qa-green-final-teacher-pytest.txt
+A	.omo/evidence/task-9-qa-red-frozen-dataclass-exception.txt
+M	kojev/teacher_types.py
+M	tests/test_teacher.py

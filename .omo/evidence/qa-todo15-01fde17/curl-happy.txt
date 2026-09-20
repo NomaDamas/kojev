@@ -1,0 +1,7 @@
+HTTP/1.1 200 OK
+date: Sat, 19 Sep 2026 20:55:19 GMT
+server: uvicorn
+content-length: 432
+content-type: application/json
+
+{"model":"tiny-random","answers":{"choice":{"probabilities":[0.4832361042499542,0.5167638659477234],"confidence":0.0008110133594997349,"choice":1},"score":{"probabilities":[0.5058132410049438,0.4941866993904114],"confidence":9.748502747330967e-05,"score":0.4941866993904114},"noul":{"probabilities":[0.508094310760498,0.49190565943717957],"confidence":0.00018904036918143685,"noul":0.49190565943717957}},"usage":{"input_tokens":13}}

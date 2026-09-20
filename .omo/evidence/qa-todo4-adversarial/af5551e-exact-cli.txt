@@ -1,0 +1,11 @@
+SURFACE=CLI
+INVOCATION=uv run python -m kojev.bench --model random --limit 200
+EXIT=0
+total_count= 200
+task_names= ['boolq', 'copa', 'hellaswag', 'nli', 'sentineg', 'sts', 'wic', 'ynat']
+eight_exact= True
+counts= {'boolq': 25, 'copa': 25, 'hellaswag': 25, 'nli': 25, 'sentineg': 25, 'sts': 25, 'wic': 25, 'ynat': 25}
+all_positive= True
+metric_keys_exact= True
+kind_counts= {'choice': 100, 'noul': 75, 'score': 25}
+REPORT_AFTER_CLEANUP=1

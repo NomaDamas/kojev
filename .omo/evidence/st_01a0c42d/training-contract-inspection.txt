@@ -1,0 +1,6 @@
+param_group_lrs= [2e-05, 0.001]
+warmup_step1_lrs= [3.3333333333333333e-06, 0.00016666666666666666]
+warmup_step6_lrs= [2e-05, 0.001]
+cosine_final_lrs= [5.584362697453882e-09, 2.792181348726941e-07]
+clip_literal_present= True
+loss_formula_literals= True

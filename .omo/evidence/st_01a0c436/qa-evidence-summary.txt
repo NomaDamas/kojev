@@ -1,0 +1,35 @@
+Adversarial QA evidence for commit 97fb2d1478faac9f6cca36ad381c4ef792ba0259
+
+Refs:
+- origin/feat/todo-13-rlcd resolves to 97fb2d1478faac9f6cca36ad381c4ef792ba0259.
+- origin/main 6cb06184084bb4e3ddbbe1e2faa552bc22817450 is an ancestor (merge-base --is-ancestor exit 0).
+
+Quality gates in disposable archived commit copy:
+- /Volumes/SSD1/1/KoJev/.venv/bin/python -m pytest tests/test_rlcd.py -q: 5 passed in 0.71s.
+- /Volumes/SSD1/1/KoJev/.venv/bin/python -m pytest -q: 75 passed in 3.56s.
+- ruff check kojev tests: All checks passed.
+- ruff format --check kojev tests: 25 files already formatted.
+- basedpyright kojev tests with disposable copy linked to the project .venv: exit 0, clean.
+- target suite repeated 3 times: each 5 passed; runtimes 0.39s, 0.42s, 0.39s.
+
+Independent runtime:
+- tiny random nn.Linear model, RLCD loss, backward.
+- loss=0.562459886074; parameter gradient L2 norm=0.858162164688.
+- every model parameter grad non-None, finite, and at least one nonzero.
+- source audit found only the intentional reward detach; no no_grad or item in rlcd.py. The policy tensor remains attached.
+- fixed reward stream (1,3,1,3,1,3): raw population variance=1.0; running-baseline residuals=(0.0,1.0,-0.6666666666666667,1.0,-0.8,1.0); residual population variance=0.615432083607.
+- gate at 0.05: 0.051 GO, 0.05 GO, 0.049 NO-GO, NaN NO-GO, +inf NO-GO, -inf NO-GO.
+- edge losses: uniform=-0.0 finite; near-deterministic=1.9214267013e-06 finite.
+
+Non-tautology mutation checks in disposable copy:
+- detach policy tensor: target suite failed 1 failed, 4 passed with RuntimeError that loss does not require grad.
+- invert/break gate threshold branch: target suite failed 1 failed, 4 passed; gate 0.051 incorrectly returned NO-GO.
+
+Containment:
+- commit changes .omo/evidence/task-13-driver.stdout, task-13-focused.stdout, task-13-format.stdout, task-13-full.stdout, task-13-kojev.txt, task-13-ruff.stdout, task-13-typecheck.stdout, kojev/rlcd.py, tests/test_rlcd.py.
+- required allowed paths were only kojev/rlcd.py, tests/test_rlcd.py, .omo/evidence/task-13-kojev.txt. Therefore containment is not satisfied.
+
+Cleanup:
+- disposable archive copy removed.
+- no process remained matching disposable path.
+- real worktree status was not modified by the QA run; no refs were changed.

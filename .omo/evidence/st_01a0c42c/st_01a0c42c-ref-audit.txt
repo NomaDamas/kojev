@@ -1,0 +1,11 @@
+git status showed live branch main with HEAD 168e7576000b32a7b2aabd016711a6bd5a5a40c2.
+HEAD=168e7576000b32a7b2aabd016711a6bd5a5a40c2
+ORIGIN_TRAIN=ac89e86853dd0faad529b7dac0d1e726fb137dda
+ORIGIN_MAIN=168e7576000b32a7b2aabd016711a6bd5a5a40c2
+Target commit:
+ac89e86853dd0faad529b7dac0d1e726fb137dda d9c7cb4e9e720d25850e8b1868072e40ecd9d952 origin/feat/todo-10-train, feat/todo-10-train
+Patch files from d9c7cb4..ac89e868:
+.omo/evidence/task-10-kojev.txt
+kojev/train.py
+tests/test_train.py
+The target commit parent is the requested origin/main value, but live origin/main is different.

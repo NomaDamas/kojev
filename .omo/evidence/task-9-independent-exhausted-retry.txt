@@ -1,0 +1,4 @@
+attempts=4
+exception_type=TypeError
+exception=super(type, obj): obj must be an instance or subtype of type
+is_teacher_request_error=False

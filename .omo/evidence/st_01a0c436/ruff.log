@@ -1,0 +1,4 @@
+$
+/Volumes/SSD1/1/KoJev/.venv/bin/python -m ruff check kojev tests 
+All checks passed!
+EXIT=0

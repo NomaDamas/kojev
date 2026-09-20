@@ -1,0 +1,7 @@
+HTTP/1.1 422 Unprocessable Entity
+date: Sat, 19 Sep 2026 20:55:19 GMT
+server: uvicorn
+content-length: 333
+content-type: application/json
+
+{"detail":{"error_type":"schema_error","message":"1 validation error for Question\n  Value error, choice questions require 2..255 options, got 300 [type=value_error, input_value={'type': <QuestionType.CH...', '297', '298', '299']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"}}

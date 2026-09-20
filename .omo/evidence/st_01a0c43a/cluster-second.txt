@@ -1,0 +1,688 @@
+=== WRONG GRES REAL ===
+wrong_gres_exit=1
+=== STDOUT EXACT ===
+True
+=== EVIDENCE ARTIFACTS ===
+--- /data2/jeffrey/kojev/repo/.omo/evidence/task-2-gpu-smoke-final.txt
+state=RUNNING
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13601|kojev-smoke|interactive|RUNNING|0:0|00:07:29|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13601.batch|batch||RUNNING|0:0|00:07:29|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13601
+Activate with: source /data2/jeffrey/kojev/runs/venv-13601/bin/activate
+Resolved 92 packages in 1ms
+   Building kojev @ file:///data2/jeffrey/kojev/repo
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading networkx (2.0MiB)
+Downloading hf-xet (4.3MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading transformers (11.7MiB)
+Downloading numpy (15.9MiB)
+Downloading ruff (9.8MiB)
+Downloading pygments (1.2MiB)
+Downloading pyarrow (47.8MiB)
+Downloading torch (528.9MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading aiohttp (1.7MiB)
+Downloading tokenizers (3.2MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading pandas (10.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading triton (236.5MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading hf-xet (4.3MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-cufft (204.2MiB)
+state=FAILED
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13601|kojev-smoke|interactive|FAILED|1:0|00:10:30|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13601.batch|batch||FAILED|1:0|00:10:30|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13601
+Activate with: source /data2/jeffrey/kojev/runs/venv-13601/bin/activate
+Resolved 92 packages in 1ms
+   Building kojev @ file:///data2/jeffrey/kojev/repo
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading networkx (2.0MiB)
+Downloading hf-xet (4.3MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading transformers (11.7MiB)
+Downloading numpy (15.9MiB)
+Downloading ruff (9.8MiB)
+Downloading pygments (1.2MiB)
+Downloading pyarrow (47.8MiB)
+Downloading torch (528.9MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading aiohttp (1.7MiB)
+Downloading tokenizers (3.2MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading pandas (10.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading triton (236.5MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading hf-xet (4.3MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-cufft (204.2MiB)
+  × Failed to download `urllib3==2.8.0`
+  ├─▶ Request failed after 3 retries in 147.9s
+  ├─▶ Failed to fetch:
+  │   `https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl`
+  ├─▶ error sending request for url
+  │   (https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl)
+  ╰─▶ operation timed out
+  help: `urllib3` (v2.8.0) was included because `kojev` (v0.1.0) depends
+        on `datasets` (v5.0.1) which depends on `requests` (v2.34.2) which
+        depends on `urllib3`
+submitted=
+state=RUNNINGCOMPLETEDCOMPLETEDFAILEDFAILEDCOMPLETEDFAILEDCOMPLETEDFAILED
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13514|t1-train|batch|RUNNING|0:0|11:22:01|gpu01|billing=8,cpu=8,gres/gpu=1,mem=160G,node=1|billing=8,cpu=8,gres/gpu=1,mem=160G,node=1
+13514.batch|batch||RUNNING|0:0|11:22:01|gpu01||cpu=8,gres/gpu=1,mem=160G,node=1
+13577|svc-ft-clean|batch|COMPLETED|0:0|02:52:00|gpu01|billing=4,cpu=4,gres/gpu=1,mem=16G,node=1|billing=4,cpu=4,gres/gpu=1,mem=16G,node=1
+13577.batch|batch||COMPLETED|0:0|02:52:00|gpu01||cpu=4,gres/gpu=1,mem=16G,node=1
+13595|applio-resume|batch|COMPLETED|0:0|01:09:54|gpu01|billing=8,cpu=8,gres/gpu=1,mem=16G,node=1|billing=8,cpu=8,gres/gpu=1,mem=16G,node=1
+13595.batch|batch||COMPLETED|0:0|01:09:54|gpu01||cpu=8,gres/gpu=1,mem=16G,node=1
+13596|kojev-smoke|interactive|FAILED|1:0|00:00:00|None assigned|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|
+13597|kojev-smoke|interactive|FAILED|2:0|00:00:01|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13597.batch|batch||FAILED|2:0|00:00:01|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+13598|applio-post|batch|COMPLETED|0:0|00:04:06|gpu01|billing=4,cpu=4,gres/gpu=1,mem=16G,node=1|billing=4,cpu=4,gres/gpu=1,mem=16G,node=1
+13598.batch|batch||COMPLETED|0:0|00:04:06|gpu01||cpu=4,gres/gpu=1,mem=16G,node=1
+13599|kojev-smoke|interactive|FAILED|1:0|00:14:39|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13599.batch|batch||FAILED|1:0|00:14:39|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+13600|ymsvc-evale4v2|batch|COMPLETED|0:0|00:03:51|gpu01|billing=4,cpu=4,gres/gpu=1,mem=16G,node=1|billing=4,cpu=4,gres/gpu=1,mem=16G,node=1
+13600.batch|batch||COMPLETED|0:0|00:03:51|gpu01||cpu=4,gres/gpu=1,mem=16G,node=1
+13601|kojev-smoke|interactive|FAILED|1:0|00:10:30|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13601.batch|batch||FAILED|1:0|00:10:30|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+submitted=13602
+state=RUNNING
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13602|kojev-smoke|interactive|RUNNING|0:0|00:06:16|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13602.batch|batch||RUNNING|0:0|00:06:16|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13602
+Activate with: source /data2/jeffrey/kojev/runs/venv-13602/bin/activate
+Resolved 92 packages in 1ms
+   Building kojev @ file:///data2/jeffrey/kojev/repo
+Downloading pandas (10.3MiB)
+Downloading tokenizers (3.2MiB)
+Downloading transformers (11.7MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading ruff (9.8MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading networkx (2.0MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading triton (236.5MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading pyarrow (47.8MiB)
+Downloading torch (528.9MiB)
+Downloading pygments (1.2MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading basedpyright (13.1MiB)
+Downloading aiohttp (1.7MiB)
+Downloading hf-xet (4.3MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+state=RUNNING
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13602|kojev-smoke|interactive|RUNNING|0:0|00:14:59|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13602.batch|batch||RUNNING|0:0|00:14:59|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13602
+Activate with: source /data2/jeffrey/kojev/runs/venv-13602/bin/activate
+Resolved 92 packages in 1ms
+   Building kojev @ file:///data2/jeffrey/kojev/repo
+Downloading pandas (10.3MiB)
+Downloading tokenizers (3.2MiB)
+Downloading transformers (11.7MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading ruff (9.8MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading networkx (2.0MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading triton (236.5MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading pyarrow (47.8MiB)
+Downloading torch (528.9MiB)
+Downloading pygments (1.2MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading basedpyright (13.1MiB)
+Downloading aiohttp (1.7MiB)
+Downloading hf-xet (4.3MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+ Downloaded nvidia-cufile
+ Downloaded aiohttp
+ Downloaded pydantic-core
+ Downloaded nvidia-cuda-runtime
+state=RUNNING
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13602|kojev-smoke|interactive|RUNNING|0:0|00:23:49|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13602.batch|batch||RUNNING|0:0|00:23:49|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13602
+Activate with: source /data2/jeffrey/kojev/runs/venv-13602/bin/activate
+Resolved 92 packages in 1ms
+   Building kojev @ file:///data2/jeffrey/kojev/repo
+Downloading pandas (10.3MiB)
+Downloading tokenizers (3.2MiB)
+Downloading transformers (11.7MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading ruff (9.8MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading networkx (2.0MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading triton (236.5MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading pyarrow (47.8MiB)
+Downloading torch (528.9MiB)
+Downloading pygments (1.2MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading basedpyright (13.1MiB)
+Downloading aiohttp (1.7MiB)
+Downloading hf-xet (4.3MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+ Downloaded nvidia-cufile
+ Downloaded aiohttp
+ Downloaded pydantic-core
+ Downloaded nvidia-cuda-runtime
+ Downloaded pygments
+      Built kojev @ file:///data2/jeffrey/kojev/repo
+ Downloaded tokenizers
+ Downloaded hf-xet
+ Downloaded networkx
+state=TIMEOUT
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13602|kojev-smoke|interactive|TIMEOUT|0:0|00:30:26|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13602.batch|batch||TIMEOUT|0:0|00:30:26|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13602
+Activate with: source /data2/jeffrey/kojev/runs/venv-13602/bin/activate
+Resolved 92 packages in 1ms
+   Building kojev @ file:///data2/jeffrey/kojev/repo
+Downloading pandas (10.3MiB)
+Downloading tokenizers (3.2MiB)
+Downloading transformers (11.7MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading ruff (9.8MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cuda-runtime (2.1MiB)
+Downloading nvidia-cufft (204.2MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading networkx (2.0MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading nvidia-cufile (1.2MiB)
+Downloading triton (236.5MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading pyarrow (47.8MiB)
+Downloading torch (528.9MiB)
+Downloading pygments (1.2MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading basedpyright (13.1MiB)
+Downloading aiohttp (1.7MiB)
+Downloading hf-xet (4.3MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+ Downloaded nvidia-cufile
+ Downloaded aiohttp
+ Downloaded pydantic-core
+ Downloaded nvidia-cuda-runtime
+ Downloaded pygments
+      Built kojev @ file:///data2/jeffrey/kojev/repo
+ Downloaded tokenizers
+ Downloaded hf-xet
+ Downloaded networkx
+slurmstepd: error: *** JOB 13602 ON gpu01 CANCELLED AT 2026-09-20T03:06:26 DUE TO TIME LIMIT ***
+submitted=13603
+state=RUNNING
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13603|kojev-smoke|interactive|RUNNING|0:0|00:08:27|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||RUNNING|0:0|00:08:27|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13603
+Activate with: source /data2/jeffrey/kojev/runs/venv-13603/bin/activate
+Resolved 92 packages in 1ms
+Downloading pandas (10.3MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading ruff (9.8MiB)
+Downloading transformers (11.7MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading pyarrow (47.8MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading torch (528.9MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading triton (236.5MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cufft (204.2MiB)
+state=RUNNING
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13603|kojev-smoke|interactive|RUNNING|0:0|00:15:06|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||RUNNING|0:0|00:15:06|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13603
+Activate with: source /data2/jeffrey/kojev/runs/venv-13603/bin/activate
+Resolved 92 packages in 1ms
+Downloading pandas (10.3MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading ruff (9.8MiB)
+Downloading transformers (11.7MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading pyarrow (47.8MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading torch (528.9MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading triton (236.5MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cufft (204.2MiB)
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13603|kojev-smoke|interactive|RUNNING|0:0|00:28:30|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||RUNNING|0:0|00:28:30|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13603
+Activate with: source /data2/jeffrey/kojev/runs/venv-13603/bin/activate
+Resolved 92 packages in 1ms
+Downloading pandas (10.3MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading ruff (9.8MiB)
+Downloading transformers (11.7MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading pyarrow (47.8MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading torch (528.9MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading triton (236.5MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cufft (204.2MiB)
+ Downloaded cuda-bindings
+ Downloaded ruff
+ Downloaded sympy
+ Downloaded nvidia-cuda-cupti
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13603|kojev-smoke|interactive|RUNNING|0:0|00:33:38|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||RUNNING|0:0|00:33:38|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13603
+Activate with: source /data2/jeffrey/kojev/runs/venv-13603/bin/activate
+Resolved 92 packages in 1ms
+Downloading pandas (10.3MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading ruff (9.8MiB)
+Downloading transformers (11.7MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading pyarrow (47.8MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading torch (528.9MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading triton (236.5MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cufft (204.2MiB)
+ Downloaded cuda-bindings
+ Downloaded ruff
+ Downloaded sympy
+ Downloaded nvidia-cuda-cupti
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13603|kojev-smoke|interactive|RUNNING|0:0|00:35:45|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||RUNNING|0:0|00:35:45|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13603
+Activate with: source /data2/jeffrey/kojev/runs/venv-13603/bin/activate
+Resolved 92 packages in 1ms
+Downloading pandas (10.3MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading ruff (9.8MiB)
+Downloading transformers (11.7MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading pyarrow (47.8MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading torch (528.9MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading triton (236.5MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cufft (204.2MiB)
+ Downloaded cuda-bindings
+ Downloaded ruff
+ Downloaded sympy
+ Downloaded nvidia-cuda-cupti
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13603|kojev-smoke|interactive|RUNNING|0:0|00:41:00|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||RUNNING|0:0|00:41:00|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13603
+Activate with: source /data2/jeffrey/kojev/runs/venv-13603/bin/activate
+Resolved 92 packages in 1ms
+Downloading pandas (10.3MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading ruff (9.8MiB)
+Downloading transformers (11.7MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading pyarrow (47.8MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading torch (528.9MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading triton (236.5MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cufft (204.2MiB)
+ Downloaded cuda-bindings
+ Downloaded ruff
+ Downloaded sympy
+ Downloaded nvidia-cuda-cupti
+ Downloaded pandas
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|ReqTRES|AllocTRES
+13603|kojev-smoke|interactive|CANCELLED by 2105|0:0|00:41:59|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||CANCELLED|0:15|00:42:02|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+---OUT---
+---ERR-TAIL---
+Using CPython 3.12.3 interpreter at: /usr/bin/python3.12
+Creating virtual environment at: /data2/jeffrey/kojev/runs/venv-13603
+Activate with: source /data2/jeffrey/kojev/runs/venv-13603/bin/activate
+Resolved 92 packages in 1ms
+Downloading pandas (10.3MiB)
+Downloading nvidia-cuda-cupti (10.2MiB)
+Downloading ruff (9.8MiB)
+Downloading transformers (11.7MiB)
+Downloading nvidia-cublas (403.5MiB)
+Downloading numpy (15.9MiB)
+Downloading nvidia-cusparselt-cu13 (162.3MiB)
+Downloading nvidia-nvjitlink (40.5MiB)
+Downloading pyarrow (47.8MiB)
+Downloading nvidia-cudnn-cu13 (527.5MiB)
+Downloading nvidia-curand (56.8MiB)
+Downloading nvidia-cusparse (139.2MiB)
+Downloading torch (528.9MiB)
+Downloading basedpyright (13.1MiB)
+Downloading nvidia-cusolver (191.6MiB)
+Downloading sympy (6.0MiB)
+Downloading nvidia-nvshmem-cu13 (57.6MiB)
+Downloading cuda-bindings (6.8MiB)
+Downloading nodejs-wheel-binaries (58.3MiB)
+Downloading triton (236.5MiB)
+Downloading nvidia-nccl-cu13 (206.0MiB)
+Downloading nvidia-cuda-nvrtc (86.0MiB)
+Downloading nvidia-cufft (204.2MiB)
+ Downloaded cuda-bindings
+ Downloaded ruff
+ Downloaded sympy
+ Downloaded nvidia-cuda-cupti
+ Downloaded pandas
+ Downloaded numpy
+slurmstepd: error: *** JOB 13603 ON gpu01 CANCELLED AT 2026-09-20T03:48:58 ***
+--- /data2/jeffrey/kojev/repo/.omo/evidence/task-2-wrong-gres.txt
+=== command ===
+ssh gpu01: copy smoke.sbatch -> /tmp/kojev-wrong-gres.sbatch, sed gres a100:1, sbatch, rm
+=== remote ===
+--- copy gres lines ---
+2:#SBATCH --job-name=kojev-smoke
+3:#SBATCH --partition=interactive
+4:#SBATCH --gres=gpu:a100:1
+5:#SBATCH --time=00:30:00
+6:#SBATCH --cpus-per-task=8
+7:#SBATCH --mem=32G
+8:#SBATCH --output=/data2/jeffrey/kojev/runs/kojev-smoke-%j.out
+9:#SBATCH --error=/data2/jeffrey/kojev/runs/kojev-smoke-%j.err
+--- sbatch ---
+sbatch: error: Batch job submission failed: Requested node configuration is not available
+sbatch_exit=1
+COPY_REMOVED
+--- /data2/jeffrey/kojev/repo/.omo/evidence/task-2-static.txt
+--- ruff check tests ---
+All checks passed!
+--- ruff format --check tests ---
+2 files already formatted
+--- basedpyright tests ---
+0 errors, 0 warnings, 0 notes
+--- /data2/jeffrey/kojev/repo/.omo/evidence/task-2-pytest-green.txt
+.....                                                                    [100%]
+5 passed in 0.00s
+--- /data2/jeffrey/kojev/repo/.omo/evidence/task-2-sync-final.txt
+--- /data2/jeffrey/kojev/repo/.omo/evidence/task-2-kojev.txt
+# KoJev plan todo 2 evidence
+
+## Verdict
+
+BLOCKED. The job-isolated `/data2` cache/environment patch passed local gates and synced to gpu01, but the required real smoke did not complete. No commit or push was made.
+
+## Local gates
+
+Invocation:
+
+```text
+cd /Volumes/SSD1/1/KoJev-todo2 && uv run pytest tests && uv run ruff check . && uv run ruff format --check . && uv run basedpyright
+```
+
+Observed:
+
+```text
+11 passed in 0.06s
+All checks passed!
+6 files already formatted
+0 errors, 0 warnings, 0 notes
+```
+
+## Sync
+
+Invocation:
+
+```text
+cd /Volumes/SSD1/1/KoJev-todo2 && RSYNC_RSH='ssh -o ConnectTimeout=20 -o ServerAliveInterval=10 -o ServerAliveCountMax=3' ./scripts/sync.sh
+```
+
+Remote verification showed:
+
+```text
+/data2/jeffrey/kojev/repo/scripts/slurm/smoke.sbatch:4:#SBATCH --gres=gpu:rtx6000:1
+/data2/jeffrey/kojev/repo/scripts/slurm/smoke.sbatch:14:export UV_CACHE_DIR="${UV_CACHE_DIR:-/data2/jeffrey/kojev/runs/uv-cache-${SLURM_JOB_ID}}"
+/data2/jeffrey/kojev/repo/scripts/slurm/smoke.sbatch:15:export UV_PROJECT_ENVIRONMENT=/data2/jeffrey/kojev/runs/venv-${SLURM_JOB_ID}
+/data2/jeffrey/kojev/repo/scripts/slurm/train.sbatch:4:#SBATCH --gres=gpu:rtx6000:1
+/data2/jeffrey/kojev/repo/scripts/slurm/train.sbatch:14:export UV_CACHE_DIR="${UV_CACHE_DIR:-/data2/jeffrey/kojev/runs/uv-cache-${SLURM_JOB_ID}}"
+/data2/jeffrey/kojev/repo/scripts/slurm/train.sbatch:15:export UV_PROJECT_ENVIRONMENT=/data2/jeffrey/kojev/runs/venv-${SLURM_JOB_ID}
+```
+
+## Fresh smoke job 13603
+
+Submission surface:
+
+```text
+ssh gpu01 'sbatch --parsable --nodelist=gpu01 --export=ALL,UV_CACHE_DIR=/data2/jeffrey/kojev/runs/uv-cache-13601 /data2/jeffrey/kojev/repo/scripts/slurm/smoke.sbatch'
+```
+
+Terminal scheduler state:
+
+```text
+13603|kojev-smoke|interactive|CANCELLED by 2105|0:0|00:41:59|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+13603.batch|batch||CANCELLED|0:15|00:42:02|gpu01||cpu=8,gres/gpu=1,mem=32G,node=1
+```
+
+Output:
+
+```text
+stdout: empty (0 bytes)
+stderr ended with:
+slurmstepd: error: *** JOB 13603 ON gpu01 CANCELLED AT 2026-09-20T03:48:58 ***
+```
+
+The job downloaded some packages into the isolated `/data2` cache but never reached `uv run python -c "import torch; print(torch.cuda.is_available())"`; therefore no `True` CUDA proof exists.
+
+## Preserved evidence
+
+Job 13601 timeout/failure evidence remains in `.omo/evidence/task-2-gpu-smoke-final.txt` and `.omo/evidence/task-2-scheduler-blocker.txt`:
+
+```text
+13601|kojev-smoke|interactive|FAILED|1:0|00:10:30|gpu01|...
+```
+
+Wrong-GRES rejection remains in `.omo/evidence/task-2-wrong-gres.txt`:
+
+```text
+sbatch: error: Batch job submission failed: Requested node configuration is not available
+sbatch_exit=1
+COPY_REMOVED
+```
+
+Full QA matrix: `.omo/evidence/task-2-manual-qa.md`.
+
+Branch status: `feat/infra`, product changes remain uncommitted and unpushed because the required smoke completion proof was not obtained.

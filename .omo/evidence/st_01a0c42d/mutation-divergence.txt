@@ -1,0 +1,21 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_divergence_watch_triggers_on_rise_and_nan ________________
+
+    def test_divergence_watch_triggers_on_rise_and_nan() -> None:
+        # Given a 200-step baseline followed by a >25% rise
+        watch = DivergenceWatch(window=200, rise_fraction=0.25)
+        for value in [1.0] * 200:
+            _ = watch.observe(value)
+    
+        # When the next loss rises sharply, then a NaN is observed
+>       assert watch.observe(1.3) is True
+E       assert False is True
+E        +  where False = observe(1.3)
+E        +    where observe = DivergenceWatch(window=200, rise_fraction=0.25, _values=deque([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, ...1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.3], maxlen=200), diverged=False).observe
+
+../kojev-todo10-qa.WhQ1Vf/tests/test_train.py:66: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_train.py::test_divergence_watch_triggers_on_rise_and_nan - ...
+1 failed in 1.63s
+exit=1

@@ -1,0 +1,46 @@
+Adversarial manual QA runtime evidence for KoJev todo 7
+
+Repository: /Volumes/SSD1/1/KoJev-todo-7
+Branch: feat/todo-7-augment
+Requested commit: 774e2f80ff317b4cd5cba8dd6834e8486f64d814
+
+Git truth invocation:
+git -C /Volumes/SSD1/1/KoJev-todo-7 status --short --branch
+HEAD=774e2f80ff317b4cd5cba8dd6834e8486f64d814
+REMOTE origin/feat/todo-7-augment=774e2f80ff317b4cd5cba8dd6834e8486f64d814
+Working tree output: ## feat/todo-7-augment...origin/feat/todo-7-augment
+Changed paths in requested commit: .omo/evidence/task-7-kojev-manual-qa.md, .omo/evidence/task-7-kojev.txt, kojev/augment.py, tests/test_augment.py
+
+Required invocations and observed results:
+1. cd /Volumes/SSD1/1/KoJev-todo-7 && uv run pytest -q
+   24 passed in 0.07s
+2. cd /Volumes/SSD1/1/KoJev-todo-7 && uv run pytest -q tests/test_augment.py
+   15 passed in 0.06s
+3. cd /Volumes/SSD1/1/KoJev-todo-7 && uv run ruff check .
+   All checks passed!
+4. cd /Volumes/SSD1/1/KoJev-todo-7 && uv run basedpyright
+   0 errors, 0 warnings, 0 notes
+
+Fresh independent driver invocation:
+cd /Volumes/SSD1/1/KoJev-todo-7 && uv run python - <<'PY' ... PY
+Observed:
+PROPERTY_1000=PASS
+TEMPLATES_AND_JOSA=PASS
+SEED_REPEATABILITY=PASS
+MISLEADING_REDERIVED_GOLD=CAUGHT
+NEGATIVE_DROPPED_GOLD=CAUGHT
+MALFORMED_INPUTS=REJECTED
+PROBABILITY_BOUNDARIES=PASS
+
+Driver details: 1,000 seeded choice/score/noul examples; semantic gold compared using original option identity; >=8 templates per QuestionType; 감정 은/이 and 주제 는/가; exact noul wording and binary flip; equal-seed repeatability; unrelated RNG isolation; duplicate-label misleading value-only gold probe; deliberate dropped-gold failure; malformed choice/noul/score schema payloads; invalid probability including NaN and infinities; probability 0 exact no-op and probability 1 transformation.
+
+Cleanup probes:
+- git diff and git diff --cached: clean.
+- no pytest/uv/KoJev test process remained.
+- unrelated long-lived Python ASR processes were present and not part of this task.
+- stale worker artifact exists: /tmp/kojev-todo-7-driver.txt, 88 bytes, mtime Sep 20 02:38:56 2026, containing prior driver output. Therefore cleanup/no-temp-artifact criterion is rejected, not inferred PASS.
+- ignored .pytest_cache, .ruff_cache, and __pycache__ directories exist after execution; no tracked changes.
+
+SDK current-attempt lookup invocation:
+node --input-type=module -e 'const { agentToolkit } = await import(`${process.env.OMO_AGENT_TOOLKIT_SDK_ROOT}/sdk.js`); const s = await agentToolkit.status(); console.dir(s,{depth:5})'
+Observed: ULW_LOOP_PLAN_MISSING for current child session; per instruction, caller evidence directory was used for artifacts.

@@ -1,0 +1,25 @@
+--- temp after cleanup ---
+removed
+--- processes matching disposable path ---
+--- broad relevant processes ---
+22902 /bin/bash -c set -u
+ATTEMPT=/Volumes/SSD1/1/KoJev/.omo/evidence/st_01a0c436
+TMP=$(cat "$ATTEMPT/tmpdir.txt")
+{
+  echo '--- temp before cleanup ---'; test -d "$TMP" && echo exists:$TMP || echo missing
+  echo '--- processes matching disposable path ---'; pgrep -fal "$TMP" || true
+  echo '--- real worktree status ---'; git -C /Volumes/SSD1/1/KoJev status --short --branch
+  echo '--- feature worktree status ---'; git -C /Volumes/SSD1/1/KoJev-todo13 status --short --branch
+} > "$ATTEMPT/cleanup-before.log" 2>&1
+rm -rf "$TMP"
+{
+  echo '--- temp after cleanup ---'; test ! -e "$TMP" && echo removed || echo STILL_PRESENT
+  echo '--- processes matching disposable path ---'; pgrep -fal "$TMP" || true
+  echo '--- broad relevant processes ---'; pgrep -fal 'pytest|kojev-todo13|kojev-todo13-0rEDtW' | head -30 || true
+  echo '--- ref verification ---'; cat "$ATTEMPT/ref.txt"
+} > "$ATTEMPT/cleanup-after.log"
+cat "$ATTEMPT/cleanup-after.log"
+--- ref verification ---
+commit=97fb2d1478faac9f6cca36ad381c4ef792ba0259
+remote=97fb2d1478faac9f6cca36ad381c4ef792ba0259
+main_ancestor=0

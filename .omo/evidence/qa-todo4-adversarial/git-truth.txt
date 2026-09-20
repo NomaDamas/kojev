@@ -1,0 +1,17 @@
+$ git status --short --branch
+## feat/todo-4-kobest-klue-bench...origin/feat/todo-4-kobest-klue-bench
+$ git rev-parse HEAD
+a96c1707eda45317194af1005109f700d181a9b6
+$ git show -s --format=%H%n%P%n%D%n%s HEAD
+a96c1707eda45317194af1005109f700d181a9b6
+d1e9fcf50efc5035db83618717f9cefc9abdd42b
+HEAD -> feat/todo-4-kobest-klue-bench, origin/feat/todo-4-kobest-klue-bench
+feat(eval): kobest+klue zero-shot benchmark harness
+$ git ls-remote origin
+a96c1707eda45317194af1005109f700d181a9b6	refs/heads/feat/todo-4-kobest-klue-bench
+d8e1a9171cb555bfa3dd33ea83861a50b949dcf4	refs/heads/main
+$ git diff names from base
+A	.omo/evidence/task-4-kojev.txt
+A	kojev/bench.py
+A	tests/test_bench.py
+$ git ls-files data/gold/**

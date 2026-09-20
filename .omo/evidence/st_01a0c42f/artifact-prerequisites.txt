@@ -1,0 +1,9 @@
+$ for p in kojev/label.py tests/test_label.py .omo/evidence/task-11-kojev.txt data/distill/ledger.jsonl data/distill/train.jsonl; do test -e "$p" && ...; done
+MISSING	kojev/label.py
+MISSING	tests/test_label.py
+MISSING	.omo/evidence/task-11-kojev.txt
+MISSING	data/distill/ledger.jsonl
+MISSING	data/distill/train.jsonl
+
+$ test -n "${OPENROUTER_API_KEY:-}"; echo api_key_present=$?
+api_key_present=yes

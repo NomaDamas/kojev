@@ -1,0 +1,8 @@
+$ git -C /Volumes/SSD1/1/KoJev-todo14 status --short --branch
+## feat/todo-14-eval...origin/main
+$ git -C /Volumes/SSD1/1/KoJev-todo14 log -1 --oneline
+6cb0618 Merge remote-tracking branch 'refs/remotes/origin/feat/todo-10-train'
+$ test -f .../kojev/evaluate.py && echo present || echo missing
+missing
+$ test -f .../tests/test_evaluate.py && echo present || echo missing
+missing

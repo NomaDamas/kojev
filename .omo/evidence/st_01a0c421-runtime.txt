@@ -1,0 +1,61 @@
+Todo 3 AdversarialVerify runtime evidence
+Date: 2026-09-19
+Target: /Volumes/SSD1/1/KoJev-todo3
+Commit: 6947a0fb5422eee694c1ba49d8095a38d63772a9
+
+--- provenance ---
+git rev-parse HEAD: 6947a0fb5422eee694c1ba49d8095a38d63772a9
+git ls-remote origin refs/heads/feat/data-gold: 6947a0fb5422eee694c1ba49d8095a38d63772a9
+Working tree untracked paths before QA: .debug-journal.md, .omo/evidence/task-3-adversarial-audit.txt, .omo/evidence/task-3-adversarial-manual-qa.md
+Commit patch paths: .omo/evidence/task-3-corrective-qa.txt, .omo/evidence/task-3-manual-qa.md, kojev/data_gold.py, kojev/schema.py, pyproject.toml, tests/test_data_gold.py, typings/datasets/__init__.pyi
+
+--- static and tests ---
+.venv/bin/ruff check kojev/data_gold.py kojev/schema.py tests/test_data_gold.py
+All checks passed!
+.venv/bin/basedpyright kojev/data_gold.py kojev/schema.py tests/test_data_gold.py
+0 errors, 0 warnings, 0 notes
+.venv/bin/pytest tests/test_data_gold.py tests/test_schema.py -q
+13 passed in 0.47s
+.venv/bin/pytest -q
+13 passed in 0.47s
+
+--- real 12-source build ---
+Exact invocation:
+cd /Volumes/SSD1/1/KoJev-todo3 && HF_DATASETS_OFFLINE=1 .venv/bin/python -m kojev.data_gold --out /tmp/kojev-todo3-6947a0f-run1
+Exit: 0
+The captured loader output names all configured Hugging Face datasets and says it used latest cached versions because the Hub was unavailable in offline mode. No synthetic/substitute-row message occurred.
+Configured source count from kojev.data_gold.SOURCES: 12.
+Generated files: summary.json, train.jsonl, val.jsonl, test.jsonl.
+Summary selected states: train=96000, val=2500, test=1000, total=99500.
+Summary question counts: train=304018, val=8500, test=2000, total=314518.
+Emitted JSONL lines: train=103999, val=2500, test=1000.
+The train delta is 7999 because KorQuAD has 8000 selected states and emits 15999 examples through deterministic cross-title negative pairing; this is not a 96000-line train file.
+Source keys include 12 unique sources; kobest_keys=[]; korquad_keys=['KorQuAD/squad_kor_v1:train'].
+
+--- validation and corruption ---
+Exact invocation: .venv/bin/python -m kojev.data_gold --validate /tmp/kojev-todo3-6947a0f-run1
+Exit: 0, no diagnostics.
+Malformed line 2 invocation against copied output: .venv/bin/python -m kojev.data_gold --validate /tmp/kojev-todo3-6947a0f-malformed
+Exit: 1
+Output: /tmp/kojev-todo3-6947a0f-malformed/train.jsonl:2: invalid JSON
+Empty questions line 2 invocation against copied output: .venv/bin/python -m kojev.data_gold --validate /tmp/kojev-todo3-6947a0f-empty
+Exit: 1
+Output: /tmp/kojev-todo3-6947a0f-empty/train.jsonl:2: Value error, examples require at least one question (minimum 1)
+
+--- schema/data validity probe ---
+Direct Example.model_validate_json over all emitted lines: train 103999, val 2500, test 1000; all schema-valid and all gold indexes in range.
+Blank state findings (state.strip()==''), source and line:
+train.jsonl:2310-2314, source=e9t/nsmc, five rows
+ test.jsonl:5-7, source=e9t/nsmc, three rows
+Total blank states: 8. The schema accepts them because Example only enforces non-empty questions, and the builder maps source text without a non-empty-state guard. This is a genuine data-validity gap.
+Question count ranges: train 1..9, val 2..9, test 2..2. No empty question lists emitted.
+
+--- deterministic rebuild ---
+Second exact invocation:
+cd /Volumes/SSD1/1/KoJev-todo3 && HF_DATASETS_OFFLINE=1 .venv/bin/python -m kojev.data_gold --out /tmp/kojev-todo3-6947a0f-run2
+Exit: 0.
+Byte comparisons run1 vs run2: train=identical, val=identical, test=identical, summary=identical.
+
+--- untracked artifact classification ---
+.debug-journal.md: task-generated debug cleanup debris remains untracked. Its own Artifacts-to-revert section says it was to be removed, while the file is still present; do not delete during this audit.
+.omo/evidence/task-3-adversarial-audit.txt and task-3-adversarial-manual-qa.md: preserved external provenance from the earlier adversarial audit, not deleted during this audit. They document the pre-correction findings and should be retained.

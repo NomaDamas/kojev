@@ -1,0 +1,3 @@
+SURFACE=CLI
+INVOCATION=uv run python -m kojev.bench --model random --limit 200 --output /Volumes/SSD1/1/KoJev/.omo/evidence/qa-todo4-adversarial/benchmark-report-af5551e.json
+EXIT=0

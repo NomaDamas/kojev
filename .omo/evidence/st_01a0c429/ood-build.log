@@ -1,0 +1,4 @@
+SURFACE: OOD corpus build
+INVOCATION: uv run python -m kojev.data_ood --gold /tmp/kojev-qa-task8-gold --out /tmp/kojev-qa-task8-ood
+{"states": 6258, "questions": 10256, "families": ["KorQuAD/squad_kor_v1", "e9t/nsmc", "klue/klue:nli", "klue/klue:sts", "klue/klue:ynat", "smilegate-ai/kor_unsmile"]}
+EXIT=0

@@ -1,0 +1,10 @@
+sha256= b545c23dd439e3e988a61dc21a4cf8aec012607125c6a4cfc200ae3ac3f26008
+all_eight= True
+task_names= ['boolq', 'copa', 'hellaswag', 'nli', 'sentineg', 'sts', 'wic', 'ynat']
+counts= {'boolq': 25, 'copa': 25, 'hellaswag': 25, 'nli': 25, 'sentineg': 25, 'sts': 25, 'wic': 25, 'ynat': 25}
+all_counts_positive= True
+metric_keys= {'boolq': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'copa': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'hellaswag': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'nli': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'sentineg': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'sts': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'wic': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'ynat': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1']}
+metric_keys_exact= True
+total_count= 200
+kind_counts= {'choice': {'count': 100, 'accuracy': 0.38, 'macro_f1': 0.20828536542822257, 'brier': 0.7265388841840767, 'ece_15': 0.11792447542553622}, 'noul': {'count': 75, 'accuracy': 0.56, 'macro_f1': 0.5571658615136876, 'brier': 0.5248789445118667, 'ece_15': 0.14871828468801573}, 'score': {'count': 25, 'accuracy': 0.24, 'macro_f1': 0.20755170755170757, 'brier': 0.894843766174478, 'ece_15': 0.08637499583857929}}
+data_gold_exists= False

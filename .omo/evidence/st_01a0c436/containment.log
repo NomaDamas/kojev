@@ -1,0 +1,12 @@
+$ git diff --name-only base..commit
+.omo/evidence/task-13-driver.stdout
+.omo/evidence/task-13-focused.stdout
+.omo/evidence/task-13-format.stdout
+.omo/evidence/task-13-full.stdout
+.omo/evidence/task-13-kojev.txt
+.omo/evidence/task-13-ruff.stdout
+.omo/evidence/task-13-typecheck.stdout
+kojev/rlcd.py
+tests/test_rlcd.py
+$ changed config files
+$ suppressions in product/test diff

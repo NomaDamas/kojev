@@ -1,0 +1,7 @@
+### scripts/slurm/smoke.sbatch
+forbidden_data_write_matches=0
+### scripts/slurm/train.sbatch
+forbidden_data_write_matches=0
+### scripts/sync.sh
+forbidden_data_write_matches=0
+gpu02_refs=

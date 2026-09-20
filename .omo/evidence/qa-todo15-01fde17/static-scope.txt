@@ -1,0 +1,7 @@
+origin/feat/todo-15-serve -> 01fde17d6f3836d828dad4ee189d51bfe5871abc
+containment: .omo/evidence/task-15-kojev.txt, kojev/serve.py, tests/fixtures/req.json, tests/test_serve.py
+KOJEV_CKPT: kojev/serve.py:20
+route: kojev/serve.py:147 @app.post("/v1/systemone")
+bind: kojev/serve.py:202 uvicorn.run(app, host="127.0.0.1", port=8930)
+no auth/generation endpoint hits in source scan
+no pyproject.toml diff

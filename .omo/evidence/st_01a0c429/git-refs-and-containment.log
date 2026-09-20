@@ -1,0 +1,11 @@
+SURFACE: git/ref verification
+INVOCATION: git status --short --branch; git rev-parse HEAD origin/feat/todo-8 origin/main; git merge-base --is-ancestor 9d7670e HEAD; git diff --name-only origin/main...HEAD
+## feat/todo-8...origin/feat/todo-8
+aa6a21cf0ac4971e01a7c7c91034a2d4ccf5dd9b
+aa6a21cf0ac4971e01a7c7c91034a2d4ccf5dd9b
+4a02c3ad8dbd1188c0ef8350dc761e84de62abf2
+contains_9d7670e_exit=0
+.omo/evidence/task-8-kojev.txt
+kojev/data_ood.py
+tests/test_data_ood.py
+0	0

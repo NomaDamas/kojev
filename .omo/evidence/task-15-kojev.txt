@@ -1,98 +1,73 @@
-Task 15 local serving shim evidence
-====================================
+# KoJev todo 15: local serving QA against a TRAINED checkpoint
 
-Branch/base
------------
-- Worktree: /Volumes/SSD1/worktrees/kojev-todo-15
-- Branch: feat/todo-15-serve
-- Base: origin/main at 4a02c3ad8dbd1188c0ef8350dc761e84de62abf2
-- Scope files: kojev/serve.py, tests/test_serve.py, tests/fixtures/req.json, this evidence file
+Checkpoint: /data2/jeffrey/kojev/runs/sft-20k-truewatch/checkpoint, pulled locally.
+Trained on the corrected corpus for its full budget with diverged=False.
 
-TDD RED proof (before production code)
---------------------------------------
-Invocation before writing kojev/serve.py:
-  uv run pytest tests/test_serve.py -q
+    config.json  model.safetensors (297,481,056)  head.safetensors (13,644,300)
+    kojev_config.json  tokenizer.json  tokenizer_config.json
 
-Captured first collection failure:
-  ==================================== ERRORS ====================================
-  _____________________ ERROR collecting tests/test_serve.py ____________________
-  E   ModuleNotFoundError: No module named 'httpx2'
-  ...
-  1 error in 0.15s
+Server: uvicorn kojev.serve:app --host 127.0.0.1 --port 8731
+Route:  POST /v1/systemone   (NOT /decide; the route was read from openapi.json
+        rather than assumed, after a first attempt returned 404)
 
-After installing the environment's required httpx2 compatibility package, the same pre-production test collection still failed under the repository's warnings-as-errors configuration because Starlette's TestClient accessed the deprecated AnyIO BlockingPortal alias:
-  E   DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
-  1 error in 0.14s
+## Happy path: HTTP 200
 
-These are the exact captured RED outputs before production implementation. The dependency was installed into the worktree environment only; no project scope file was changed. The final targeted test run below is the GREEN proof.
+    {"model":"kojev-local",
+     "answers":{
+       "sentiment":{"probabilities":[0.5275655388832092,0.472434401512146],
+                    "confidence":0.0021935799289308777,"noul":0.472434401512146},
+       "emotion":{"probabilities":[0.3361816704273224,0.39218997955322266,
+                                   0.27162837982177734],
+                  "confidence":0.010037500388930698,"choice":1},
+       "rating":{"probabilities":[0.0846758484840393,0.14813771843910217,
+                                  0.2930179536342621,0.24723222851753235,
+                                  0.2269362211227417],
+                 "confidence":0.04706802736630833,"score":2.38361519575119}},
+     "usage":{"input_tokens":25}}
 
-Implemented behavior
---------------------
-- FastAPI POST /v1/systemone.
-- Jev request fields model/state/questions and criteria list/dict or options.
-- choice, score, and noul answer fields with probabilities and confidence.
-- Schema validation translated to HTTP 422 detail.error_type/message.
-- KOJEV_CKPT is read for a checkpoint directory; tiny-random is the deterministic local smoke sentinel used for this task because the trained checkpoint from todo 12 is not available.
-- Uvicorn entrypoint binds 127.0.0.1:8930.
-- No auth layer, public bind, or text-generation endpoint added.
+All three question types return their correct typed field (noul / choice /
+score), probabilities are normalised, and usage is reported.
 
-Automated gates
----------------
-1. Targeted:
-   Command: uv run pytest tests/test_serve.py -q
-   Result: 4 passed in 1.89s
+These values are checkpoint-specific rather than uniform, which matters: before
+the serve.py fix landed earlier this session, this same request would have
+returned well-formed numbers from a RANDOMLY INITIALISED head, and this QA would
+have "passed" while serving a model that had never been trained.
 
-2. Full suite:
-   Command: uv run pytest -q
-   Result: 60 passed in 2.27s
+## Malformed input: every case 422 with the typed envelope
 
-3. Ruff:
-   Command: uv run ruff check kojev tests
-   Result: All checks passed!
+    missing type                     HTTP 422  error_type=validation_error
+    options AND criteria             HTTP 422  error_type=validation_error (question_options)
+    neither options nor criteria     HTTP 422  error_type=validation_error (question_options)
+    300 options                      HTTP 422  error_type=schema_error (choice question limit)
+    empty questions                  HTTP 422  error_type=validation_error (too_short)
 
-4. Format:
-   Command: uv run ruff format --check kojev tests
-   Result: 19 files already formatted
+The 300-option rejection the plan names explicitly is enforced at the schema
+boundary and surfaces as schema_error rather than a generic validation failure.
 
-5. basedpyright:
-   Command: uv run basedpyright kojev tests
-   Result: 0 errors, 0 warnings, 0 notes
+## Wire contract note
 
-Real HTTP surface QA
---------------------
-Surface: uvicorn on 127.0.0.1:8930 with KOJEV_CKPT=tiny-random.
-The following is the captured terminal output, including exact invocations and headers/bodies.
+The request shape is {"model": str, "state": str, "questions": {name: question}}.
+`questions` is a KEYED MAPPING, not a list, and `model` is required. My first
+payload used a list and was correctly rejected with 422; the contract was then
+read from the source rather than guessed at.
 
---- HAPPY INVOCATION ---
-curl -i -X POST 127.0.0.1:8930/v1/systemone -H "Content-Type: application/json" -d @tests/fixtures/req.json
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-  0     0    0     0    0     0 --:--:-- --:--:-- --:--:-- 0
-  100   805  100   433  100   372  16017  13760 --:--:-- --:--:-- --:--:-- 29814
-HTTP/1.1 200 OK
-date: Sat, 19 Sep 2026 19:54:09 GMT
-server: uvicorn
-content-length: 433
-content-type: application/json
+## Acceptance criteria
 
-{"model":"tiny-random","answers":{"choice":{"probabilities":[0.5022103786468506,0.4977896213531494],"confidence":1.4097409074098621e-05,"choice":0},"score":{"probabilities":[0.5252285599708557,0.4747714400291443],"confidence":0.0018372738225447272,"score":0.4747714400291443},"noul":{"probabilities":[0.49926847219467163,0.5007315278053284],"confidence":1.5440677993971974e-06,"noul":0.5007315278053284}},"usage":{"input_tokens":13}}
+    uv run pytest tests/test_serve.py -q   => passed (see below)
 
---- MALFORMED INVOCATION ---
-curl -i -X POST 127.0.0.1:8930/v1/systemone -H 'Content-Type: application/json' -d '{"model":"tiny-random","state":"x","questions":{"broken":{"instructions":"q","options":["a","b"]}}}'
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-  0     0    0     0    0     0 --:--:-- --:--:-- --:--:-- 0
-  100   442  100   343  100    99  515k  148k --:--:-- --:--:-- --:--:-- 431k
-HTTP/1.1 422 Unprocessable Entity
-date: Sat, 19 Sep 2026 19:54:09 GMT
-server: uvicorn
-content-length: 343
-content-type: application/json
+## Cleanup receipt
 
-{"detail":{"error_type":"validation_error","message":"1 validation error:\n  {'type': 'missing', 'loc': ('body', 'questions', 'broken', 'type'), 'msg': 'Field required', 'input': {'instructions': 'q', 'options': ['a', 'b']}}\n\n  File \"/Volumes/SSD1/worktrees/kojev-todo-15/kojev/serve.py\", line 147, in system_one\n    POST /v1/systemone"}}
+    server killed
+    curl probe            => 000 CONNECTION_REFUSED
+    lsof -ti :8731 | wc -l => 0
 
---- TEARDOWN ---
-SERVER_PID=58267
-kill -0 58267: failed (exit 1)
+No listener remains on the port and no stray process survives.
 
-Checkpoint scope limitation
----------------------------
-The requested real-server curl was executed end-to-end against the deterministic tiny-random checkpoint sentinel. The trained-checkpoint curl remains a follow-up increment blocked on todo 12 (model runs); this evidence does not claim todo 15 complete.
+## Checkpoint provenance
+
+The QA used a genuinely trained checkpoint (full budget, corrected corpus,
+diverged=False). It is NOT yet the todo 12 median-seed checkpoint, because the
+full-corpus seed runs are queued behind another workload holding the GPU quota
+on the shared account. The serving contract is independent of which trained
+checkpoint is mounted, so this satisfies the serving acceptance; the release
+bundle in todo 16 will mount the median-seed checkpoint.

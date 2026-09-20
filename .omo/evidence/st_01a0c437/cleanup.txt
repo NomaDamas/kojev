@@ -1,0 +1,2 @@
+$ git -C /Volumes/SSD1/1/KoJev-todo14 status --short --branch
+## feat/todo-14-eval...origin/main

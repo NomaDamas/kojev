@@ -1,0 +1,5 @@
+list ['a', 'b']
+dict ['a', 'b']
+choice ['a', 'b']
+score ['low', 'high']
+noul ['no', 'yes']

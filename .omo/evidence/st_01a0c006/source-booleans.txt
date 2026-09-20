@@ -1,0 +1,3 @@
+has_network_imports False
+has_download_calls False
+has_credential_literals False

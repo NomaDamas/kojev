@@ -1,0 +1,11 @@
+SURFACE: required automated verification
+INVOCATION: uv run pytest tests/test_data_ood.py -q
+....                                                                     [100%]
+4 passed in 0.04s
+INVOCATION: uv run pytest -q
+............................................................             [100%]
+60 passed in 2.66s
+INVOCATION: uv run ruff check kojev tests
+All checks passed!
+INVOCATION: uv run basedpyright kojev tests
+0 errors, 0 warnings, 0 notes

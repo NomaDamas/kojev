@@ -1,0 +1,3 @@
+INVOCATION=uv run basedpyright kojev tests
+0 errors, 0 warnings, 0 notes
+EXIT=0

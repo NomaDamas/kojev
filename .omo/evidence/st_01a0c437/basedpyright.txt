@@ -1,0 +1,2 @@
+$ cd /Volumes/SSD1/1/KoJev-todo14 && uv run basedpyright kojev tests
+0 errors, 0 warnings, 0 notes

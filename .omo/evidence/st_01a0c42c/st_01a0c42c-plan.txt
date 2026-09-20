@@ -1,0 +1,2 @@
+Source review:
+_optimizer separates names starting backbone. from head names and constructs two AdamW groups with supplied backbone_lr/head_lr. run_training defaults are backbone_lr=2e-5 and head_lr=1e-3. warmup is ceil(total_steps*0.06), then LambdaLR uses 0.5*(1+cos(pi*progress)). Training calls torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0). encoder.py computes each gold group loss as functional.cross_entropy(group_logits.unsqueeze(0), target) + torch.square(group_probabilities - one_hot).sum(), then averages groups.

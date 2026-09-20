@@ -1,0 +1,4 @@
+$ /Volumes/SSD1/1/KoJev/.venv/bin/ruff check kojev tests
+All checks passed!
+
+exit_code=0

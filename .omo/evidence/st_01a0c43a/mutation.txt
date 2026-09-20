@@ -1,0 +1,18 @@
+.F........                                                               [100%]
+=================================== FAILURES ===================================
+_______ test_templates_hardlink_from_the_shared_cache_instead_of_copying _______
+
+    def test_templates_hardlink_from_the_shared_cache_instead_of_copying() -> None:
+        # Cache and per-job venv share the /data2 mount, so hardlinking avoids
+        # re-copying torch (~10k files, ~2GB) into every job's venv. Dropping a job
+        # venv only decrements link counts; shared cache entries survive.
+        for path in (SMOKE, TRAIN):
+            text = _text(path)
+>           assert "export UV_LINK_MODE=__MUTATED__" in text
+E           assert 'export UV_LINK_MODE=__MUTATED__' in '#!/usr/bin/env bash\n#SBATCH --job-name=kojev-smoke\n#SBATCH --partition=interactive\n#SBATCH --gres=gpu:rtx6000:1\n#... the per-job path.\nif [ -x "${SHARED_VENV}/bin/python" ]; then\n  exec "$@"\nelse\n  exec uv run --no-sync "$@"\nfi\n'
+
+tests/test_sync_slurm.py:51: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_sync_slurm.py::test_templates_hardlink_from_the_shared_cache_instead_of_copying
+1 failed, 9 passed in 0.02s
+mutation_exit=1

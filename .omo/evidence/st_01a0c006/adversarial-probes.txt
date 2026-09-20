@@ -1,0 +1,3 @@
+PASS stale_state existing-empty-directory typed NotImplementedError
+PASS malformed_input value=None exception=AttributeError
+PASS malformed_input value=123 exception=AttributeError

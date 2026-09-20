@@ -1,0 +1,5 @@
+## tracked credential/network scan
+## network/scraping identifiers in changed Python
+d8e1a9171cb555bfa3dd33ea83861a50b949dcf4:docs/aihub.md:24:   curl -o aihubshell https://api.aihub.or.kr/api/aihubshell.do
+## imports of optional hook
+tests/test_data_aihub.py:10:from kojev.data_aihub import AIHUB_DATA_DIR, load_aihub_examples

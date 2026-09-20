@@ -1,0 +1,21 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_fit_temperature_increases_temperature_for_overconfident_logits ______
+
+    def test_fit_temperature_increases_temperature_for_overconfident_logits() -> None:
+        # Given deliberately overconfident logits whose labels are often wrong
+        logits = torch.tensor([[8.0, 0.0], [0.0, 8.0], [8.0, 0.0], [0.0, 8.0]])
+        labels = torch.tensor([1, 0, 1, 0])
+    
+        # When temperature is fitted on validation logits
+        temperature = fit_temperature(logits, labels)
+    
+        # Then calibration softens the overconfident predictions
+>       assert temperature > 1.0
+E       assert 1.0 > 1.0
+
+../kojev-todo10-qa.WhQ1Vf/tests/test_train.py:93: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_train.py::test_fit_temperature_increases_temperature_for_overconfident_logits
+1 failed in 1.64s
+exit=1

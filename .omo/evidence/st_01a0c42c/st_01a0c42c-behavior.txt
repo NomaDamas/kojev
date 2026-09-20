@@ -1,0 +1,7 @@
+Direct runtime probes from clean target archive:
+divergence_nan=True
+divergence_rise=True
+divergence_healthy=False
+temperature=10.0
+optimizer_lrs=[2e-05, 0.001]
+Optimizer had two param groups. Source confirms warmup_steps=max(1, ceil(total_steps*0.06)), cosine factor after warmup, clip_grad_norm_(..., 1.0). Encoder source confirms cross_entropy + square(probabilities-one_hot).sum().

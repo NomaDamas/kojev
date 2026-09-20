@@ -1,0 +1,33 @@
+unique_ood_states 5252
+ood_rows_with_train_state_overlap 22
+TRAIN_OVERLAP '.' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '.' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '.' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '.' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '.' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '...' ood_source= e9t/nsmc train_sources= ['jeanlee/kmhas_korean_hate_speech']
+TRAIN_OVERLAP 'Very good!' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '굿' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '굿' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '굿' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '내 인생 최악의 영화' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '마음에 듭니다.' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '쓰레기' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '이런걸 영화라고...' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '재미없어요' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '지루함' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '지문: 추석(秋夕)은 한가위, 중추(仲秋), 중추절(仲秋節), 가배일(嘉俳日)로 부르기도 하며, 음력 8월 15일에 치르는 명절로서 설날과 더불어 한국인에게 전통적으로 가장 중요한 명절이다. 가을 추수를 끝내기전에(' ood_source= KorQuAD/squad_kor_v1 train_sources= ['KorQuAD/squad_kor_v1']
+TRAIN_OVERLAP '지문: 추석(秋夕)은 한가위, 중추(仲秋), 중추절(仲秋節), 가배일(嘉俳日)로 부르기도 하며, 음력 8월 15일에 치르는 명절로서 설날과 더불어 한국인에게 전통적으로 가장 중요한 명절이다. 가을 추수를 끝내기전에(' ood_source= KorQuAD/squad_kor_v1 train_sources= ['KorQuAD/squad_kor_v1']
+TRAIN_OVERLAP '지문: 카시니-하위헌스 탐사선이 토성의 고리(테)를 조사하기 전까지 천문학자들은 고리의 나이가 태양계의 생성 역사보다 훨씬 짧은 것으로 보았으며, 앞으로 1억 년 정도밖에 유지되지 못할 것으로 예상했었다. 토성 위성' ood_source= KorQuAD/squad_kor_v1 train_sources= ['KorQuAD/squad_kor_v1']
+TRAIN_OVERLAP '지문: 카시니-하위헌스 탐사선이 토성의 고리(테)를 조사하기 전까지 천문학자들은 고리의 나이가 태양계의 생성 역사보다 훨씬 짧은 것으로 보았으며, 앞으로 1억 년 정도밖에 유지되지 못할 것으로 예상했었다. 토성 위성' ood_source= KorQuAD/squad_kor_v1 train_sources= ['KorQuAD/squad_kor_v1']
+TRAIN_OVERLAP '최고!' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+TRAIN_OVERLAP '컴퓨터 전기세가 아깝다!' ood_source= e9t/nsmc train_sources= ['e9t/nsmc']
+ood_rows_with_val_state_overlap 0
+ood_rows_without_test_origin 0
+SPOT e9t/nsmc state= "'여자는 짐작만가지고 움직이지 않아요'이요원의 이말이 와닿는 요즘..왜맨날 카톡에 알쏭달쏭한 얘기들만 써놓는지...속터져" original_gold= 1
+  이 리뷰는 긍정적이지 않다. options= ['아니오', '예'] gold= 0 expected= 0
+  리뷰의 만족도를 반대 방향 척도로 고르시오. options= ['만족', '불만족'] gold= 0 expected= 0
+SPOT klue/klue:sts state= '100미터 이내에 프랑스조계지 카페거리와 후민 카페거리가 있어요.\n100미터 안에 프랑스 조계, 후민 카페 거리가 있습니다.' original_gold= 4
+  두 문장의 의미 유사도를 반대 방향 척도로 고르시오. options= ['완전히 같음', '매우 비슷함', '비슷함', '다소 다름', '매우 다름', '전혀 다름'] gold= 1 expected= 1
+SPOT KorQuAD/squad_kor_v1 state= "지문: '고종과 한미전기주식회사'(고승제 저)에서는 한미전기주식회사가 한일가스주식회사에 매각되던 상황을 다음과 같이 정리하고 있다. 30만달러의 차관을 도입하여 경영체제를 바로 잡" original_gold= 1
+  이 지문은 질문과 무관하다. options= ['아니오', '예'] gold= 0 expected= 0

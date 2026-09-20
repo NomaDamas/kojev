@@ -1,0 +1,38 @@
+31:    "MODEL",
+42:MODEL: Final = "qwen/qwen3-vl-8b-instruct"
+56:    """Parsed teacher response and its exact provider-reported cost."""
+59:    cost_usd: float
+60:    request_id: str
+61:    usage: dict[str, int]
+62:    logprobs: Logprobs | None = None
+135:        include_logprobs: bool = True,
+148:                    include_logprobs=include_logprobs,
+150:                result = self._parse_response(response, len(questions))
+151:                await self._append_usage(result)
+159:        include_logprobs: bool,
+162:            "model": MODEL,
+174:            "logprobs": include_logprobs,
+175:            "top_logprobs": 5,
+218:    def _parse_response(response: httpx.Response, question_count: int) -> TeacherResult:
+221:        usage = payload.usage
+222:        cost = (
+223:            usage.prompt_tokens * INPUT_PRICE_PER_MILLION
+224:            + usage.completion_tokens * OUTPUT_PRICE_PER_MILLION
+228:            cost_usd=cost,
+229:            request_id=payload.id,
+230:            usage={
+231:                "prompt_tokens": usage.prompt_tokens,
+232:                "completion_tokens": usage.completion_tokens,
+233:                "total_tokens": usage.total_tokens,
+235:            logprobs=choice.logprobs,
+248:                if record.kind == "usage":
+249:                    total += record.cost_usd
+252:    async def _append_usage(self, result: TeacherResult) -> None:
+256:                "kind": "usage",
+257:                "model": MODEL,
+258:                "request_id": result.request_id,
+259:                **result.usage,
+260:                "cost_usd": result.cost_usd,
+261:                "logprobs": (
+262:                    result.logprobs.model_dump()
+263:                    if result.logprobs is not None

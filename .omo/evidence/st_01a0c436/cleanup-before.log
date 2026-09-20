@@ -1,0 +1,42 @@
+--- temp before cleanup ---
+exists:/tmp/kojev-todo13-0rEDtW
+--- processes matching disposable path ---
+--- real worktree status ---
+## main...origin/main
+?? .audit-hf-datasets/
+?? .omo/evidence/qa-todo15-01fde17/
+?? .omo/evidence/qa-todo4-adversarial/
+?? .omo/evidence/st_01a0c006/
+?? .omo/evidence/st_01a0c3a2/
+?? .omo/evidence/st_01a0c3ab-manual-qa.md
+?? .omo/evidence/st_01a0c3ab-runtime.txt
+?? .omo/evidence/st_01a0c421-manual-qa.md
+?? .omo/evidence/st_01a0c421-runtime.txt
+?? .omo/evidence/st_01a0c425-manual-qa.md
+?? .omo/evidence/st_01a0c429/
+?? .omo/evidence/st_01a0c42c/
+?? .omo/evidence/st_01a0c42d/
+?? .omo/evidence/st_01a0c42e-manual-qa.md
+?? .omo/evidence/st_01a0c42f/
+?? .omo/evidence/st_01a0c436/
+?? .omo/evidence/task-1-manual-qa.md
+?? .omo/evidence/task-8-kojev.local-preverify.txt
+?? .omo/evidence/task-9-corrective-503-runtime.txt
+?? .omo/evidence/task-9-corrective-git.txt
+?? .omo/evidence/task-9-corrective-hygiene.txt
+?? .omo/evidence/task-9-corrective-pytest.txt
+?? .omo/evidence/task-9-corrective-runtime.txt
+?? .omo/evidence/task-9-corrective-static.txt
+?? .omo/evidence/task-9-independent-basedpyright.txt
+?? .omo/evidence/task-9-independent-cleanup.txt
+?? .omo/evidence/task-9-independent-exhausted-retry.txt
+?? .omo/evidence/task-9-independent-git-containment.txt
+?? .omo/evidence/task-9-independent-public-api.txt
+?? .omo/evidence/task-9-independent-pytest.txt
+?? .omo/evidence/task-9-independent-ruff.txt
+?? .omo/evidence/task-9-independent-runtime.txt
+?? .omo/evidence/task-9-manual-qa.independent-st_01a0c424.md
+?? .omo/plans/
+?? .omo/tmp-hf-datasets-audit/
+--- feature worktree status ---
+## feat/todo-13-rlcd...origin/main [ahead 1]

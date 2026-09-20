@@ -1,0 +1,7 @@
+Real tiny CPU CLI:
+uv run python -m kojev.train --tiny --train /tmp/kojev-task10-real-e2e/train.jsonl --val /tmp/kojev-task10-real-e2e/val.jsonl --limit 2 --epochs 1 --seed 7 --batch-size 2 --augmentation-probability 0 --out /tmp/kojev-task10-real-e2e/out
+stdout: {"report": "/tmp/kojev-task10-real-e2e/out/report.json"}
+Parsed report keys: ['args', 'data_counts', 'diverged', 'loss_curve', 'metrics', 'peak_memory', 'temperature', 'wall_time']
+Metric keys: ['kind:choice', 'overall', 'source:fixture']
+Overall metrics: count=2, accuracy=0.5, brier=0.5059832334518433, ece=0.054695725440979004
+Per-kind metrics present under kind:choice.

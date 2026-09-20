@@ -1,0 +1,8 @@
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && LEDGER=<temp> uv run python <three-request-script>
+Exit: 0
+Output:
+{"request": 1, "exception_type": "ValidationError", "exception": "7 validation errors for _ResponsePayload\nchoices.0.logprobs.content.0.top_logprobs.str\n  Input should be a valid string [type=string_type, input_value=[{'token': '\uc11c', 'bytes'...b': -5.593772888183594}], input_type=list]\n    For further info"}
+{"request": 2, "exception_type": "ValidationError", "exception": "7 validation errors for _ResponsePayload\nchoices.0.logprobs.content.0.top_logprobs.str\n  Input should be a valid string [type=string_type, input_value=[{'token': 'A', 'bytes': ...b': -6.077854156494141}], input_type=list]\n    For further in"}
+{"request": 3, "exception_type": "ValidationError", "exception": "7 validation errors for _ResponsePayload\nchoices.0.logprobs.content.0.top_logprobs.str\n  Input should be a valid string [type=string_type, input_value=[{'token': 'A', 'bytes': ...b': -6.027931213378906}], input_type=list]\n    For further in"}
+Ledger:
+Ledger total lines:        0

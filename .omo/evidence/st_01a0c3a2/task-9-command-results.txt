@@ -1,0 +1,25 @@
+Manual QA command evidence for KoJev todo 9
+Worktree: /Volumes/SSD1/worktrees/kojev-task-9-teacher
+Branch: feat/task-9-openrouter-teacher
+
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && uv run pytest tests/test_teacher.py -q
+Observed: 1 failed, 3 passed in 0.10s.
+Failure: test_retries_429_and_5xx_with_bounded_attempts[asyncio]; observed result.answers == {1: 0}, expected {1: 0, 2: 1}.
+
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && uv run pytest -q
+Observed: 1 failed, 12 passed in 0.12s.
+Same retry test failure.
+
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && uv run ruff check kojev/teacher.py tests/test_teacher.py
+Observed: failed with 13 errors, including ISC003, UP040, E501, D107, D105, TRY003, EM101, PLR2004, and additional line-length/docstring errors.
+
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && uv run basedpyright kojev/teacher.py tests/test_teacher.py
+Observed: 4 errors, 2 warnings, 0 notes. Errors include union narrowing failures for TeacherResult | BudgetReached and unknown logprobs/answers member types.
+
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && awk '!/^[[:space:]]*$/ && !/^[[:space:]]*(\\/\\/|#|--)/' kojev/teacher.py | wc -l
+Observed: 239 pure LOC.
+
+Invocation: cd /Volumes/SSD1/worktrees/kojev-task-9-teacher && awk '!/^[[:space:]]*$/ && !/^[[:space:]]*(\\/\\/|#|--)/' tests/test_teacher.py | wc -l
+Observed: 110 pure LOC.
+
+Parent checkout commands were rejected as non-evidence because they ran in /Volumes/SSD1/1/KoJev rather than the dedicated worktree.

@@ -1,0 +1,5 @@
+Clean target archive, command repeated three times: uv run pytest tests/test_train.py -q
+RUN 1: ..... [100%], 5 passed in 1.67s, EXIT 0
+RUN 2: ..... [100%], 5 passed in 1.69s, EXIT 0
+RUN 3: ..... [100%], 5 passed in 1.70s, EXIT 0
+Changed tests/code contain no sleeps; no network/download calls were used by the tiny tests.

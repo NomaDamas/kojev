@@ -1,0 +1,13 @@
+INVOCATION: test QA temp cleanup
+removed /tmp/kojev-qa-task8-gold
+removed /tmp/kojev-qa-task8-ood
+removed /tmp/kojev-qa-task8-adversarial-train.jsonl
+removed /tmp/kojev-qa-task8-adversarial-ood.jsonl
+removed /tmp/qa_task8_verify.py
+removed /tmp/qa_task8_detail.py
+INVOCATION: process audit
+jeffrey          45570   0.0  0.0 435300512   1472   ??  S     4:38AM   0:00.00 grep -E [d]ata_gold|[d]ata_ood|[p]ytest tests/test_data_ood|[p]ytest -q
+jeffrey          45567   0.0  0.0 435300464   1664   ??  S     4:38AM   0:00.00 /bin/bash -c cd /Volumes/SSD1/1/KoJev-todo8\012rm -rf /tmp/kojev-qa-task8-gold /tmp/kojev-qa-task8-ood /tmp/kojev-qa-task8-adversarial* /tmp/qa_task8_verify.py /tmp/qa_task8_detail.py /tmp/main-teacher.py /tmp/main-teacher_types.py\012{\012  echo 'INVOCATION: test QA temp cleanup';\012  for p in /tmp/kojev-qa-task8-gold /tmp/kojev-qa-task8-ood /tmp/kojev-qa-task8-adversarial-train.jsonl /tmp/kojev-qa-task8-adversarial-ood.jsonl /tmp/qa_task8_verify.py /tmp/qa_task8_detail.py; do if [ -e "$p" ]; then echo "LEFTOVER $p"; else echo "removed $p"; fi; done;\012  echo 'INVOCATION: process audit';\012  ps aux | grep -E '[d]ata_gold|[d]ata_ood|[p]ytest tests/test_data_ood|[p]ytest -q' || true;\012  echo 'INVOCATION: git status --short --branch'; git status --short --branch;\012} | tee /Volumes/SSD1/1/KoJev/.omo/evidence/st_01a0c429/cleanup.log\012# update matrix only to ensure artifact exists was already written; show final files\012ls -l /Volumes/SSD1/1/KoJev/.omo/evidence/st_01a0c429
+jeffrey          45565   0.0  0.0 435303744   2224   ??  Ss    4:38AM   0:00.00 /bin/bash -c cd /Volumes/SSD1/1/KoJev-todo8\012rm -rf /tmp/kojev-qa-task8-gold /tmp/kojev-qa-task8-ood /tmp/kojev-qa-task8-adversarial* /tmp/qa_task8_verify.py /tmp/qa_task8_detail.py /tmp/main-teacher.py /tmp/main-teacher_types.py\012{\012  echo 'INVOCATION: test QA temp cleanup';\012  for p in /tmp/kojev-qa-task8-gold /tmp/kojev-qa-task8-ood /tmp/kojev-qa-task8-adversarial-train.jsonl /tmp/kojev-qa-task8-adversarial-ood.jsonl /tmp/qa_task8_verify.py /tmp/qa_task8_detail.py; do if [ -e "$p" ]; then echo "LEFTOVER $p"; else echo "removed $p"; fi; done;\012  echo 'INVOCATION: process audit';\012  ps aux | grep -E '[d]ata_gold|[d]ata_ood|[p]ytest tests/test_data_ood|[p]ytest -q' || true;\012  echo 'INVOCATION: git status --short --branch'; git status --short --branch;\012} | tee /Volumes/SSD1/1/KoJev/.omo/evidence/st_01a0c429/cleanup.log\012# update matrix only to ensure artifact exists was already written; show final files\012ls -l /Volumes/SSD1/1/KoJev/.omo/evidence/st_01a0c429
+INVOCATION: git status --short --branch
+## feat/todo-8...origin/feat/todo-8

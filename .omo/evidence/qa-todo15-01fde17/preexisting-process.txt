@@ -1,0 +1,4 @@
+Observed before QA run:
+57912 uv run uvicorn kojev.serve:app --host 127.0.0.1 --port 8930
+57914 /Volumes/SSD1/worktrees/kojev-todo-15/.venv/bin/python /Volumes/SSD1/worktrees/kojev-todo-15/.venv/bin/uvicorn kojev.serve:app --host 127.0.0.1 --port 8930
+127.0.0.1:8930 LISTEN

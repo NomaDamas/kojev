@@ -1,0 +1,9 @@
+path= /Volumes/SSD1/1/KoJev/.omo/evidence/qa-todo4-adversarial/benchmark-report-af5551e.json
+total_count= 200
+task_names= ['boolq', 'copa', 'hellaswag', 'nli', 'sentineg', 'sts', 'wic', 'ynat']
+eight_exact= True
+counts= {'boolq': 25, 'copa': 25, 'hellaswag': 25, 'nli': 25, 'sentineg': 25, 'sts': 25, 'wic': 25, 'ynat': 25}
+all_positive= True
+metric_keys_exact= True
+metric_keys= {'boolq': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'copa': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'hellaswag': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'nli': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'sentineg': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'sts': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'wic': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1'], 'ynat': ['accuracy', 'brier', 'count', 'ece_15', 'macro_f1']}
+kinds= {'choice': 100, 'noul': 75, 'score': 25}

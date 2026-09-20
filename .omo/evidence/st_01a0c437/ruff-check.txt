@@ -1,0 +1,2 @@
+$ cd /Volumes/SSD1/1/KoJev-todo14 && uv run ruff check kojev tests
+All checks passed!

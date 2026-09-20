@@ -1,0 +1,12 @@
+$ git status after cleanup
+$ processes
+20400 /Volumes/SSD1/1/KoJev/.venv/bin/python /Volumes/SSD1/1/KoJev/.venv/bin/basedpyright-langserver --stdio
+20402 /Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/nodejs_wheel/bin/node /Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/basedpyright/langserver.index.js --stdio
+34153 /Volumes/SSD1/1/KoJev/.venv/bin/python /Volumes/SSD1/1/KoJev/.venv/bin/basedpyright-langserver --stdio
+34404 /Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/nodejs_wheel/bin/node /Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/basedpyright/langserver.index.js --stdio
+52103 /Volumes/SSD1/1/KoJev/.venv/bin/python /Volumes/SSD1/1/KoJev/.venv/bin/basedpyright-langserver --stdio
+52104 /Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/nodejs_wheel/bin/node /Volumes/SSD1/1/KoJev/.venv/lib/python3.12/site-packages/basedpyright/langserver.index.js --stdio
+$ report
+benchmark-report.json absent
+$ data/gold
+data/gold absent

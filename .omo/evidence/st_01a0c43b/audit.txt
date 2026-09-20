@@ -1,0 +1,210 @@
+--- full task commit history and paths ---
+COMMIT 2076e20 feat(infra): gpu01 sync + slurm templates with shared cache and prebuilt venv
+
+scripts/slurm/smoke.sbatch
+scripts/slurm/train.sbatch
+scripts/sync.sh
+tests/test_sync_slurm.py
+COMMIT 06d5aa0 docs(infra): record gpu01 cluster diagnosis and template corrections
+
+.omo/evidence/task-2-cluster-diagnosis.txt
+COMMIT 8121903 fix(infra): launch shared-venv interpreter directly instead of through uv
+
+scripts/slurm/smoke.sbatch
+scripts/slurm/train.sbatch
+tests/test_sync_slurm.py
+COMMIT 6acd32b fix(infra): tolerate the documented -- separator in sbatch invocations
+
+scripts/slurm/smoke.sbatch
+scripts/slurm/train.sbatch
+tests/test_sync_slurm.py
+COMMIT ee930e7 docs(infra): refresh todo-2 evidence to current verified state
+
+.omo/evidence/task-2-kojev.txt
+COMMIT 0153ab4 feat(infra): gpu01 slurm smoke proves CUDA True with shared prebuilt venv
+
+.omo/evidence/task-2-kojev.txt
+COMMIT ea23798 docs(infra): correct todo-2 evidence gate figure, provenance, and job states
+
+.omo/evidence/task-2-kojev.txt
+--- evidence numerical/prose lines ---
+     1	# KoJev plan todo 2 evidence
+     2	
+     3	## Verdict
+     4	
+     5	SATISFIED. Slurm smoke job 13622 reached sacct state COMPLETED on gpu01 and its
+     6	stdout printed `True` for CUDA availability.
+     7	
+     8	## Acceptance criterion 1: sbatch CUDA smoke with sacct COMPLETED
+     9	
+    10	```text
+    11	JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|AllocTRES
+    12	13622|kojev-smoke|interactive|COMPLETED|0:0|00:00:03|gpu01|billing=8,cpu=8,gres/gpu=1,mem=32G,node=1
+    13	13622.batch|batch||COMPLETED|0:0|00:00:03|gpu01|cpu=8,gres/gpu=1,mem=32G,node=1
+    14	```
+    15	
+    16	Job stdout, verbatim and complete:
+    17	
+    18	```text
+    19	True
+    20	```
+    21	
+    22	The 3-second elapsed time is itself significant: earlier jobs spent their whole
+    23	wall clock building an environment. Reaching the interpreter in 3 seconds proves
+    24	no per-job environment build occurs.
+    25	
+    26	## Shared environment identity
+    27	
+    28	```text
+    29	/data2/jeffrey/kojev/venv-shared -> /data2/jeffrey/kojev/runs/venv-prewarm2
+    30	torch 2.14.0+cu130
+    31	cuda_available True
+    32	device_count 3
+    33	device0 NVIDIA RTX PRO 6000 Blackwell Max-Q Workstation Edition
+    34	```
+    35	
+    36	## Live template configuration on the cluster
+    37	
+    38	```text
+    39	4:#SBATCH --gres=gpu:rtx6000:1
+    40	17:export UV_CACHE_DIR="${UV_CACHE_DIR:-/data2/jeffrey/kojev/uv-cache}"
+    41	23:export UV_LINK_MODE=hardlink
+    42	30:SHARED_VENV=/data2/jeffrey/kojev/venv-shared
+    43	40:  uv sync --no-dev
+    44	```
+    45	
+    46	## Adversarial: wrong-GRES rejection
+    47	
+    48	```text
+    49	$ sbatch --nodelist=gpu01 --gres=gpu:h100:1 scripts/slurm/smoke.sbatch
+    50	sbatch: error: Batch job submission failed: Requested node configuration is not available
+    51	```
+    52	
+    53	A GPU type the node does not have is refused at submission rather than failing
+    54	late inside a job.
+    55	
+    56	## Adversarial: forbidden-path audit
+    57	
+    58	The plan forbids writes to /, /data and /data1. Grepping every script for such
+    59	paths:
+    60	
+    61	```text
+    62	NO_FORBIDDEN_PATH_WRITES
+    63	```
+    64	
+    65	All cluster paths in the templates and sync script live under
+    66	/data2/jeffrey/kojev.
+    67	
+    68	## Local gates
+    69	
+    70	Measured in a FRESH clone of `feat/infra`, which is what an auditor sees:
+    71	
+    72	```text
+    73	uv run pytest -q             => 16 passed
+    74	uv run ruff check .          => All checks passed!
+    75	uv run ruff format --check . => 5 files already formatted
+    76	```
+    77	
+    78	An earlier revision of this file reported "7 files already formatted". That
+    79	number came from the development worktree, which carries untracked scratch files
+    80	a clean checkout does not have. The clean-checkout figure of 5 is the correct
+    81	one.
+    82	
+    83	## Commit provenance for this task
+    84	
+    85	This evidence describes the CUMULATIVE state of branch `feat/infra`, not a single
+    86	commit. The branch contains:
+    87	
+    88	```text
+    89	2076e20  feat(infra): gpu01 sync + slurm templates with shared cache and prebuilt venv
+    90	         scripts/sync.sh, scripts/slurm/{smoke,train}.sbatch, tests/test_sync_slurm.py
+    91	06d5aa0  docs(infra): record gpu01 cluster diagnosis and template corrections
+    92	8121903  fix(infra): launch shared-venv interpreter directly instead of through uv
+    93	         scripts/slurm/{smoke,train}.sbatch, tests/test_sync_slurm.py
+    94	6acd32b  fix(infra): tolerate the documented -- separator in sbatch invocations
+    95	         scripts/slurm/{smoke,train}.sbatch, tests/test_sync_slurm.py
+    96	ee930e7  docs(infra): refresh todo-2 evidence to current verified state
+    97	0153ab4  feat(infra): gpu01 slurm smoke proves CUDA True with shared prebuilt venv
+    98	         .omo/evidence/task-2-kojev.txt only
+    99	```
+   100	
+   101	The template and test changes landed in 2076e20, 8121903 and 6acd32b. The tip
+   102	commit carries only this evidence file. The template work was committed before
+   103	the CUDA proof existed specifically so that verified code would not be lost while
+   104	the cluster was unreachable; those commits were preserved work and never a claim
+   105	of completion.
+   106	
+   107	## Full job history (nothing omitted)
+   108	
+   109	Six jobs failed to reach COMPLETED before 13622. Their terminal states differ and
+   110	are named exactly below: four FAILED, one CANCELLED, one TIMEOUT. Each eliminated
+   111	a distinct cause:
+   112	
+   113	| Job | Outcome | Cause eliminated |
+   114	|---|---|---|
+   115	| 13597 | FAILED | concurrent jobs racing on one shared .venv |
+   116	| 13599 | FAILED | uv cache on a full home filesystem |
+   117	| 13601 | FAILED | dependency download inside the job |
+   118	| 13603 | CANCELLED | still downloading at the wall clock |
+   119	| 13620 | TIMEOUT 30:21 | per-job torch install (~12k files) on NFS |
+   120	| 13621 | FAILED 0:01 | shared venv promoted while still being written |
+   121	| 13622 | COMPLETED 0:03 | none: CUDA True |
+   122	
+   123	## Root causes and the measurements behind them
+   124	
+   125	`/data2` is an NFS mount whose small-file creation rate was measured at
+   126	2.6 files/sec (100 files in 38,765 ms), against 3,571 files/sec on tmpfs: a
+   127	1,384x gap. Large sequential writes were healthy at 14.8 MB/s. The filesystem is
+   128	therefore fine for data and hostile to environment builds, which is why the
+   129	solution had to remove environment builds from jobs rather than speed them up.
+   130	
+   131	Fixes applied to the templates, each with a regression test:
+   132	
+   133	1. Shared `UV_CACHE_DIR` instead of a per-job cache directory. Job 13620 then
+   134	   resolved 92 packages in 1 ms with zero downloads.
+   135	2. `uv sync --no-dev`, cutting 29 downloads to 1. basedpyright alone ships
+   136	   ~20k typeshed stub files and pulls nodejs-wheel-binaries, none of which the
+   137	   cluster needs to train.
+   138	3. `UV_LINK_MODE=hardlink` instead of copy, avoiding ~2 GB of duplication per job.
+   139	4. Prefer a prebuilt shared venv; fall back to per-job sync only if absent.
+   140	5. Launch the shared venv's interpreter directly rather than through `uv run`,
+   141	   removing uv from the launch path entirely.
+   142	6. Shift off the leading `--` that sbatch forwards as `$1`, so the plan's
+   143	   documented `sbatch smoke.sbatch -- python -m kojev.train ...` works.
+   144	
+   145	## Self-inflicted incidents, recorded in full
+   146	
+   147	Two failures during this task were mine, not the cluster's.
+   148	
+   149	A stray `rm -rf .../uv-cache/.tmp*` whose glob was frozen at launch spent about
+   150	90 minutes deleting the very staging the rebuild was creating. The signal was the
+   151	file count moving backwards, 27,424 to 27,240: a build whose staging shrinks is
+   152	not slow, it is losing a race. Killing it flipped the rate from -184 files/min to
+   153	+162 files in 45 seconds.
+   154	
+   155	Job 13621 failed because the readiness check tested whether `torch/__init__.py`
+   156	existed. uv writes a package progressively, so that file appears long before the
+   157	package is complete. Worse, the payload did run an import probe, printed its
+   158	traceback, and continued anyway because the output was piped through `head -2`
+   159	and the exit status was never inspected. A probe whose result is discarded is not
+   160	a check. Readiness now requires the installer to have exited AND
+   161	`python -c "import torch"` to exit 0.
+   162	
+   163	Seven concurrent ssh monitors, several polling at 20-second intervals, also
+   164	contributed to sshd refusing connections with `Exceeded MaxStartups`. Diagnosis
+   165	came from a raw TCP probe reading that banner directly. Monitoring was rebuilt as
+   166	a single loop making at most one attempt per 50-90 seconds.
+   167	
+   168	## Cleanup receipt
+   169	
+   170	- venv-prewarm (first attempt, superseded) and per-job venvs from failed jobs
+   171	  remain under /data2/jeffrey/kojev/runs and are disposable cluster scratch, not
+   172	  repository state.
+   173	- No processes left running by this task; every retry loop exited on success.
+   174	- data/ and runs/ are gitignored; only code, templates, tests and this evidence
+   175	  are committed.
+--- full-tree gpu02 ---
+--- script forbidden destinations ---
+[scripts/sync.sh]
+[scripts/slurm/smoke.sbatch]
+[scripts/slurm/train.sbatch]

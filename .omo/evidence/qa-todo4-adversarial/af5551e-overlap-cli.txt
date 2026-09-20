@@ -1,0 +1,17 @@
+SURFACE=CLI --training-manifest overlap rejection
+INVOCATION=uv run python -m kojev.bench --model random --limit 8 --training-manifest /Volumes/SSD1/1/KoJev/.omo/evidence/qa-todo4-adversarial/overlap-af5551e.jsonl --output /Volumes/SSD1/1/KoJev/.omo/evidence/qa-todo4-adversarial/overlap-should-not-exist.json
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 473, in <module>
+    main()
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 359, in main
+    load_benchmark_items(limit, training_manifest), RandomDecisionModel()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 325, in load_benchmark_items
+    assert_no_kobest_contamination(
+  File "/Volumes/SSD1/1/KoJev-todo4/kojev/bench.py", line 308, in assert_no_kobest_contamination
+    raise AssertionError(
+AssertionError: contamination: KoBEST id 'boolq-0' at line 1
+EXIT=1
+REPORT_ABSENT=0

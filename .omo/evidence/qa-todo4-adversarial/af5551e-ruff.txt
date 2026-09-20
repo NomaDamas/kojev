@@ -1,0 +1,3 @@
+INVOCATION=uv run ruff check kojev tests
+All checks passed!
+EXIT=0

@@ -1,0 +1,4 @@
+$
+/Volumes/SSD1/1/KoJev/.venv/bin/python -m ruff format --check kojev tests 
+25 files already formatted
+EXIT=0

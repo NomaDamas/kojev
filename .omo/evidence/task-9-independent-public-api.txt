@@ -1,0 +1,5 @@
+all= ['BUDGET_CAP_USD', 'BudgetReached', 'INITIAL_CONCURRENCY', 'INPUT_PRICE_PER_MILLION', 'MAX_CONCURRENCY', 'MAX_RETRIES', 'MODEL', 'MissingApiKeyError', 'OPENROUTER_URL', 'OUTPUT_PRICE_PER_MILLION', 'TeacherClient', 'TeacherRequestError', 'TeacherResult', 'parse_teacher_answers']
+TeacherClient= (*, api_key: 'str | None' = None, ledger_path: 'Path | None' = None, http_client: 'httpx.AsyncClient | None' = None, retry_delays: 'Sequence[float]' = (1.0, 2.0, 4.0, 8.0)) -> 'None'
+ask= (self, state: 'str', questions: 'Sequence[str]', *, include_logprobs: 'bool' = True) -> 'TeacherResult | BudgetReached'
+parse= (raw: 'str', question_count: 'int') -> 'dict[int, int]'
+constants= qwen/qwen3-vl-8b-instruct 0.117 0.455 95.0 32 64 4

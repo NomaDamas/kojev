@@ -1,0 +1,88 @@
+$ git worktree list --porcelain
+worktree /Volumes/SSD1/1/KoJev
+HEAD 6cb06184084bb4e3ddbbe1e2faa552bc22817450
+branch refs/heads/main
+
+worktree /Volumes/SSD1/1/KoJev-aihub
+HEAD d8e1a9171cb555bfa3dd33ea83861a50b949dcf4
+branch refs/heads/feat/aihub
+
+worktree /Volumes/SSD1/1/KoJev-task6
+HEAD ccdfbbbfc664ac43c21e0ae5329f044e432fcbe4
+branch refs/heads/feat/task-6-span-pooling
+
+worktree /Volumes/SSD1/1/KoJev-todo-7
+HEAD 146b0d942a9e4d611510141b0c04f8dc5ad83677
+branch refs/heads/feat/todo-7-augment
+
+worktree /Volumes/SSD1/1/KoJev-todo2
+HEAD d1e9fcf50efc5035db83618717f9cefc9abdd42b
+branch refs/heads/feat/infra
+
+worktree /Volumes/SSD1/1/KoJev-todo3
+HEAD 3e79f89d70fe3304e799863307b0b3255f6ccc82
+branch refs/heads/feat/data-gold
+
+worktree /Volumes/SSD1/1/KoJev-todo4
+HEAD af5551e9e3076b0b254e96765c4b3252a5808a0a
+branch refs/heads/feat/todo-4-kobest-klue-bench
+
+worktree /Volumes/SSD1/1/KoJev-todo8
+HEAD 91c6df6b018ac6543133f370139b5bf23c093d6b
+branch refs/heads/feat/todo-8
+
+worktree /Volumes/SSD1/worktrees/kojev-task-9-teacher
+HEAD 9b679603762d52a96c63841a79e24f8e48b9663d
+branch refs/heads/feat/task-9-openrouter-teacher
+
+worktree /Volumes/SSD1/worktrees/kojev-todo-10
+HEAD 3c4ba43b36964acd54ed75e1d3963c3326453e00
+branch refs/heads/feat/todo-10-train
+
+worktree /Volumes/SSD1/worktrees/kojev-todo-15
+HEAD 01fde17d6f3836d828dad4ee189d51bfe5871abc
+branch refs/heads/feat/todo-15-serve
+
+
+$ git ls-remote origin refs/heads/feat/todo-11-teacher-labels
+exit=0
+
+$ git log --all --oneline --decorate -- kojev/label.py tests/test_label.py .omo/evidence/task-11-kojev.txt
+exit=0
+
+$ git status --short --branch
+## main...origin/main
+?? .audit-hf-datasets/
+?? .omo/evidence/qa-todo15-01fde17/
+?? .omo/evidence/qa-todo4-adversarial/
+?? .omo/evidence/st_01a0c006/
+?? .omo/evidence/st_01a0c3a2/
+?? .omo/evidence/st_01a0c3ab-manual-qa.md
+?? .omo/evidence/st_01a0c3ab-runtime.txt
+?? .omo/evidence/st_01a0c421-manual-qa.md
+?? .omo/evidence/st_01a0c421-runtime.txt
+?? .omo/evidence/st_01a0c425-manual-qa.md
+?? .omo/evidence/st_01a0c429/
+?? .omo/evidence/st_01a0c42c/
+?? .omo/evidence/st_01a0c42d/
+?? .omo/evidence/st_01a0c42e-manual-qa.md
+?? .omo/evidence/st_01a0c42f/
+?? .omo/evidence/task-1-manual-qa.md
+?? .omo/evidence/task-8-kojev.local-preverify.txt
+?? .omo/evidence/task-9-corrective-503-runtime.txt
+?? .omo/evidence/task-9-corrective-git.txt
+?? .omo/evidence/task-9-corrective-hygiene.txt
+?? .omo/evidence/task-9-corrective-pytest.txt
+?? .omo/evidence/task-9-corrective-runtime.txt
+?? .omo/evidence/task-9-corrective-static.txt
+?? .omo/evidence/task-9-independent-basedpyright.txt
+?? .omo/evidence/task-9-independent-cleanup.txt
+?? .omo/evidence/task-9-independent-exhausted-retry.txt
+?? .omo/evidence/task-9-independent-git-containment.txt
+?? .omo/evidence/task-9-independent-public-api.txt
+?? .omo/evidence/task-9-independent-pytest.txt
+?? .omo/evidence/task-9-independent-ruff.txt
+?? .omo/evidence/task-9-independent-runtime.txt
+?? .omo/evidence/task-9-manual-qa.independent-st_01a0c424.md
+?? .omo/plans/
+?? .omo/tmp-hf-datasets-audit/

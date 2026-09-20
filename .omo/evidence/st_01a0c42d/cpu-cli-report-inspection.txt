@@ -1,0 +1,7 @@
+report_exists= True
+top_keys= ['args', 'data_counts', 'diverged', 'loss_curve', 'metrics', 'peak_memory', 'temperature', 'wall_time']
+metric_keys= ['kind:choice', 'overall', 'source:qa-fixture']
+kind_metric= {'count': 1, 'accuracy': 1.0, 'brier': 0.0, 'ece': 0.0}
+calibration_fields= ['brier', 'ece']
+loss_curve_len= 2
+diverged= False

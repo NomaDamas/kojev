@@ -1,0 +1,1 @@
+{"report": "/tmp/kojev-task10-qa-out/report.json"}

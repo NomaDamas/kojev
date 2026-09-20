@@ -1,0 +1,4 @@
+$ /Volumes/SSD1/1/KoJev/.venv/bin/ruff format --check kojev tests
+25 files already formatted
+
+exit_code=0

@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.9, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Volumes/SSD1/worktrees/kojev-task-9-teacher
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.1.0, anyio-4.15.1
+collected 14 items
+
+tests/test_data_aihub.py ...                                             [ 21%]
+tests/test_schema.py ......                                              [ 64%]
+tests/test_teacher.py .....                                              [100%]
+
+============================== 14 passed in 0.07s ==============================

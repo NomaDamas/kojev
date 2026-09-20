@@ -1,0 +1,12 @@
+Diff/source audit:
+No changed pyproject/pyright/ruff configuration paths.
+No blanket '# type: ignore' or '# ruff: noqa'.
+Targeted committed annotations in kojev/train.py:
+212 run_training: # noqa: C901, PLR0913, PLR0915
+232 torch.manual_seed: # pyright: ignore[reportUnknownMemberType]
+254,269 random.Random: # noqa: S311
+276 loss.backward: # pyright: ignore[reportUnknownMemberType, reportUnusedCallResult]
+278 optimizer.step: # pyright: ignore[reportUnknownMemberType, reportUnusedCallResult]
+405-414 argparse namespace fields: # pyright: ignore[reportAny]
+443 print: # noqa: T201
+The target gates pass without loosening project strictness. These are line-specific rule suppressions; the worker's literal claim of no suppressions is not accurate.

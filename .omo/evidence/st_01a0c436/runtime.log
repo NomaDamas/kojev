@@ -1,0 +1,16 @@
+gradient_loss=0.562459886074
+gradient_norm=0.858162164688
+all_grads_non_none=True
+all_grads_finite=True
+all_grads_not_zero=True
+gate_0.051=GO
+gate_0.05=GO
+gate_0.049=NO-GO
+gate_nan=NO-GO
+gate_inf=NO-GO
+gate_-inf=NO-GO
+raw_variance=1
+baseline_adjusted=(0.0, 1.0, -0.6666666666666667, 1.0, -0.8, 1.0)
+baseline_variance=0.615432083607
+edge_uniform=-0;finite=True
+edge_near_deterministic=1.9214267013e-06;finite=True

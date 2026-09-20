@@ -1,0 +1,1 @@
+PASS all required doc markers present: step_1_signup_auth, step_2_application, step_3_api_key, step_4_download, step_5_license, target, redistribution_caveat, optional_lane, default_isolation, mapping_1, mapping_2, choice_score, score

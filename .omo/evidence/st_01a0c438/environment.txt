@@ -1,0 +1,2 @@
+commit=5c288155e9cdbab24295a21108e8b80a13147419
+export=/private/tmp/kojev-todo11-verify.iqOyRz/repo

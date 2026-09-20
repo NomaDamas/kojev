@@ -1,0 +1,7 @@
+cleanup_check
+verify export temp removed: yes
+streaming audit script removed: yes
+resume probe temp removed: yes
+resume probe script removed: yes
+verifier processes remaining: none
+paid API calls made: none

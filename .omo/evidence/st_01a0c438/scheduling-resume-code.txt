@@ -1,0 +1,22 @@
+18:from kojev.teacher import INITIAL_CONCURRENCY, BudgetReached, TeacherClient
+24:WAVE_SIZE: Final = INITIAL_CONCURRENCY
+25:RETRY_COUNT: Final = 2
+159:def _issued_records(ledger_path: Path, output_path: Path) -> tuple[set[str], set[str]]:
+199:    if isinstance(result, BudgetReached):
+209:        if isinstance(single, BudgetReached) or 1 not in single.answers:
+220:    for _ in range(RETRY_COUNT):
+223:        except TimeoutError:
+260:    def _append_records(self, records: Sequence[LabeledRecord]) -> None:
+271:    async def _run_wave(
+272:        self, examples: Sequence[Example], issued: set[str]
+283:                if record.request_id in issued:
+285:                issued.add(record.request_id)
+290:                _ = task_group.start_soon(label, example)
+294:        """Label candidates in bounded waves and return new record count."""
+295:        issued, completed_states = _issued_records(self._ledger_path, self._output_path)
+296:        candidates = [
+299:            if _goldless(example) and example.state not in completed_states
+302:        for start in range(0, len(candidates), WAVE_SIZE):
+303:            wave = candidates[start : start + WAVE_SIZE]
+304:            records = await self._run_wave(wave, issued)
+305:            self._append_records(records)

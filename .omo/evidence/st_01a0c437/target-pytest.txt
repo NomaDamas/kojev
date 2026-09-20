@@ -1,0 +1,13 @@
+$ cd /Volumes/SSD1/1/KoJev-todo14 && uv run pytest tests/test_evaluate.py -q
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+   Building kojev @ file:///Volumes/SSD1/1/KoJev-todo14
+      Built kojev @ file:///Volumes/SSD1/1/KoJev-todo14
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 74 packages in 7.28s
+ERROR: file or directory not found: tests/test_evaluate.py
+
+
+no tests ran in 0.00s
