@@ -2,7 +2,11 @@
 #SBATCH --job-name=kojev-smoke
 #SBATCH --partition=interactive
 #SBATCH --gres=gpu:rtx6000:1
-#SBATCH --time=00:30:00
+# 2h, not 30m: the plan's own smoke command (--limit 2000, 1 epoch) evaluates the
+# full 6,499-example validation split at every 0.25 epoch, which does not fit a
+# 30-minute cap on this hardware (job 13626 was still training at 25 minutes).
+# The interactive partition permits up to 12h, so this stays well inside policy.
+#SBATCH --time=02:00:00
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --output=/data2/jeffrey/kojev/runs/kojev-smoke-%j.out

@@ -114,7 +114,9 @@ def test_smoke_sbatch_requests_interactive_rtx6000_when_template_is_read() -> No
     text = _text(SMOKE)
     assert "#SBATCH --partition=interactive" in text
     assert "#SBATCH --gres=gpu:rtx6000:1" in text
-    assert "#SBATCH --time=00:30:00" in text
+    # 2h: the plan's documented smoke command evaluates the full validation
+    # split four times, which does not fit 30 minutes on this hardware.
+    assert "#SBATCH --time=02:00:00" in text
     assert "#SBATCH --cpus-per-task=8" in text
     assert "#SBATCH --mem=32G" in text
     assert "#SBATCH --gres=gpu:a100" not in text
