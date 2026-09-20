@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic_core import PydanticCustomError
 from transformers import ModernBertConfig, ModernBertModel
 
-from kojev.encoder import KoJevModel, SpanCollator
+from kojev.encoder import KoJevModel, SpanCollator, load_checkpoint
 from kojev.schema import Example, Question, QuestionType
 
 _CKPT_ENV: Final = "KOJEV_CKPT"
@@ -126,8 +126,13 @@ def _load_runtime() -> Runtime:
     if not checkpoint_path.is_dir():
         msg = f"checkpoint does not exist: {checkpoint_path}"
         raise FileNotFoundError(msg)
-    model = KoJevModel.from_pretrained(str(checkpoint_path))[0]
-    return Runtime(model, SpanCollator(WhitespaceTokenizer(), max_length=128))
+    # load_checkpoint, NOT from_pretrained: from_pretrained allocates a FRESH
+    # head at the default width and would pair it with a whitespace tokenizer,
+    # so the endpoint would answer 200 with probabilities from an untrained head
+    # over wrongly tokenized input. load_checkpoint restores the saved head
+    # weights and the saved tokenizer together.
+    model, collator, _ = load_checkpoint(checkpoint_path)
+    return Runtime(model, collator)
 
 
 app = FastAPI(title="KoJev local System One")

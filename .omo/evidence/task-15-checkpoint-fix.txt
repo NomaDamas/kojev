@@ -1,0 +1,76 @@
+# KoJev todo 15: served checkpoint was not the saved model
+
+## The defect
+
+`kojev/serve.py::_load_runtime` built the runtime like this:
+
+```python
+model = KoJevModel.from_pretrained(str(checkpoint_path))[0]
+return Runtime(model, SpanCollator(WhitespaceTokenizer(), max_length=128))
+```
+
+Two independent faults, both SILENT:
+
+1. `from_pretrained` allocates a FRESH `SpanScorer` at the default width (1024).
+   It never reads the checkpoint's `head.safetensors`. Loading a checkpoint whose
+   head was 16 wide and comparing weights raises:
+   `RuntimeError: The size of tensor a (1024) must match the size of tensor b (16)`
+2. The loaded model was paired with a `WhitespaceTokenizer`, not the tokenizer
+   saved alongside the checkpoint, so token ids did not match the backbone.
+
+Neither fault raises at request time. The endpoint answers 200 with normalised
+probabilities that are simply not the trained model's. Todo 15's acceptance is a
+curl against the TRAINED checkpoint, so it would have passed while serving a
+randomly initialised head.
+
+## RED proof
+
+```text
+>       assert served == pytest.approx(expected, abs=1e-6)
+E       comparison failed. Mismatched elements: 2 / 2:
+E       Max absolute difference: 0.07260221242904663
+E       Index | Obtained            | Expected
+E       0     | 0.5086372494697571  | 0.5812394618988037 +/- 1.0e-06
+E       1     | 0.49136272072792053 | 0.4187605082988739 +/- 1.0e-06
+```
+
+## Two weaknesses found in MY OWN test before it was trusted
+
+The first version of this test PASSED against the broken code. Two reasons, both
+fixed:
+
+1. The option surfaces "아니오" and "예" were absent from the fixture vocabulary,
+   so both fell back to `[UNK]`. Their pooled features were identical, the grouped
+   softmax returned exactly (0.5, 0.5) for ANY head, and the assertion could not
+   discriminate. The options are now in the vocabulary.
+2. Even with distinct options, an untrained head on this tiny input sits close to
+   uniform. The head is now deliberately skewed and the fixture asserts its own
+   discriminating power:
+
+```python
+assert abs(probabilities[0] - 0.5) > 1e-3, (
+    f"fixture is too uniform to discriminate: {probabilities}"
+)
+```
+
+A test that cannot fail for its named reason is worse than no test, because it
+reports safety it never checked.
+
+## Fix
+
+`_load_runtime` now calls `load_checkpoint`, which restores the saved head
+weights and the saved tokenizer together.
+
+## GREEN
+
+```text
+uv run pytest -q               => 121 passed
+uv run ruff check kojev tests  => All checks passed!
+uv run ruff format --check     => 32 files already formatted
+uv run basedpyright kojev tests => 0 errors, 0 warnings, 0 notes
+```
+
+## Cleanup receipt
+
+- Probe scripts ran via `uv run python -c` and left no files.
+- No cluster commands were issued; gpu01 jobs 13627 and 13629 were untouched.
