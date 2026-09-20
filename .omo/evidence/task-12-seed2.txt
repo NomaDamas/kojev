@@ -1,0 +1,9 @@
+# Full SFT seed 2 (job 13687)
+
+COMPLETED 00:32:08 ExitCode 0:0
+run /data2/jeffrey/kojev/runs/sft-full-seed2
+diverged=false  temperature=1.05  train=103952  val=6499
+overall acc=0.7211  majority=0.6446  gap=+0.0764
+choice +0.218  noul +0.025  score +0.044
+A-backbone seeds 0/1/2 all healthy: gaps +0.070 / +0.077 / +0.076
+>=2/3 non-diverged already holds for arm A. Remaining: control DeBERTa (13692) and gold+distill (13693).
