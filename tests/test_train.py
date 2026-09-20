@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
+import random
 import sys
 
 import pytest
@@ -97,16 +98,30 @@ def test_gold_only_training_loss_is_unchanged() -> None:
 
 
 def test_divergence_watch_triggers_on_rise_and_nan() -> None:
-    # Given a 200-step baseline followed by a >25% rise
+    """A SUSTAINED rise trips the watch; a NaN trips it immediately.
+
+    This test previously asserted that one elevated sample (1.3 after a 1.0
+    baseline) was divergence. That is what made the detector fire on ordinary
+    batch noise in every real run. The plan specifies the running MEAN rising
+    over 200 steps, so the rise now has to persist.
+    """
     watch = DivergenceWatch(window=200, rise_fraction=0.25)
     for value in [1.0] * 200:
         _ = watch.observe(value)
 
-    # When the next loss rises sharply, then a NaN is observed
-    assert watch.observe(1.3) is True
+    # A single spike is noise, not divergence.
+    assert watch.observe(1.3) is False
+    assert watch.diverged is False
+
+    # A rise that persists across the window is divergence.
+    for value in [1.3] * 200:
+        _ = watch.observe(value)
     assert watch.diverged is True
-    assert watch.observe(float("nan")) is True
-    assert watch.diverged is True
+
+    # NaN is always immediate, regardless of window state.
+    fresh = DivergenceWatch(window=200, rise_fraction=0.25)
+    assert fresh.observe(float("nan")) is True
+    assert fresh.diverged is True
 
 
 def test_divergence_watch_does_not_trigger_on_healthy_decrease() -> None:
@@ -417,3 +432,42 @@ def test_limit_samples_across_sources_instead_of_taking_a_head_slice(
     # A head slice of 120 rows would cover 3 of 12 sources (50+50+20).
     selected = report["data_counts"]["train_sources"]
     assert selected >= 10, f"limit covered only {selected} of 12 sources"
+
+
+def test_divergence_watch_ignores_noise_around_a_flat_mean() -> None:
+    """A noisy but healthy loss must not be reported as divergence.
+
+    Measured on gpu01 job 13647: first-200-step mean 1.3579, last-200-step mean
+    1.3553, min 0.7177, max 2.2734, no NaN. That loss is flat to slightly
+    decreasing, yet the run reported diverged=true.
+
+    The detector compared a SINGLE batch loss against the running mean, so any
+    one batch above mean*1.25 tripped it. With this spread that is near certain.
+    The plan specifies the running MEAN rising over 200 steps, which is a
+    comparison between means, not between a sample and a mean.
+
+    The pre-existing tests used noiseless streams, which is why the fault was
+    invisible to them.
+    """
+    rng = random.Random(0)  # noqa: S311
+    watch = DivergenceWatch(window=200, rise_fraction=0.25)
+
+    for _ in range(800):
+        # Same spread as the real run, with a flat mean.
+        value = 1.36 + rng.uniform(-0.65, 0.92)
+        _ = watch.observe(value)
+
+    assert watch.diverged is False, "healthy noisy loss was reported as diverged"
+
+
+def test_divergence_watch_still_triggers_on_a_sustained_rise() -> None:
+    """A real divergence signature must still be caught."""
+    watch = DivergenceWatch(window=200, rise_fraction=0.25)
+
+    for _ in range(200):
+        _ = watch.observe(1.0)
+    # The documented signature: loss climbs and stays high (1.5 -> 6.1).
+    for _ in range(200):
+        _ = watch.observe(6.1)
+
+    assert watch.diverged is True, "a sustained rise was not caught"

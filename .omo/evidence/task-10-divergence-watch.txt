@@ -1,0 +1,56 @@
+# KoJev: the divergence watch fired on ordinary batch noise
+
+## The defect
+
+    if len(self._values) == self.window:
+        baseline = sum(self._values) / self.window
+        if baseline > 0.0 and value > baseline * (1.0 + self.rise_fraction):
+            self.diverged = True
+
+It compared a SINGLE batch loss against the running mean. The plan specifies
+"running-mean train loss rises >25% over 200 steps", which is a comparison
+between MEANS, not between a sample and a mean.
+
+## Evidence the runs were healthy
+
+Job 13647 loss curve:
+
+    first 200 mean : 1.3579
+    last  200 mean : 1.3553
+    min 0.7177  max 2.2734
+    any NaN: False
+
+Flat to slightly decreasing, no NaN, and still reported diverged=true. With that
+spread any single batch above 1.70 trips a 1.25x threshold, which is close to
+certain over hundreds of steps.
+
+## Why the tests missed it
+
+Both pre-existing tests used NOISELESS streams: a constant 1.0 baseline followed
+by a single 1.3, and a perfectly monotone decrease. Real training loss is noisy,
+and the noisy case is precisely the one that breaks. The new test reproduces the
+measured spread around a flat mean.
+
+## Correcting an earlier claim of mine
+
+I previously recorded that the watch "was reporting a real instability rather
+than misfiring". That was wrong. The detector fires on healthy noise, and every
+diverged=true in this project is therefore suspect.
+
+## Fix
+
+Two windows: the older half is the baseline, the recent half is compared against
+it. NaN still trips immediately. The threshold and window are unchanged.
+
+## Contract change
+
+`test_divergence_watch_triggers_on_rise_and_nan` asserted that ONE elevated
+sample was divergence. It now asserts a single spike is noise, a rise sustained
+across the window is divergence, and NaN is immediate.
+
+## Proofs
+
+RED:      AssertionError: healthy noisy loss was reported as diverged
+MUTATION: AssertionError: a sustained rise was not caught
+
+GREEN: 135 passed, ruff clean, format clean, basedpyright 0 errors.

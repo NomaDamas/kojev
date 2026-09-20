@@ -63,18 +63,27 @@ class DivergenceWatch:
 
     def __post_init__(self) -> None:
         """Allocate the rolling window after validating configuration."""
-        self._values = deque(maxlen=self.window)
+        # Two windows: the older half is the baseline, the recent half is what
+        # gets compared against it.
+        self._values = deque(maxlen=self.window * 2)
 
     def observe(self, value: float) -> bool:
         """Record one loss and return the sticky divergence state."""
         if not math.isfinite(value):
             self.diverged = True
             return True
-        if len(self._values) == self.window:
-            baseline = sum(self._values) / self.window
-            if baseline > 0.0 and value > baseline * (1.0 + self.rise_fraction):
-                self.diverged = True
         self._values.append(value)
+        # Compare the running MEAN against the previous running mean, which is
+        # what "running-mean train loss rises >25% over 200 steps" means.
+        # Comparing a single batch loss against the mean fires on ordinary
+        # noise: a real run with a flat mean of 1.3579 and a 0.7177-2.2734
+        # spread was reported as diverged on every attempt.
+        if len(self._values) == self._values.maxlen:
+            values = list(self._values)
+            baseline = sum(values[: self.window]) / self.window
+            recent = sum(values[self.window :]) / self.window
+            if baseline > 0.0 and recent > baseline * (1.0 + self.rise_fraction):
+                self.diverged = True
         return self.diverged
 
 
