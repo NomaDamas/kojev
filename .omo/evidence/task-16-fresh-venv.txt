@@ -1,0 +1,10 @@
+# Todo 16 gpu01 fresh-venv round-trip
+
+venv: /data2/jeffrey/kojev/venv-fresh16
+  created from venv-shared python + shared.pth (system python had no torch)
+bundle: /data2/jeffrey/kojev/release/kojev-v0 restored to /data2/jeffrey/kojev/restore-v0
+decide() CPU, 3 fixture states, distinct noul:
+  맑다 0.1319591999053955
+  실망 0.15110471844673157
+  회의 0.37497246265411377
+FRESH_VENV_ROUNDTRIP_OK
