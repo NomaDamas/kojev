@@ -342,7 +342,11 @@ def evaluate(config: EvaluationConfig, model: DecisionModel) -> dict[str, JsonVa
         EvaluationError: If the checkpoint is unusable, a split file is
             missing, or an evaluated split is contaminated by train states.
     """
-    checkpoint = resolve_checkpoint(config.checkpoint)
+    checkpoint = (
+        config.checkpoint
+        if is_open_jev_ref(config.checkpoint)
+        else resolve_checkpoint(config.checkpoint)
+    )
     if not config.train.is_file():
         raise EvaluationError.missing_split(config.train)
     train_states = _states(read_jsonl(config.train))
