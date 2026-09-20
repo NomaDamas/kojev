@@ -576,6 +576,8 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     _ = train.add_argument("--batch-size", type=int, default=4)
     _ = train.add_argument("--eval-every", type=int, default=200)
     _ = train.add_argument("--lr", type=float, default=1e-5)
+    _ = train.add_argument("--beta", type=float, default=0.1)
+    _ = train.add_argument("--lambda-cal", type=float, default=0.5)
     return parser.parse_args(argv)
 
 
@@ -612,6 +614,8 @@ def _run_train(values: dict[str, object]) -> int:
     batch_size = values.get("batch_size")
     eval_every = values.get("eval_every")
     lr = values.get("lr")
+    beta = values.get("beta")
+    lambda_cal = values.get("lambda_cal")
     if not (
         isinstance(checkpoint, Path)
         and isinstance(train_path, Path)
@@ -621,6 +625,8 @@ def _run_train(values: dict[str, object]) -> int:
         and isinstance(batch_size, int)
         and isinstance(eval_every, int)
         and isinstance(lr, float)
+        and isinstance(beta, float)
+        and isinstance(lambda_cal, float)
     ):
         return 1
     if not checkpoint.exists():
@@ -643,6 +649,7 @@ def _run_train(values: dict[str, object]) -> int:
             lr=lr,
             batch_size=batch_size,
             eval_every=eval_every,
+            objective=RLCDConfig(beta=beta, lambda_cal=lambda_cal),
         ),
     )
     print(json.dumps({"verdict": report["verdict"], "steps": report["steps"]}))  # noqa: T201

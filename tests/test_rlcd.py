@@ -264,3 +264,27 @@ def test_train_cli_rejects_a_missing_checkpoint_without_writing_a_report(
     )
     assert exit_code != 0
     assert not (out_dir / "report.json").exists()
+
+
+def test_train_cli_accepts_second_attempt_hparams(tmp_path: Path) -> None:
+    """Plan second attempt: beta 0.3 and lambda_cal 1.0 must parse."""
+    exit_code = main(
+        [
+            "train",
+            "--checkpoint",
+            str(tmp_path / "absent-ckpt"),
+            "--train",
+            str(tmp_path / "train.jsonl"),
+            "--val",
+            str(tmp_path / "val.jsonl"),
+            "--ood",
+            str(tmp_path / "ood.jsonl"),
+            "--out",
+            str(tmp_path / "run"),
+            "--beta",
+            "0.3",
+            "--lambda-cal",
+            "1.0",
+        ]
+    )
+    assert exit_code != 0
