@@ -138,6 +138,7 @@ class _TrainingLoop:
     scheduler: torch.optim.lr_scheduler.LambdaLR
     train_examples: list[Example]
     val_examples: list[Example]
+    device: torch.device
 
 
 @dataclass(frozen=True, slots=True)
@@ -274,6 +275,35 @@ def _evaluate(
     return metrics, padded, targets
 
 
+def select_device() -> torch.device:
+    """Return the accelerator to train on, preferring CUDA when present.
+
+    gpu01 jobs 13626 and 13627 both exhausted their wall clocks because the
+    training loop autocast on "cpu" and never moved anything to the allocated
+    GPU. Device choice is therefore explicit and unit-tested rather than implied.
+    """
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    return torch.device("cpu")
+
+
+def _to_device(batch: Batch, device: torch.device) -> Batch:
+    """Move a collated batch's tensors onto the training device."""
+    if device.type == "cpu" or not isinstance(batch, SpanBatch):
+        return batch
+    return SpanBatch(
+        input_ids=batch.input_ids.to(device),
+        attention_mask=batch.attention_mask.to(device),
+        question_spans=batch.question_spans,
+        option_spans=batch.option_spans,
+        question_groups=batch.question_groups,
+        question_types=batch.question_types,
+        gold_indices=batch.gold_indices,
+        question_token_ids=batch.question_token_ids,
+        question_weights=batch.question_weights,
+    )
+
+
 def _optimizer(
     model: nn.Module, backbone_lr: float, head_lr: float
 ) -> torch.optim.AdamW:
@@ -361,9 +391,11 @@ def _train_epochs(
                 augment_example(row, augment_rng, config.augmentation_probability)
                 for row in shuffled[start : start + config.batch_size]
             ]
-            batch = runtime.collate(rows)
+            batch = _to_device(runtime.collate(rows), loop.device)
             loop.optimizer.zero_grad(set_to_none=True)
-            with torch.autocast("cpu", dtype=torch.bfloat16, enabled=config.bf16):
+            with torch.autocast(
+                loop.device.type, dtype=torch.bfloat16, enabled=config.bf16
+            ):
                 loss = training_loss(runtime.forward(runtime.model, batch))
             loss.backward()  # pyright: ignore[reportUnknownMemberType, reportUnusedCallResult]
             _ = torch.nn.utils.clip_grad_norm_(runtime.model.parameters(), 1.0)
@@ -524,6 +556,9 @@ def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
     )
     steps = max(1, math.ceil(len(train_examples) / config.batch_size) * config.epochs)
     optimizer = _optimizer(runtime.model, config.backbone_lr, config.head_lr)
+    device = select_device()
+    # Move the model ONCE, before the optimizer steps over its parameters.
+    _ = runtime.model.to(device)
     loop = _TrainingLoop(
         config,
         runtime,
@@ -531,6 +566,7 @@ def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
         _make_scheduler(optimizer, steps),
         train_examples,
         val_examples,
+        device,
     )
     losses, _, watch = _train_epochs(loop)
     report = _persist_report(
