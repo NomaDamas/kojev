@@ -1,74 +1,44 @@
-# KoJev results (snapshot)
+# KoJev evaluation results
 
-These numbers are **not** the todo 12 five-run table and **not** the todo 14
-held-out benchmark. They are the cluster artefacts that exist today, recorded
-so the README is not empty while full SFT seeds sit in the Slurm queue behind
-`QOSMaxGRESPerUser`.
-
-Recompute from a runs directory with:
-
-```bash
-uv run python -m kojev.report --runs /data2/jeffrey/kojev/runs
-```
-
-Diverged rows are listed and excluded from the median. That is the selection
-rule; it is not a suggestion.
-
-## Smoke (`--limit 2000`, 1 epoch)
-
-| run | acc | majority | gap | brier | ece | diverged |
-|---|---:|---:|---:|---:|---:|---|
-| sft-smoke-sampled | 0.6290 | 0.6012 | +0.0278 | 0.4995 | 0.1238 | no |
-| sft-smoke-clean | 0.6675 | 0.6385 | +0.0290 | 0.4403 | 0.0585 | no |
-| sft-smoke-fixed | 0.6551 | 0.6271 | +0.0280 | 0.4547 | 0.0820 | no |
-| sft-smoke-gpu6 | 0.7381 | 0.7066 | +0.0315 | 0.3702 | 0.0754 | no |
-| sft-smoke-gpu4 | — | — | — | — | — | yes |
-| sft-smoke-b8 | — | — | — | — | — | yes |
-
-Todo 10's gate is `val_acc_all - majority_all >= 0.05`. No completed smoke
-clears it. The gap is consistently ~+0.03.
-
-## Longer gold-only run (`--limit 20000`, 1 epoch, `sft-20k-truewatch`)
-
-`diverged=false`, temperature 1.15.
-
-| slice | n | acc | majority | gap |
-|---|---:|---:|---:|---:|
-| overall | 19386 | 0.6738 | 0.6446 | +0.0291 |
-| kind:choice | 4349 | 0.3656 | 0.2417 | +0.1239 |
-| kind:noul | 14537 | 0.7771 | 0.7853 | −0.0083 |
-| kind:score | 500 | 0.3520 | 0.3460 | +0.0060 |
-
-Per source, the same checkpoint is at chance on the balanced tasks:
-
-| source | n | acc | majority | gap |
-|---|---:|---:|---:|---:|
-| e9t/nsmc | 1000 | 0.5000 | 0.5060 | −0.0060 |
-| kakaobrain/kor_nli:multi_nli | 1000 | 0.4950 | 0.5000 | −0.0050 |
-| kakaobrain/kor_nli:snli | 1000 | 0.4790 | 0.5000 | −0.0210 |
-| klue/klue:nli | 1000 | 0.5040 | 0.5000 | +0.0040 |
-| KorQuAD/squad_kor_v1 | 999 | 0.4715 | 0.5005 | −0.0290 |
-| smilegate-ai/kor_unsmile | 1387 | 0.3367 | 0.4095 | −0.0728 |
-| jeanlee/kmhas_korean_hate_speech | 4500 | 0.8702 | 0.8704 | −0.0002 |
-| searle-j/kote | 4500 | 0.9540 | 0.8509 | +0.1031 |
-| wicho/kor_3i4k | 1000 | 0.6560 | 0.5510 | +0.1050 |
-
-Noul is 75% of val questions. kmhas and kote are heavily negative (majority
-0.87 and 0.96). A head that collapses toward "no" looks strong overall and
-learns almost nothing on NSMC / NLI. That is why the 0.05 overall gap has not
-moved between the 2k smoke and the 20k run.
-
-## Todo 12 five-run table
-
-Queued, not yet run. Jobs 13685/13686/13687 (A: A.X-Encoder-base, gold only,
-seeds 0/1/2), 13692 (B: `kakaobank/kf-deberta-base` control), 13693 (C: gold +
-distill weight 0.5). All `PENDING (QOSMaxGRESPerUser)` at the time of this
-snapshot.
-
-## Todo 14 held-out benchmarks
-
-Not yet run. KoBEST stays fully held out; it is not in the gold builder.
-
-## RLCD
-
-Not yet run. Verdict will be GO or a plain negative result, not a silent skip.
+| model | split | states | acc | brier | ece | p50_ms | p95_ms | report |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| main | boolq | 1404 | 0.5014245014245015 | 0.5221045923753058 | n/a | 13.299362966790795 | 17.97109702602029 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | copa | 1000 | 0.471 | 0.5948480176940331 | n/a | 11.623582569882274 | 16.135317040607333 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | gold-val | 6499 | 0.7190240379655422 | 0.33308753775170247 | n/a | 14.596455032005906 | 26.61545993760228 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | hellaswag | 500 | 0.28 | 0.788878411870593 | n/a | 13.09115590993315 | 16.006442019715905 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | nli | 2153 | 0.34974454249883885 | 0.6795080206837595 | n/a | 13.895498821511865 | 19.899389008060098 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | ood | 6345 | 0.5201585613458377 | 0.5523285595881593 | n/a | 13.644564896821976 | 19.83572100289166 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | sentineg | 396 | 0.4898989898989899 | 0.6650409083766214 | n/a | 12.355473008938134 | 18.41983897611499 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | sts | 519 | 0.12909441233140656 | 0.8796065603875337 | n/a | 13.268507085740566 | 16.07347815297544 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | wic | 1260 | 0.4666666666666667 | 0.5474906590370782 | n/a | 11.89580955542624 | 14.650215161964297 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| main | ynat | 7825 | 0.22236421725239616 | 0.8456615013689237 | n/a | 14.599147019907832 | 25.15104180201888 | /data2/jeffrey/kojev/runs/eval-full/report-main.json |
+| seed0 | boolq | 1404 | 0.5064102564102564 | 0.5174859393410017 | n/a | 20.69676190149039 | 30.56288999505341 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | copa | 1000 | 0.466 | 0.6009215413325988 | n/a | 21.50097454432398 | 29.125718865543604 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | gold-val | 6499 | 0.7134530073248736 | 0.3361541208261258 | n/a | 19.413093104958534 | 37.79732319526374 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | hellaswag | 500 | 0.278 | 0.7897530530143483 | n/a | 18.724633613601327 | 34.0400580316782 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | nli | 2153 | 0.3399907106363214 | 0.7033421225135862 | n/a | 15.052443835884333 | 21.426927065476775 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | ood | 6345 | 0.5097167166199362 | 0.5774896520433286 | n/a | 20.62916406430304 | 30.047250911593437 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | sentineg | 396 | 0.47474747474747475 | 0.608669688561671 | n/a | 26.550619397312403 | 32.3901018127799 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | sts | 519 | 0.14258188824662812 | 0.8657073426753215 | n/a | 15.71583398617804 | 21.834932966157794 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | wic | 1260 | 0.5047619047619047 | 0.5377213957040549 | n/a | 21.97156846523285 | 30.524447094649076 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed0 | ynat | 7825 | 0.24651757188498402 | 0.8316359269310035 | n/a | 21.891139913350344 | 35.30099312774837 | /data2/jeffrey/kojev/runs/eval-full/report-seed0.json |
+| seed1 | boolq | 1404 | 0.5049857549857549 | 0.5246224567700635 | n/a | 14.931238489225507 | 21.150011103600264 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | copa | 1000 | 0.458 | 0.5308203509347297 | n/a | 12.275857385247946 | 15.314321033656597 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | gold-val | 6499 | 0.7234602290312597 | 0.3265273410334128 | n/a | 16.098391031846404 | 26.98646206408739 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | hellaswag | 500 | 0.308 | 0.75346824837869 | n/a | 13.043215032666922 | 15.006555942818522 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | nli | 2153 | 0.35764050162563865 | 0.6663507030018831 | n/a | 18.068674951791763 | 28.256054036319256 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | ood | 6345 | 0.5230590737696993 | 0.5447067982365857 | n/a | 13.663403922691941 | 20.04973986186087 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | sentineg | 396 | 0.4621212121212121 | 0.5209601487143706 | n/a | 11.551626492291689 | 13.133626896888018 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | sts | 519 | 0.19460500963391136 | 0.8508595345586957 | n/a | 15.019980957731605 | 21.869617979973555 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | wic | 1260 | 0.4976190476190476 | 0.5160287421951223 | n/a | 12.256841058842838 | 17.82388985157013 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| seed1 | ynat | 7825 | 0.1605111821086262 | 0.844076942062733 | n/a | 12.45593000203371 | 18.632075982168317 | /data2/jeffrey/kojev/runs/eval-full/report-seed1.json |
+| distill | boolq | 1404 | 0.5 | 0.5269627604972891 | n/a | 20.719110849313438 | 31.653007958084345 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | copa | 1000 | 0.501 | 0.5993319459422406 | n/a | 18.233392969705164 | 25.00041713938117 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | gold-val | 6499 | 0.7290828432889714 | 0.32707715213954286 | n/a | 18.784213811159134 | 38.27146510593593 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | hellaswag | 500 | 0.312 | 0.777530742627155 | n/a | 20.24380152579397 | 27.18892297707498 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | nli | 2153 | 0.34045517882025084 | 0.7078197258506829 | n/a | 29.255822068080306 | 41.008863830938935 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | ood | 6345 | 0.5521608817557768 | 0.5673654341978714 | n/a | 19.041742896661162 | 33.4945369977504 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | sentineg | 396 | 0.4318181818181818 | 0.5960940412712163 | n/a | 17.195680062286556 | 23.591051809489727 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | sts | 519 | 0.14450867052023122 | 0.8839973409545444 | n/a | 32.68188494257629 | 41.313898051157594 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | wic | 1260 | 0.4595238095238095 | 0.5686055526754886 | n/a | 23.023274028673768 | 31.96504688821733 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| distill | ynat | 7825 | 0.4475399361022364 | 0.6956492166166676 | n/a | 17.242630943655968 | 26.5818580519408 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
