@@ -244,7 +244,7 @@ Your next move: run `/ulw-execute` on this plan (plan-reviewer high-accuracy rev
   QA scenarios: happy = real `curl -i -X POST 127.0.0.1:8930/v1/systemone -d @tests/fixtures/req.json` against uvicorn with the trained checkpoint returns 200 + calibrated answers (capture body); then kill server pid and verify `kill -0` fails (cleanup receipt). failure = malformed body curl returns 422 with error_type. Evidence .omo/evidence/task-15-kojev.txt
   Commit: Y | feat(serve): jev-compatible local systemone endpoint
 
-- [ ] 16. Final report + packaging + budget/receipt audit
+- [x] 16. Final report + packaging + budget/receipt audit
   Recommended task executor category: writing
   What to do / Must NOT do: `README.md` (repo): what KoJev is, recipe provenance (kotoba-lang/typed-decisions; TypeSafe Jev as reference point, independent, no affiliation), full results tables from eval/RESULTS.md, seed spreads, RLCD verdict (GO or negative result stated plainly), budget audit (ledger total vs $100), reproduction commands (sync -> sbatch chain), data licenses table (each HF dataset's license short row + AI Hub note), limitations (OOD ceiling expectations from the recipe, ModernBERT instability record, teacher label caveats). Package main checkpoint as local bundle /data2/jeffrey/kojev/release/kojev-v0/ (backbone HF format + head.safetensors + tokenizer + kojev_config.json with pooling/temperature/provenance) + loader round-trip test from a clean dir. Must NOT: no HF upload; no claims not backed by a report.json path; no "beats Jev" claims (not comparable — different labels).
   Parallelization: Wave 5 | Blocked by: 14,15 | Blocks: -

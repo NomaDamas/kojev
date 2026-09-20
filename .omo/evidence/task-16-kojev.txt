@@ -89,3 +89,16 @@ BUDGET
 CLEANUP
   Removed /tmp/kojev-todo16-cli after capturing the transcripts above.
   No server, process, or network resource was created by this task.
+
+--- CLUSTER HALF (2026-09-21) ---
+README sections present: Status, Results, RLCD verdict, Budget, Reproduction,
+Data licenses, Limitations.
+eval/RESULTS.md is the full six-model table (not invented numbers).
+Bundle: /data2/jeffrey/kojev/release/kojev-v0 (6 files) restored to
+/data2/jeffrey/kojev/restore-v0.
+Fresh venv /data2/jeffrey/kojev/venv-fresh16 decide() noul
+0.13196 / 0.15110 / 0.37497 (task-16-fresh-venv.txt).
+Tampered temperature "hot" -> EncodingError (task-16-tampered-config.txt).
+Ledger: uv run python -m kojev.release audit data/distill/ledger.jsonl
+{"total_usd": 2.9455706409999483, "records": 37557, "under_cap": true}
+README quotes $2.945571. No HF upload.
