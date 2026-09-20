@@ -22,6 +22,7 @@ from kojev.bench import (
     map_klue_row,
     map_kobest_row,
     metric_report,
+    render_metric_tables,
     render_task_grid,
 )
 from kojev.schema import JsonValue, Question, QuestionType
@@ -300,5 +301,26 @@ def test_grid_cli_writes_results_from_named_json_reports(
     monkeypatch.setattr(sys, "argv", ["kojev.bench", *paths, "--results", str(results)])
     bench.main()
     table = results.read_text(encoding="utf-8")
-    assert table.splitlines()[0].count("|") == 10
-    assert len([line for line in table.splitlines() if line.startswith("| main")]) == 1
+    assert "## Accuracy" in table
+    assert "## Brier" in table
+    assert table.count("| main |") == 4
+    headers = [line for line in table.splitlines() if "| boolq |" in line]
+    assert headers
+    assert headers[0].count("|") == 10
+
+
+def test_metric_tables_include_f1_brier_and_ece_sections() -> None:
+    """Plan RESULTS tables: per-task acc, F1, Brier, ECE — not accuracy alone."""
+    models = (
+        ("main", _full_tasks(0.50)),
+        ("rlcd", _full_tasks(0.51)),
+        ("control", _full_tasks(0.40)),
+        ("distill", _full_tasks(0.49)),
+        ("english", _full_tasks(0.20)),
+    )
+    document = render_metric_tables(models)
+    for heading in ("## Accuracy", "## Macro-F1", "## Brier", "## ECE-15"):
+        assert heading in document
+    assert document.count("| model |") == 4
+    assert "0.250" in document  # brier from the fixture
+    assert "0.100" in document  # ece_15 from the fixture
