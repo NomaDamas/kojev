@@ -67,15 +67,48 @@ All cluster paths in the templates and sync script live under
 
 ## Local gates
 
+Measured in a FRESH clone of `feat/infra`, which is what an auditor sees:
+
 ```text
-uv run pytest -q            => 16 passed
-uv run ruff check .         => All checks passed!
-uv run ruff format --check . => 7 files already formatted
+uv run pytest -q             => 16 passed
+uv run ruff check .          => All checks passed!
+uv run ruff format --check . => 5 files already formatted
 ```
+
+An earlier revision of this file reported "7 files already formatted". That
+number came from the development worktree, which carries untracked scratch files
+a clean checkout does not have. The clean-checkout figure of 5 is the correct
+one.
+
+## Commit provenance for this task
+
+This evidence describes the CUMULATIVE state of branch `feat/infra`, not a single
+commit. The branch contains:
+
+```text
+2076e20  feat(infra): gpu01 sync + slurm templates with shared cache and prebuilt venv
+         scripts/sync.sh, scripts/slurm/{smoke,train}.sbatch, tests/test_sync_slurm.py
+06d5aa0  docs(infra): record gpu01 cluster diagnosis and template corrections
+8121903  fix(infra): launch shared-venv interpreter directly instead of through uv
+         scripts/slurm/{smoke,train}.sbatch, tests/test_sync_slurm.py
+6acd32b  fix(infra): tolerate the documented -- separator in sbatch invocations
+         scripts/slurm/{smoke,train}.sbatch, tests/test_sync_slurm.py
+ee930e7  docs(infra): refresh todo-2 evidence to current verified state
+0153ab4  feat(infra): gpu01 slurm smoke proves CUDA True with shared prebuilt venv
+         .omo/evidence/task-2-kojev.txt only
+```
+
+The template and test changes landed in 2076e20, 8121903 and 6acd32b. The tip
+commit carries only this evidence file. The template work was committed before
+the CUDA proof existed specifically so that verified code would not be lost while
+the cluster was unreachable; those commits were preserved work and never a claim
+of completion.
 
 ## Full job history (nothing omitted)
 
-Six jobs failed before 13622. Each eliminated a distinct cause:
+Six jobs failed to reach COMPLETED before 13622. Their terminal states differ and
+are named exactly below: four FAILED, one CANCELLED, one TIMEOUT. Each eliminated
+a distinct cause:
 
 | Job | Outcome | Cause eliminated |
 |---|---|---|
