@@ -1,0 +1,81 @@
+# KoJev todo 14 partial evidence: evaluation CLI
+
+## Scope of this increment
+
+Todo 14 requires running the harness over named checkpoints and emitting
+eval/RESULTS.md. `python -m kojev.evaluate --help` exited 0 printing NOTHING:
+the module had no argparse and no `__main__`, so the run was not expressible.
+This increment makes it runnable. It does NOT complete todo 14, which still
+needs real trained checkpoints from todo 12, the public open-jev baseline row,
+and the full table set.
+
+## RED proof (before production code)
+
+```text
+ImportError: cannot import name 'main' from 'kojev.evaluate'
+1 error in 0.35s
+```
+
+## GREEN
+
+```text
+uv run pytest -q              => 117 passed
+uv run ruff check kojev tests => All checks passed!
+uv run ruff format --check     => 32 files already formatted
+uv run basedpyright kojev tests => 0 errors, 0 warnings, 0 notes
+```
+
+## Real-surface QA
+
+```text
+$ python -m kojev.evaluate --help
+usage: kojev.evaluate [-h] --checkpoint CHECKPOINT --train TRAIN --split SPLIT
+                      --out OUT --results RESULTS
+
+Score named checkpoints over gold/OOD splits into RESULTS.md.
+```
+
+Checkpoints and splits are given as repeated NAME=PATH pairs so RESULTS.md rows
+stay traceable to the model and report that produced them.
+
+## Todo 14's named failure case
+
+A checkpoint path that does not exist exits NONZERO and writes no RESULTS.md:
+
+```text
+test_cli_rejects_a_missing_checkpoint_and_writes_no_results  PASSED
+  assert exit_code != 0
+  assert not results.exists()
+```
+
+A defect was found and fixed while building this: the model loader originally ran
+BEFORE checkpoint validation, so a missing directory raised an untyped error that
+escaped the typed handler. `resolve_checkpoint` is now called first, which is the
+correct order regardless.
+
+## Non-tautology proof (mutation)
+
+Removing the pre-validation line makes the missing-checkpoint test fail:
+
+```text
+MUTATION (remove pre-validation) -> exit 1
+1 failed, 9 passed
+```
+
+So the test genuinely pins the ordering, not merely the presence of an error.
+
+## Design notes
+
+- Scoring, contamination, and latency logic were NOT touched; the CLI calls the
+  existing tested `evaluate()`.
+- All checkpoints are evaluated before RESULTS.md is rendered, so one unusable
+  checkpoint cannot leave a partial results table that looks like a measurement.
+- `_EvalArgs` uses `None` defaults rather than `[]` so the class attributes stay
+  immutable (RUF012) while argparse's append action still gets a mutable list.
+- `# noqa: T201` on CLI prints follows the existing convention in
+  `kojev/train.py`: intentional stdout, not a silenced defect.
+
+## Cleanup receipt
+
+- The mutation check ran in a disposable copy under /var/folders and was removed.
+- No cluster commands were issued; gpu01 job 13627 was untouched.
