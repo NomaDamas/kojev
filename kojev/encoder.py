@@ -333,7 +333,11 @@ class SpanScorer(nn.Module):
     @override
     def forward(self, features: Tensor) -> Tensor:
         """Return one scalar logit per option feature row."""
-        hidden = self.activation.forward(self.input_layer.forward(features))
+        # A bfloat16 checkpoint emits reduced-precision hidden states while this
+        # head holds fp32 weights. Autocast hides the difference during training
+        # but evaluation runs without it (gpu01 job 13633), so align explicitly.
+        aligned = features.to(self.input_layer.weight.dtype)
+        hidden = self.activation.forward(self.input_layer.forward(aligned))
         hidden = self.activation.forward(self.hidden_layer.forward(hidden))
         return self.output_layer.forward(hidden)
 

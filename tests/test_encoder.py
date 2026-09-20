@@ -20,6 +20,7 @@ from transformers import (
 )
 
 from kojev.encoder import (
+    BackboneConfig,
     CheckpointProvenance,
     KoJevModel,
     SpanCollator,
@@ -500,3 +501,44 @@ def test_forward_survives_softmax_promoting_dtype(
     for group in output.groups:
         total = float(grouped[torch.tensor(group)].sum())
         assert total == pytest.approx(1.0, abs=1e-2)
+
+
+def test_head_accepts_reduced_precision_backbone_output() -> None:
+    """The head must consume whatever dtype the backbone emits, without autocast.
+
+    Regression for gpu01 job 13633. The A.X checkpoint config carries
+    torch_dtype bfloat16, so the loaded backbone emits BFloat16 hidden states
+    while the freshly constructed SpanScorer holds Float32 weights. Training
+    hid the mismatch because autocast casts both sides; evaluation runs without
+    autocast and raised:
+
+        RuntimeError: mat1 and mat2 must have the same dtype, but got
+        BFloat16 and Float
+    """
+    _, collator = _tiny_model()
+    batch = collator(_examples())
+    # Emit reduced precision from the backbone, as a bfloat16 checkpoint does.
+    inner = TinyBackbone()
+
+    class _HalfPrecisionBackbone(nn.Module):
+        inner: TinyBackbone
+        config: BackboneConfig
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.inner = inner
+            self.config = inner.config
+
+        @override
+        def forward(self, input_ids: Tensor, attention_mask: Tensor) -> TinyOutput:
+            output: TinyOutput = self.inner.forward(
+                input_ids=input_ids, attention_mask=attention_mask
+            )
+            hidden: Tensor = output.last_hidden_state
+            return TinyOutput(hidden.bfloat16())
+
+    model = KoJevModel(_HalfPrecisionBackbone(), head_hidden_size=8)
+
+    output = model.forward(batch)
+
+    assert torch.isfinite(output.logits.float()).all()
