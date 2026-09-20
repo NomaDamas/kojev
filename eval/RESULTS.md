@@ -42,3 +42,22 @@
 | distill | sts | 519 | 0.14450867052023122 | 0.8839973409545444 | n/a | 32.68188494257629 | 41.313898051157594 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
 | distill | wic | 1260 | 0.4595238095238095 | 0.5686055526754886 | n/a | 23.023274028673768 | 31.96504688821733 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
 | distill | ynat | 7825 | 0.4475399361022364 | 0.6956492166166676 | n/a | 17.242630943655968 | 26.5818580519408 | /data2/jeffrey/kojev/runs/eval-full/report-distill.json |
+| control | boolq | 1404 | 0.5363247863247863 | 0.8327019530373164 | n/a | 22.078954032622278 | 30.50642996095121 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | copa | 1000 | 0.616 | 0.4772393854344448 | n/a | 18.55583768337965 | 24.8626540414989 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | gold-val | 6499 | 0.9132492113564669 | 0.13010270676919722 | n/a | 18.759487895295024 | 28.21236103773117 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | hellaswag | 500 | 0.376 | 0.7088961439879045 | n/a | 21.507609984837472 | 29.816915979608893 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | nli | 2153 | 0.7073850441244774 | 0.414396978439201 | n/a | 29.317700071260333 | 32.924046041443944 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | ood | 6345 | 0.38093396500048343 | 0.9544937040220541 | n/a | 18.946408992633224 | 28.302425984293222 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | sentineg | 396 | 0.9090909090909091 | 0.17560744146237245 | n/a | 20.241292542777956 | 26.718928012996912 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | sts | 519 | 0.4527938342967245 | 0.6697767032332337 | n/a | 29.849991900846362 | 34.224265022203326 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | wic | 1260 | 0.5634920634920635 | 0.5486228868470043 | n/a | 21.709185908548534 | 29.444799991324544 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+| control | ynat | 7825 | 0.8483067092651757 | 0.21824457319864127 | n/a | 22.34632195904851 | 30.25332512333989 | /data2/jeffrey/kojev/runs/eval-full/report-control.json |
+
+## Latency protocol
+
+1 state x 10 questions; 3 warmups dropped; 20 repeats.
+
+| model | e2e_p50 | e2e_p95 | fwd_p50 | fwd_p95 | qps_b8 | qps_b32 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| main | 15.434 | 16.371 | 0.000 | 0.000 | 631.7 | 645.6 |
+| control | 17.999 | 20.986 | 0.000 | 0.000 | 559.9 | 572.8 |

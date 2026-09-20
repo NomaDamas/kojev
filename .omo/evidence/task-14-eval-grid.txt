@@ -1,0 +1,13 @@
+# Todo 14 eval grid (OpenJev still missing)
+
+Job 13709 COMPLETED 4 A.X reports then FAILED on DeBERTa overflow.
+Job 13711 COMPLETED 00:10:37 control report-control.json (skipped_overflow=500).
+Missing checkpoint: evaluate gone=/tmp/no-such-ckpt exit 1, no RESULTS.
+
+5 models x 10 splits in eval/RESULTS.md (gold-val, ood, 5 KoBEST, 3 KLUE).
+Latency protocol gpu01 (1x10, 3 warmups, 20 repeats):
+  main e2e p50=15.4ms p95=16.4ms  qps_b8=632 qps_b32=646
+  control e2e p50=18.0ms p95=21.0ms qps_b8=560 qps_b32=573
+fwd_p50=0: wrap_kojev_model has no separate forward hook.
+
+OpenJev (typed_decisions) not installed; uv pip fights the shared venv.
