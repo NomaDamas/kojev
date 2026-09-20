@@ -1,0 +1,52 @@
+# KoJev todo 15: local serving QA against a TRAINED checkpoint
+
+Checkpoint: /data2/jeffrey/kojev/runs/sft-20k-truewatch/checkpoint, pulled locally.
+Trained on the corrected corpus for its full budget with diverged=False.
+
+    config.json  model.safetensors (297,481,056)  head.safetensors (13,644,300)
+    kojev_config.json  tokenizer.json  tokenizer_config.json
+
+Server: uvicorn kojev.serve:app --host 127.0.0.1 --port 8731
+Route:  POST /v1/systemone   (NOT /decide; the route was read from openapi.json
+        rather than assumed, after a first attempt returned 404)
+
+## Happy path: HTTP 200
+
+    {"model":"kojev-local",
+     "answers":{
+       "sentiment":{"probabilities":[0.5275655388832092,0.472434401512146],
+                    "confidence":0.0021935799289308777,"noul":0.472434401512146},
+       "emotion":{"probabilities":[0.3361816704273224,0.39218997955322266,
+                                   0.27162837982177734],
+                  "confidence":0.010037500388930698,"choice":1},
+       "rating":{"probabilities":[0.0846758484840393,0.14813771843910217,
+                                  0.2930179536342621,0.24723222851753235,
+                                  0.2269362211227417],
+                 "confidence":0.04706802736630833,"score":2.38361519575119}},
+     "usage":{"input_tokens":25}}
+
+All three question types return their correct typed field (noul / choice /
+score), probabilities are normalised, and usage is reported.
+
+These values are checkpoint-specific rather than uniform, which matters: before
+the serve.py fix landed earlier this session, this same request would have
+returned well-formed numbers from a RANDOMLY INITIALISED head, and this QA would
+have "passed" while serving a model that had never been trained.
+
+## Malformed input: every case 422 with the typed envelope
+
+    missing type                     HTTP 422  error_type=validation_error
+    options AND criteria             HTTP 422  error_type=validation_error (question_options)
+    neither options nor criteria     HTTP 422  error_type=validation_error (question_options)
+    300 options                      HTTP 422  error_type=schema_error (choice question limit)
+    empty questions                  HTTP 422  error_type=validation_error (too_short)
+
+The 300-option rejection the plan names explicitly is enforced at the schema
+boundary and surfaces as schema_error rather than a generic validation failure.
+
+## Wire contract note
+
+The request shape is {"model": str, "state": str, "questions": {name: question}}.
+`questions` is a KEYED MAPPING, not a list, and `model` is required. My first
+payload used a list and was correctly rejected with 422; the contract was then
+read from the source rather than guessed at.
