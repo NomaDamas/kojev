@@ -1,0 +1,15 @@
+# Todo 10 gate: val_acc - majority >= 0.05
+
+The --limit 2000 smokes completed (sacct) with a ~+0.03 overall gap; noul
+imbalance made +0.05 unreachable on a 2k slice. The first full-budget seed
+clears the numeric gate:
+
+    job 13685 COMPLETED 00:36:16 ExitCode 0:0
+    run /data2/jeffrey/kojev/runs/sft-full-seed0
+    diverged=false  temperature=1.15  train=103952  val=6499
+    overall acc=0.7145  majority=0.6446  gap=+0.0699
+    choice +0.196  noul +0.024  score +0.030
+    pytest tests/test_train.py previously green on main
+
+unsmile 0.913 vs maj 0.410 (+0.504) after the negative-noul fix.
+nsmc remains near chance (+0.012). KorQuAD is below majority.

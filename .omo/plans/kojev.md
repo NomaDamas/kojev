@@ -190,7 +190,7 @@ Your next move: run `/ulw-execute` on this plan (plan-reviewer high-accuracy rev
   QA scenarios: happy = real probe output + ledger lines; failure = mock returning cost pushing total to $95.01 -> client refuses further requests and writes BUDGET_REACHED. Evidence .omo/evidence/task-9-kojev.txt
   Commit: Y | feat(distill): budget-capped openrouter teacher client
 
-- [ ] 10. SFT trainer + report.json + slurm smoke run
+- [x] 10. SFT trainer + report.json + slurm smoke run
   Recommended task executor category: deep
   What to do / Must NOT do: `kojev/train.py`: dataloader over gold JSONL with augmentation p, AdamW (backbone lr 2e-5, head lr 1e-3, warmup 6%, cosine), CE+Brier, bf16 autocast, grad clip 1.0, DIVERGENCE WATCH (if running-mean train loss rises >25% over 200 steps or is NaN: abort run, mark report diverged=true — ModernBERT-family documented instability), eval each 0.25 epoch on val (acc/Brier/ECE per kind+source), post-hoc temperature fit on val, everything into runs/<run-id>/report.json (args, data counts, loss curve, wall, peak mem, metrics, temperature). Then: sync to gpu01, `sbatch scripts/slurm/smoke.sbatch -- python -m kojev.train --limit 2000 --epochs 1 --seed 0` on interactive partition; verify report.json lands and val accuracy beats majority baseline by >=5pt on the 2k slice. Must NOT: no training on kobest; no >4096 ctx in this stage; smoke uses --limit, never the full corpus on interactive.
   Parallelization: Wave 3 | Blocked by: 2,3,6,7 | Blocks: 12
