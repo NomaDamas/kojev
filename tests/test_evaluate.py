@@ -13,6 +13,7 @@ from kojev.evaluate import (
     EvaluationError,
     assert_no_train_contamination,
     evaluate,
+    main,
     resolve_checkpoint,
 )
 from kojev.schema import Example, Question, QuestionType, write_jsonl
@@ -227,3 +228,75 @@ def test_evaluate_refuses_a_contaminated_split_end_to_end(tmp_path: Path) -> Non
         )
 
     assert not out.exists()
+
+
+def test_cli_rejects_a_missing_checkpoint_and_writes_no_results(
+    tmp_path: Path,
+) -> None:
+    """Todo 14 names this failure: a bad checkpoint path must exit nonzero.
+
+    It must also leave no partial RESULTS.md behind, because a half-written
+    results table is worse than no table: it looks like a real measurement.
+    """
+    train = tmp_path / "train.jsonl"
+    test = tmp_path / "test.jsonl"
+    write_jsonl(train, [_example("훈련 상태", 1, split="train")])
+    write_jsonl(test, [_example("평가 상태", 1)])
+    results = tmp_path / "RESULTS.md"
+    absent = tmp_path / "no-such-checkpoint"
+
+    exit_code = main(
+        [
+            "--checkpoint",
+            f"main={absent}",
+            "--train",
+            str(train),
+            "--split",
+            f"gold_test={test}",
+            "--out",
+            str(tmp_path / "report.json"),
+            "--results",
+            str(results),
+        ]
+    )
+
+    assert exit_code != 0
+    assert not results.exists()
+
+
+def test_cli_emits_a_results_table_for_each_named_checkpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """RESULTS.md must carry one row per named model, traceable to its report."""
+    train = tmp_path / "train.jsonl"
+    test = tmp_path / "test.jsonl"
+    write_jsonl(train, [_example("훈련 상태", 1, split="train")])
+    write_jsonl(test, [_example("평가 상태", 1)])
+    checkpoint = _checkpoint(tmp_path)
+    results = tmp_path / "RESULTS.md"
+
+    def _fake_load(_checkpoint: Path) -> _FixedModel:
+        return _FixedModel([(0.25, 0.75)])
+
+    monkeypatch.setattr("kojev.evaluate._load_decision_model", _fake_load)
+
+    exit_code = main(
+        [
+            "--checkpoint",
+            f"main={checkpoint}",
+            "--train",
+            str(train),
+            "--split",
+            f"gold_test={test}",
+            "--out",
+            str(tmp_path / "report.json"),
+            "--results",
+            str(results),
+        ]
+    )
+
+    assert exit_code == 0
+    rendered = results.read_text(encoding="utf-8")
+    assert "| model |" in rendered
+    assert "main" in rendered
+    assert "gold_test" in rendered
