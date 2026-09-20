@@ -48,14 +48,23 @@ class LedgerRecord(BaseModel):
 
 
 class OutputLine(BaseModel):
-    """The request metadata persisted beside one labeled example."""
+    """Resume view of one labeled example, schema-valid or legacy extra keys."""
 
     model_config: ClassVar[ConfigDict] = ConfigDict(extra="ignore")
 
     state: str
-    request_id: str
+    request_id: str | None = None
     candidate_id: str | None = None
     questions: list[Question] = []
+
+    def provider_request_id(self) -> str | None:
+        """Prefer a top-level id, else the stamped question meta."""
+        if self.request_id is not None:
+            return self.request_id
+        if not self.questions:
+            return None
+        value = self.questions[0].meta.get("provider_request_id")
+        return value if isinstance(value, str) else None
 
 
 @dataclass(frozen=True, slots=True)
@@ -307,12 +316,7 @@ class LabelRunner:
         self._output_path.parent.mkdir(parents=True, exist_ok=True)
         with self._output_path.open("a", encoding="utf-8") as handle:
             for record in records:
-                payload = record.example.model_dump(mode="json")
-                payload["label_source"] = LABEL_SOURCE
-                payload["request_id"] = record.request_id
-                payload["candidate_id"] = record.candidate_id
-                payload["cost_usd"] = record.cost_usd
-                _ = handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
+                _ = handle.write(f"{record.example.model_dump_json()}\n")
 
     async def _run_wave(
         self, examples: Sequence[Example], issued: set[str], candidate_ids: set[str]

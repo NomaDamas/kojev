@@ -1,0 +1,9 @@
+# Distill JSONL extra keys (job 13693)
+
+read_jsonl rejected every distill line: label_source, request_id, cost_usd
+were written at Example top-level (extra=forbid). 33340 lines / 100020
+questions already had the same fields in questions[].meta.
+
+Cluster rewrite: dropped top-level extras; train.jsonl now parses.
+label.py _append_records now writes Example.model_dump_json() only.
+Resume still reads legacy extra keys via OutputLine extra=ignore.

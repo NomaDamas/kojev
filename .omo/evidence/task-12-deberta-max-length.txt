@@ -1,0 +1,8 @@
+# Control DeBERTa OOM / 512-window (jobs 13692, 13698)
+
+kf-deberta-base max_position_embeddings=512. SpanCollator packed 4096
+(and a 5334-token warning). Job 13692 OOM at batch 16 (12GiB attention).
+Job 13698 cancelled at batch 4 / 95GB after the 5334>512 warning.
+
+from_pretrained now caps collator max_length at min(4096, native window).
+A.X-Encoder stays 4096 (native 8192). Control will rerun at 512.

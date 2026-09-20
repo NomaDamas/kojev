@@ -67,6 +67,7 @@ class TinyConfig:
     """Minimal backbone configuration."""
 
     hidden_size: int
+    max_position_embeddings: int = 4096
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,9 +181,14 @@ class ResizingBackbone(nn.Module):
     config: TinyConfig
     embedding: nn.Embedding
 
-    def __init__(self, vocab_size: int, hidden_size: int = 8) -> None:
+    def __init__(
+        self,
+        vocab_size: int,
+        hidden_size: int = 8,
+        max_position_embeddings: int = 4096,
+    ) -> None:
         super().__init__()
-        self.config = TinyConfig(hidden_size)
+        self.config = TinyConfig(hidden_size, max_position_embeddings)
         self.embedding = nn.Embedding(vocab_size, hidden_size)
 
     def resize_token_embeddings(self, new_num_tokens: int) -> nn.Embedding:
@@ -247,9 +253,14 @@ def test_deberta_v2_pretrained_path_uses_auto_loader(
         intermediate_size=16,
         num_hidden_layers=1,
         num_attention_heads=2,
+        max_position_embeddings=512,
     )
     tokenizer = ExactVocabTokenizer(config.vocab_size)
-    backbone = ResizingBackbone(config.vocab_size, hidden_size=config.hidden_size)
+    backbone = ResizingBackbone(
+        config.vocab_size,
+        hidden_size=config.hidden_size,
+        max_position_embeddings=512,
+    )
     calls: list[str] = []
 
     def fake_config(name: str) -> DebertaV2Config:
@@ -269,8 +280,9 @@ def test_deberta_v2_pretrained_path_uses_auto_loader(
     monkeypatch.setattr("kojev.encoder.AutoModel.from_pretrained", fake_model)
     monkeypatch.setattr("kojev.encoder.AutoTokenizer.from_pretrained", fake_tokenizer)
 
-    model, _ = KoJevModel.from_pretrained("synthetic-deberta")
+    model, collator = KoJevModel.from_pretrained("synthetic-deberta")
 
+    assert collator.max_length == 512
     assert calls == [
         "tokenizer:synthetic-deberta",
         "config:synthetic-deberta",

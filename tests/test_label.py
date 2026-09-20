@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 import anyio
 import httpx
 import pytest
-from pydantic import BaseModel, ConfigDict
 
 import kojev.label
 from kojev.label import (
@@ -17,28 +16,11 @@ from kojev.label import (
     OutputLine,
     build_goldless_families,
 )
-from kojev.schema import Example, Question, QuestionType
+from kojev.schema import Example, Question, QuestionType, read_jsonl
 from kojev.teacher import TeacherClient
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-
-class QuestionOutput(BaseModel):
-    """Typed serialized question projection used by the test boundary."""
-
-    model_config: ClassVar[ConfigDict] = ConfigDict(extra="ignore")
-
-    meta: dict[str, str]
-
-
-class LabeledOutput(BaseModel):
-    """Typed serialized output projection used by the test boundary."""
-
-    model_config: ClassVar[ConfigDict] = ConfigDict(extra="ignore")
-
-    label_source: str
-    questions: list[QuestionOutput]
 
 
 def _response(request_id: str, content: str = "A1: 1\nA2: 0\nA3: 2") -> httpx.Response:
@@ -116,15 +98,18 @@ async def test_resume_dedupes_completed_request_ids_and_stamps_source(
     # Then the second invocation appends no duplicate and every question is stamped
     assert first == 1
     assert second == 0
-    records = [json.loads(line) for line in output.read_text().splitlines()]
-    labeled = LabeledOutput.model_validate(records[0])
-    assert labeled.label_source == "teacher:qwen3-vl-8b-instruct"
+    parsed = read_jsonl(output)
+    assert len(parsed) == 1
     assert all(
         question.meta["label_source"] == "teacher:qwen3-vl-8b-instruct"
-        for question in labeled.questions
+        for question in parsed[0].questions
     )
-    assert OutputLine.model_validate(records[0]).request_id == "req-existing"
-    assert len(records) == 1
+    assert (
+        OutputLine.model_validate_json(
+            output.read_text().splitlines()[0]
+        ).provider_request_id()
+        == "req-existing"
+    )
     await client.aclose()
 
 
