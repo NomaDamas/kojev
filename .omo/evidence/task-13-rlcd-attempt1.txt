@@ -1,0 +1,16 @@
+# RLCD attempt 1 (job 13703) NO-GO
+
+COMPLETED 00:07:33 ExitCode 0:0
+run /data2/jeffrey/kojev/runs/rlcd-median-seed2
+init sft-full-seed2 (median A, val acc 0.7211)
+beta=0.1  lambda_cal=0.5  batch=4  gold-only (distill not passed)
+stopped_early=true  steps=800  (2 consecutive val-Brier rises)
+
+failed_clauses: quality, brier_drop
+val acc 0.7211 -> 0.7201 (drop 0.10pt, within 0.5pt)
+val brier 0.332 -> 0.361 (worse; need drop <= 0.005)
+ece 0.032 -> 0.079 (worse)
+selective_acc 0.866 -> 0.854 (worse)
+ood acc 0.521 -> 0.527 (slightly up)
+
+Plan requires a second attempt: beta 0.3, lambda_cal 1.0, plus teacher families.
