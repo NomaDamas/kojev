@@ -1,0 +1,88 @@
+# KoJev todo 13 partial evidence: RLCD gate CLI
+
+## Scope of this increment
+
+Plan todo 13 requires "one slurm RLCD run COMPLETED with gate verdict (GO or
+NO-GO) written into runs/<id>/report.json". `python -m kojev.rlcd --help` exited
+0 printing NOTHING: the module had no argparse and no `__main__`, so the run was
+not expressible. This increment makes the gate runnable and reportable. It does
+NOT complete todo 13, which still needs the Slurm run itself against a todo-12
+checkpoint.
+
+## RED proof (before production code)
+
+```text
+ImportError: cannot import name 'main' from 'kojev.rlcd'
+1 error in 5.17s
+```
+
+## GREEN
+
+```text
+uv run pytest -q             => 118 passed
+uv run ruff check kojev tests => All checks passed!
+uv run ruff format --check    => 32 files already formatted
+uv run basedpyright kojev tests => 0 errors, 0 warnings, 0 notes
+```
+
+## Real-surface QA
+
+```text
+$ python -m kojev.rlcd --help
+usage: kojev.rlcd [-h] --metrics METRICS --out OUT
+                  [--gate-delta-threshold GATE_DELTA_THRESHOLD]
+
+$ python -m kojev.rlcd --metrics metrics.json --out run
+exit 0
+{"verdict": "GO", "delta": 0.030000000000000027}
+
+report.json:
+{
+  "baseline_metric": 0.71,
+  "candidate_metric": 0.74,
+  "gate_delta_threshold": 0.01,
+  "held_out_metric_delta": 0.030000000000000027,
+  "verdict": "GO"
+}
+```
+
+## Adversarial: missing input must not leave a partial report
+
+```text
+$ python -m kojev.rlcd --metrics nope.json --out run2
+exit 1
+held-out metrics file does not exist: .../nope.json
+report written? False
+```
+
+The inputs are validated BEFORE the output directory is created, so a failed run
+cannot leave a half-written verdict behind.
+
+## Non-tautology proof (mutation)
+
+The CLI must take its verdict from the already-tested `rlcd_gate`, not from a
+reimplementation. Replacing `verdict = rlcd_gate(delta, config)` with a constant
+`GateDecision.GO` fails the suite:
+
+```text
+>       assert report["verdict"] == GateDecision.NO_GO.value
+E       AssertionError: assert 'GO' == 'NO-GO'
+1 failed, 7 passed
+```
+
+## Design notes
+
+- The gate logic itself was NOT touched, reimplemented, or weakened; the CLI
+  calls `rlcd_gate` and records the threshold it used.
+- The typed argparse Namespace with class-body defaults matches the convention
+  already used by `kojev/label.py`.
+- `# noqa: T201` on the two CLI prints follows the existing convention in
+  `kojev/train.py`; it marks intentional CLI stdout rather than silencing a
+  defect.
+- Tests are offline, CPU-only, and free of sleeps or timing assumptions.
+
+## Cleanup receipt
+
+- Mutation checks ran in disposable copies under /var/folders and were removed.
+- Real-surface QA used a temporary directory that was removed.
+- No cluster commands were issued; gpu01 job 13627 was untouched.
