@@ -286,6 +286,21 @@ def _evaluate(
     return metrics, padded, targets
 
 
+def _sample(examples: list[Example], limit: int, seed: int) -> list[Example]:
+    """Take `limit` examples spread across the corpus, deterministically.
+
+    Head-slicing a corpus grouped by source selects whole sources and omits the
+    rest, so the run trains on one distribution and is scored on another. A
+    seeded shuffle keeps the subset representative and the run reproducible.
+    """
+    if limit >= len(examples):
+        return examples
+    indices = list(range(len(examples)))
+    random.Random(seed).shuffle(indices)  # noqa: S311
+    chosen = sorted(indices[:limit])
+    return [examples[index] for index in chosen]
+
+
 def select_device() -> torch.device:
     """Return the accelerator to train on, preferring CUDA when present.
 
@@ -474,6 +489,8 @@ def _persist_report(context: _ReportContext) -> TrainReport:
         },
         "data_counts": {
             "train": len(context.train_examples),
+            "train_sources": len({row.source for row in context.train_examples}),
+            "val_sources": len({row.source for row in context.val_examples}),
             "val": len(context.val_examples),
             "train_questions_distill": sum(
                 1
@@ -568,8 +585,14 @@ def run_training(**kwargs: Unpack[RunTrainingKwargs]) -> TrainReport:
     if distill_path is not None:
         train_examples.extend(read_jsonl(distill_path))
     if config.limit is not None:
-        train_examples = train_examples[: config.limit]
-        val_examples = val_examples[: config.limit]
+        # Sample deterministically instead of taking a head slice. The gold
+        # corpus is written source by source, so `train_examples[:limit]` picks
+        # a pathological subset: on the real corpus --limit 2000 covered 7 of
+        # 12 sources, inflated one source from 7.7% to 33.2%, dropped the
+        # largest source entirely, and left the training slice and the
+        # evaluation slice on different distributions.
+        train_examples = _sample(train_examples, config.limit, config.seed)
+        val_examples = _sample(val_examples, config.limit, config.seed)
     runtime = _resolve_runtime(
         kwargs.get("model"),
         kwargs.get("collate_fn"),

@@ -1,0 +1,56 @@
+# KoJev: --limit trained and evaluated on different distributions
+
+Four hyperparameter configurations all plateaued at the same ~0.031 margin:
+
+| batch | backbone lr | steps | diverged | gate  |
+|-------|-------------|-------|----------|-------|
+| 4     | 2e-5        | 500   | True     | n/a   |
+| 4     | 1e-5        | 500   | True     | -0.071|
+| 8     | 2e-5        | 250   | True     | 0.0311|
+| 16    | 1e-5        | 125   | False    | 0.0315|
+| 16    | 2e-5        | 125   | False    | 0.0331|
+
+That flatness across a 4x range of step counts and two learning rates was the
+real signal: the limiter was not optimisation.
+
+## Root cause
+
+`--limit` took a HEAD SLICE of a corpus that the builder writes source by
+source, so it selected whole sources and omitted the rest.
+
+Measured on the real corpus:
+
+  first 2000 TRAIN rows: 7 of 12 sources
+    lawcompany/KLAID          33.2%   (7.7% in the full corpus, inflated 4.3x)
+    searle-j/kote             18.1%
+    e9t/nsmc                  15.2%
+    KorQuAD/squad_kor_v1       ABSENT (15.4% of the full corpus, the largest)
+    kakaobrain/kor_nli:snli    ABSENT
+    kakaobrain/kor_nli:multi   ABSENT
+    klue/klue:nli              ABSENT
+    wicho/kor_3i4k             ABSENT
+
+  first 2000 VAL rows: a DIFFERENT distribution
+    lawcompany/KLAID           3.0%   (33.2% in the training slice)
+    wicho/kor_3i4k            11.8%   (absent from the training slice)
+
+So the smoke trained on one distribution and was scored on another, including a
+source it had never seen. smilegate-ai/kor_unsmile scoring 0.12 against a 0.636
+majority was the visible symptom: not undertraining, but evaluation on material
+the training slice under-represented.
+
+## Fix
+
+`_sample` takes `limit` examples spread across the corpus using a seeded
+shuffle, so the subset stays representative and the run stays reproducible.
+`data_counts` now also reports `train_sources` and `val_sources`, so a skewed
+subset is visible in every future report instead of having to be discovered.
+
+## Non-tautology proof
+
+Restoring the head slice fails the new test:
+
+    E   AssertionError: limit covered only 3 of 12 sources
+    E   assert 3 >= 10
+
+Gates: 131 passed, ruff clean, format clean, basedpyright 0 errors.
