@@ -426,7 +426,12 @@ def wrap_open_jev(model: object) -> DecisionModel:
                     "options": list(question.options),
                 }
                 payload.append(item)
-            raw = model.decide(state, payload)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
+            try:
+                raw = model.decide(state, payload)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
+            except ValueError as error:
+                if "max_len" in str(error):
+                    raise EncodingError.questions_exceed_budget() from error
+                raise
             rows = cast("list[dict[str, object]]", raw)
             vectors: list[tuple[float, ...]] = []
             for question, row in zip(questions, rows, strict=True):
