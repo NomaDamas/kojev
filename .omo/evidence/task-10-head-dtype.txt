@@ -1,0 +1,32 @@
+# KoJev: fp32 head could not consume a bfloat16 backbone
+
+Job 13633 FAILED in 00:02:09, deeper into the run than its predecessors:
+
+    kojev/encoder.py line 422, in forward
+        logits = self.scorer.forward(torch.stack(features)).squeeze(-1)
+    RuntimeError: mat1 and mat2 must have the same dtype, but got BFloat16 and Float
+
+The traceback placed it in _collect, the EVALUATION path, which runs without
+autocast.
+
+## Root cause
+
+The A.X checkpoint config carries torch_dtype bfloat16, so the loaded backbone
+emits BFloat16 hidden states. SpanScorer is constructed fresh and holds Float32
+weights. Autocast casts both sides during training and hid the mismatch; the
+evaluation pass has no autocast, so the first validation raised.
+
+## Fix
+
+    aligned = features.to(self.input_layer.weight.dtype)
+
+The head now consumes whatever dtype the backbone emits, in both paths, without
+depending on an autocast context being active.
+
+## Non-tautology proof
+
+Dropping the alignment reproduces the cluster error exactly:
+
+    E   RuntimeError: mat1 and mat2 must have the same dtype, but got BFloat16 and Float
+
+Gates: 127 passed, ruff clean, format clean, basedpyright 0 errors.
