@@ -1,5 +1,7 @@
-# sft-full-seed2-ep2 job 13717 heartbeats
+# sft-full-seed2-ep2 job 13717 heartbeats (still RUNNING)
 
-step 1625 overall acc 0.7153 (below epoch-1 0.7211)
-step 3250 overall acc 0.7490 (still RUNNING, short of 0.75)
+step 1625 overall acc 0.7153
+step 3250 overall acc 0.7490
+step 4875 overall acc 0.7630  (>= 0.75 at this quarter)
 majority 0.6446
+Final report.json not written yet.
