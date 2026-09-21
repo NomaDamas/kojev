@@ -1,0 +1,12 @@
+# Four-way: KoJev vs OpenJev vs Laya-multilingual vs Jev-1.13
+Same 80 examples/split, seed 0. Jev via OpenRouter Decisions ($0.009).
+Laya: convaiinnovations/laya-multilingual. OpenJev: deberta-v3-large.
+
+| split | KoJev | OpenJev | Laya-ml | Jev 1.13 |
+|---|---:|---:|---:|---:|
+| gold-val | 0.702 | 0.621 | 0.682 | 0.769 |
+| boolq | 0.500 | 0.738 | 0.625 | 0.988 |
+| copa | 0.538 | 0.675 | 0.500 | 0.988 |
+| wic | 0.463 | 0.513 | 0.500 | 0.888 |
+| hellaswag | 0.338 | 0.375 | 0.375 | 0.775 |
+| sentineg | 0.525 | 0.838 | 0.700 | 0.938 |
