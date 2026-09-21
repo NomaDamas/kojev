@@ -1,0 +1,12 @@
+# KoJev restore-v0 vs OpenRouter typesafe/jev-1.13
+POST https://openrouter.ai/api/alpha/decisions
+n=80 examples/split seed=0, 480 calls, 0 errors, $0.009278
+
+| split | KoJev | Jev 1.13 |
+|---|---:|---:|
+| gold-val | 0.702 | 0.769 |
+| boolq | 0.500 | 0.988 |
+| copa | 0.538 | 0.988 |
+| wic | 0.463 | 0.888 |
+| hellaswag | 0.338 | 0.775 |
+| sentineg | 0.525 | 0.938 |
